@@ -12,7 +12,6 @@ interface ClassPath {
     fun getClass(name: String): Class<*>?
 }
 
-fun String.classPath() = split(';').toList().map { File(it) }.classPath()
 fun List<File>.classPath() = map { it.toURI().toURL() }.toTypedArray().classPath()
 fun Array<URL>.classPath() = object : ClassPath {
     override fun getClass(name: String) = try {

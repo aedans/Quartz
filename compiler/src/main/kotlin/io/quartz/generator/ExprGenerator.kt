@@ -54,6 +54,7 @@ fun ExprI.Bool.push(mg: MethodGenerator) {
     mg.ga.push(boolean)
 }
 
+@Suppress("unused")
 fun ExprI.This.push(mg: MethodGenerator) {
     mg.ga.loadThis()
 }

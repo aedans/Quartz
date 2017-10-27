@@ -29,7 +29,7 @@ data class MethodInfo(
 fun ClassGenerator.generateMethod(info: MethodInfo, fn: MethodGenerator.() -> Unit) {
     MethodGenerator(info, this).run {
         fn()
-        ga.visitEnd()
+        ga.endMethod()
         classGeneratorLater.forEach { it() }
     }
 }

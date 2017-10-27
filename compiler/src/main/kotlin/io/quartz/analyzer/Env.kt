@@ -51,15 +51,5 @@ fun Env.withMemLoc(name: String, memLoc: MemLoc) = run {
     }
 }
 
-fun env(
-        typeMap: Env.(String) -> SchemeK?,
-        varMap: Env.(String) -> SchemeK?,
-        memLocMap: Env.(String) -> MemLoc?
-): Env = object : Env {
-    override fun getType(name: String) = typeMap(name)
-    override fun getVar(name: String) = varMap(name)
-    override fun getMemLoc(name: String) = memLocMap(name)
-}
-
 var fresh = 0
 fun fresh() = "$${fresh++}"

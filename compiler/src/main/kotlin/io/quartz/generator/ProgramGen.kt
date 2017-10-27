@@ -1,12 +1,12 @@
 package io.quartz.generator
 
 import io.quartz.generator.asm.ProgramGenerator
-import io.quartz.tree.ir.ProgramI
+import io.quartz.tree.ir.DeclI
 
 /**
  * @author Aedan Smith
  */
 
-fun ProgramI.generate(pg: ProgramGenerator) {
+fun List<DeclI>.generate(pg: ProgramGenerator) {
     forEach { it.generate(pg) }
 }

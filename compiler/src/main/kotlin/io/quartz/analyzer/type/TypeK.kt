@@ -92,7 +92,10 @@ val TypeK.typeI: TypeI get() = when (this) {
 val DeclT.Class.schemeK get() = SchemeK(nil, name.typeK)
 
 val Class<*>.schemeK get() = run {
-    SchemeK(typeParameters.asIterable().map { GenericK(it.name, TypeK.any) }, TypeK.Const(name))
+    val typeK = typeParameters.fold(TypeK.Const(name) as TypeK) {
+        a, b -> TypeK.Apply(a, TypeK.Var(b.name))
+    }
+    SchemeK(typeParameters.asIterable().map { GenericK(it.name, TypeK.any) }, typeK)
 }
 
 val String.typeK get() = TypeK.Const(this)

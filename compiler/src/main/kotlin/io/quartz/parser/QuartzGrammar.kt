@@ -31,6 +31,7 @@ abstract class QuartzGrammar<out T>(val file: String) : Grammar<T>() {
     val ELSE by token("else\\b")
     val TRUE by token("true\\b")
     val FALSE by token("false\\b")
+    val IMPORT by token("import\\b")
     val CONST by token("[A-Z][_a-zA-Z0-9]*")
     val VAR by token("[_a-z][_a-zA-Z0-9]*")
 

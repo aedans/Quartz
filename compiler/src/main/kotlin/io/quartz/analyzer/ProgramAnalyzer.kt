@@ -1,10 +1,11 @@
 package io.quartz.analyzer
 
-import io.quartz.tree.ast.ProgramT
-import io.quartz.tree.ir.ProgramI
+import io.quartz.tree.ast.DeclT
+import io.quartz.tree.ast.FileT
+import io.quartz.tree.ir.DeclI
 
 /**
  * @author Aedan Smith
  */
 
-fun ProgramT.analyze(env: Env): ProgramI = map { it.analyze(env) }
+fun List<DeclT>.analyze(env: Env): List<DeclI> = map { it.analyze(env) }
