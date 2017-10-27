@@ -16,7 +16,7 @@ import io.quartz.tree.nil
 fun ExprT.analyze(env: Env): ExprI = when (this) {
     is ExprT.Unit -> analyze()
     is ExprT.Bool -> analyze()
-    is ExprT.Cast -> analyze(env)
+    is ExprT.Cast -> TODO()
     is ExprT.Var -> analyze(env)
     is ExprT.Apply -> analyze(env)
     is ExprT.If -> analyze(env)
@@ -32,8 +32,6 @@ fun ExprT.Unit.analyze() = ExprI.InvokeStatic(
 )
 
 fun ExprT.Bool.analyze() = ExprI.Bool(location, boolean)
-
-fun ExprT.Cast.analyze(env: Env): Nothing = TODO()
 
 fun ExprT.Var.analyze(env: Env) = run {
     val memLoc = env.getMemLoc(name)!!
@@ -55,7 +53,7 @@ fun ExprT.Var.analyze(env: Env) = run {
 }
 
 fun ExprT.Apply.analyze(env: Env) = run {
-    val (_, typeK) = infer(env)
+    val (_, _) = infer(env)
     val (_, expr1TypeK) = expr1.infer(env)
     val arrowK = expr1TypeK.arrow
     val expr1I = expr1.analyze(env)
