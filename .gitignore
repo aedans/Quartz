@@ -2,8 +2,14 @@
 
 .gradle
 build
+*/out
+*.class
 
 # IDE Files
 
 *.xml
 *.iml
+
+# Misc
+
+tests

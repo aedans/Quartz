@@ -1,5 +1,5 @@
 group 'io.quartz'
-version '0.0.0'
+version '0.1.0'
 
 buildscript {
     ext.kotlin_version = '1.1.51'
@@ -18,12 +18,21 @@ apply plugin: 'kotlin'
 
 sourceCompatibility = 1.8
 
-repositories {
-    mavenCentral()
+allprojects {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
 }
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile project(':std')
+    compile 'org.jetbrains.kotlin:kotlin-reflect:1.1.2'
+    compile 'org.funktionale:funktionale-all:1.1'
+    compile 'com.github.h0tk3y.betterParse:better-parse:0.2.1'
+    compile 'org.ow2.asm:asm-all:5.2'
+    compile 'com.xenomachina:kotlin-argparser:2.0.3'
 }
 
 compileKotlin {
