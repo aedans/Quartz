@@ -16,22 +16,25 @@ import java.io.File
  * @author Aedan Smith
  */
 
-fun main(args: Array<String>) {
-    try {
-        val options = Options(args)
-        val classPath = options.cp.classPath()
-        val sourcePath = options.sp.sourcePath()
-        val globalEnv = GlobalEnv(classPath, sourcePath, nil)
+object Cli {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        try {
+            val options = Options(args)
+            val classPath = options.cp.classPath()
+            val sourcePath = options.sp.sourcePath()
+            val globalEnv = GlobalEnv(classPath, sourcePath, nil)
 
-        options.src.forEach {
-            val grammar = QuartzGrammar.create(it.name) { fileT }
-            val ast = grammar.parse(it.reader())
-            val ir = ast.analyze(globalEnv)
-            ir.generate(ProgramGenerator { File(options.out, "${it.info.name}.class").writeBytes(it.toByteArray()) })
+            options.src.forEach {
+                val grammar = QuartzGrammar.create(it.name) { fileT }
+                val ast = grammar.parse(it.reader())
+                val ir = ast.analyze(globalEnv)
+                ir.generate(ProgramGenerator { File(options.out, "${it.info.name}.class").writeBytes(it.toByteArray()) })
+            }
+        } catch (e: ShowHelpException) {
+            val writer = System.out.writer()
+            e.printUserMessage(writer, null, 80)
+            writer.flush()
         }
-    } catch (e: ShowHelpException) {
-        val writer = System.out.writer()
-        e.printUserMessage(writer, null, 80)
-        writer.flush()
     }
 }

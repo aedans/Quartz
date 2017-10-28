@@ -13,24 +13,24 @@ class Options(args: Array<out String>) {
 
     val src by parser.positionalList(
             "SOURCE",
-            help = "Source files"
+            help = "source files"
     ) { File(this) }
 
     val cp by parser.storing(
             "-c", "--classpath",
-            help = "Specify where to find user class files"
+            help = "specify where to find user class files"
     ) { split(';').map(::File) }
             .default(listOf(File(".")))
 
     val sp by parser.storing(
             "-s", "--sourcepath",
-            help = "Specify where to find input source files"
+            help = "specify where to find input source files"
     ) { split(';').map(::File) }
             .default(listOf(File(".")))
 
     val out by parser.storing(
             "-o", "--output",
-            help = "Specify where to place generated class files"
+            help = "specify where to place generated class files"
     ) { File(this) }
             .default(File("."))
 }
