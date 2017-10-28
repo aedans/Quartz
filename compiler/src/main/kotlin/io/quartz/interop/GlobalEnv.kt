@@ -1,12 +1,10 @@
 package io.quartz.interop
 
-import io.quartz.analyzer.Env
-import io.quartz.analyzer.MemLoc
-import io.quartz.analyzer.UnknownVariable
-import io.quartz.analyzer.schemeK
+import io.quartz.analyzer.*
 import io.quartz.analyzer.type.schemeK
 import io.quartz.tree.*
 import io.quartz.tree.ast.DeclT
+import kategory.identity
 import kategory.left
 import kategory.right
 
@@ -30,6 +28,10 @@ data class GlobalEnv(
 
     private fun spGetVar(name: Name) = (sp.getDecl(name.qualify(`package`)) as? DeclT.Value)
             ?.schemeK(this)
+            ?.bimap(
+                    { UnknownTypeOf(name) },
+                    ::identity
+            )
 
     private fun cpGetVar(name: Name) = cp.getClass("\$Get${name.capitalize()}".name.qualify(`package`))
             ?.getMethod("get${name.capitalize()}")

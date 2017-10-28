@@ -5,8 +5,8 @@ import io.quartz.analyzer.EitherE
 import io.quartz.analyzer.monadErrorE
 import kategory.*
 
-class UnableToUnify(t1: TypeK, t2: TypeK) : CompilerError("Unable to unify ${t1 to t2}")
-class InfiniteBind(tVar: TypeK.Var, type: TypeK) : CompilerError("Infinite type ${tVar to type}")
+class UnableToUnify(t1: TypeK, t2: TypeK) : CompilerError("Unable to unify $t1 with $t2}")
+class InfiniteBind(tVar: TypeK.Var, type: TypeK) : CompilerError("Infinite type $tVar in $type")
 
 /** Unifies two types if possible, returning a substitution that, when applied to both types, yields the same type */
 fun unify(t1: TypeK, t2: TypeK): EitherE<Subst> = when {
