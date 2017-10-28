@@ -2,6 +2,7 @@ package io.quartz.tree.ast
 
 import io.quartz.tree.Locatable
 import io.quartz.tree.Location
+import io.quartz.tree.Name
 
 /**
  * @author Aedan Smith
@@ -31,9 +32,9 @@ sealed class ExprT : Locatable {
 
     data class Var(
             override val location: Location,
-            val name: String
+            val name: Name
     ) : ExprT() {
-        override fun toString() = name
+        override fun toString() = name.toString()
     }
 
     data class Apply(
@@ -55,7 +56,7 @@ sealed class ExprT : Locatable {
 
     data class Lambda(
             override val location: Location,
-            val arg: String,
+            val arg: Name,
             val expr: ExprT
     ) : ExprT() {
         override fun toString() = "\\$arg = $expr"

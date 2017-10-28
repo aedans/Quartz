@@ -1,25 +1,24 @@
 package io.quartz.tree.ast
 
-import io.quartz.tree.ir.typeI
-import io.quartz.tree.nil
+import io.quartz.tree.*
 
 /**
  * @author Aedan Smith
  */
 
-data class GenericT(val name: String, val type: TypeT)
+data class GenericT(val name: Name, val type: TypeT)
 
 data class SchemeT(val generics: List<GenericT>, val type: TypeT) {
     override fun toString() = "$generics => $type"
 }
 
 sealed class TypeT {
-    data class Const(val name: String) : TypeT() {
-        override fun toString() = name
+    data class Const(val name: QualifiedName) : TypeT() {
+        override fun toString() = name.toString()
     }
 
-    data class Var(val name: String) : TypeT() {
-        override fun toString() = name
+    data class Var(val name: Name) : TypeT() {
+        override fun toString() = name.toString()
     }
 
     data class Apply(val type: TypeT, val apply: TypeT) : TypeT() {
@@ -48,4 +47,4 @@ fun TypeT.apply(generics: List<TypeT>): TypeT = when (generics) {
 
 fun TypeT.apply(generic: TypeT) = TypeT.Apply(this, generic)
 
-val Class<*>.typeT get() = TypeT.Const(typeName)
+val Class<*>.typeT get() = TypeT.Const(qualifiedName)

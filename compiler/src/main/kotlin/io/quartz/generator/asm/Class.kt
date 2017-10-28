@@ -1,5 +1,9 @@
 package io.quartz.generator.asm
 
+import io.quartz.tree.LocatableName
+import io.quartz.tree.Location
+import io.quartz.tree.Name
+import io.quartz.tree.Qualifier
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 
@@ -9,7 +13,14 @@ import org.objectweb.asm.Opcodes
 
 class ClassGenerator(val info: ClassInfo) : ClassWriter(ClassWriter.COMPUTE_FRAMES) {
     init {
-        visit(Opcodes.V1_8, info.access, info.name, info.signature, info.superClass, info.interfaces.toList().toTypedArray())
+        visit(
+                Opcodes.V1_8,
+                info.access,
+                info.name.toString(),
+                info.signature,
+                info.superClass.toString(),
+                info.interfaces.map { it.toString() }.toTypedArray()
+        )
     }
 
     var i = 0
@@ -20,10 +31,11 @@ class ClassGenerator(val info: ClassInfo) : ClassWriter(ClassWriter.COMPUTE_FRAM
 
 data class ClassInfo(
         val access: Int,
-        val name: String,
+        val qualifier: Qualifier,
+        val name: Name,
         val signature: String,
-        val superClass: String,
-        val interfaces: List<String>
+        val superClass: LocatableName,
+        val interfaces: List<LocatableName>
 )
 
 fun ProgramGenerator.generateClass(info: ClassInfo, func: ClassGenerator.() -> Unit) = run {

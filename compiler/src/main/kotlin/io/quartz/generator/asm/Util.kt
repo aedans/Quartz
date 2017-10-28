@@ -1,5 +1,6 @@
 package io.quartz.generator.asm
 
+import io.quartz.tree.Name
 import io.quartz.tree.ir.GenericI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.ir.signature
@@ -10,8 +11,8 @@ import org.objectweb.asm.commons.Method
  * @author Aedan Smith
  */
 
-fun method(returnType: TypeI, name: String, args: List<TypeI>) = Method.getMethod(
-        "${returnType.qualifiedName} $name ${args.joinToString(prefix = "(", postfix = ")") { it.qualifiedName }}"
+fun method(returnType: TypeI, name: Name, args: List<TypeI>) = Method.getMethod(
+        "${returnType.qualifiedName} $name ${args.joinToString(prefix = "(", postfix = ")") { it.qualifiedName.toString() }}"
 )!!
 
 fun TypeI.type() = org.objectweb.asm.Type.getType(descriptor)!!

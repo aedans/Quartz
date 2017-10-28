@@ -2,17 +2,20 @@ package io.quartz.tree.ir
 
 import io.quartz.tree.Locatable
 import io.quartz.tree.Location
+import io.quartz.tree.Name
+import io.quartz.tree.Qualifier
 
 /**
  * @author Aedan Smith
  */
 
 sealed class DeclI : Locatable {
-    abstract val name: String
+    abstract val name: Name
 
     data class Class(
-            override val name: String,
+            override val name: Name,
             override val location: Location,
+            val qualifier: Qualifier,
             val constructor: Constructor?,
             val obj: Object
     ) : DeclI() {
@@ -29,8 +32,9 @@ sealed class DeclI : Locatable {
     }
 
     data class Method(
-            override val name: String,
+            override val name: Name,
             override val location: Location,
+            val qualifier: Qualifier,
             val scheme: Scheme,
             val expr: ExprI
     ) : DeclI() {
@@ -42,7 +46,7 @@ sealed class DeclI : Locatable {
     }
 
     data class Field(
-            override val name: String,
+            override val name: Name,
             override val location: Location,
             val type: TypeI
     ) : DeclI()

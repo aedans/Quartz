@@ -15,7 +15,7 @@ fun ExprT.infer(env: Env): Pair<Subst, TypeK> = when (this) {
     is ExprT.Unit -> emptySubst to TypeT.unit.typeK(env)
     is ExprT.Bool -> emptySubst to TypeT.bool.typeK(env)
     is ExprT.Var -> env.getVar(name)?.let { emptySubst to it.instantiate() }
-            ?: throw NoSuchElementException(name)
+            ?: throw NoSuchElementException(name.toString())
     is ExprT.Cast -> {
         val (s1, exprType) = expr.infer(env)
         val s2 = unify(exprType, type.typeK(env))

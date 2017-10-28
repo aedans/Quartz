@@ -5,6 +5,7 @@ import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.ir.VoidTypeI
 import io.quartz.tree.ir.signature
+import io.quartz.tree.name
 import io.quartz.tree.nil
 import org.funktionale.collections.prependTo
 import org.objectweb.asm.Opcodes
@@ -16,7 +17,7 @@ import org.objectweb.asm.Type
 
 fun DeclI.generate(pg: ProgramGenerator) = when (this) {
     is DeclI.Class -> generate(pg)
-    is DeclI.Method -> generateTopLevel(pg)
+    is DeclI.Method -> generate(pg)
     is DeclI.Field -> throw Exception()
 }
 
@@ -24,6 +25,7 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
     val access = Opcodes.ACC_PUBLIC + (if (constructor == null) Opcodes.ACC_INTERFACE + Opcodes.ACC_ABSTRACT else 0)
     pg.generateClass(ClassInfo(
             access,
+            qualifier,
             name,
             classSignature(obj.generics, TypeI.any.prependTo(obj.superTypes)),
             TypeI.any.locatableName,
@@ -32,7 +34,7 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
         if (constructor != null) {
             generateConstructor(MethodInfo(
                     Opcodes.ACC_PUBLIC,
-                    method(VoidTypeI, "<init>", constructor.args),
+                    method(VoidTypeI, "<init>".name, constructor.args),
                     methodSignature(nil, constructor.args, VoidTypeI)
             )) {
                 constructor.expr.generate(this)
@@ -46,10 +48,11 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
     }
 }
 
-fun DeclI.generateTopLevel(pg: ProgramGenerator) {
+fun DeclI.Method.generate(pg: ProgramGenerator) {
     DeclI.Class(
-            "$${name.capitalize()}",
+            "$${name.capitalize()}".name,
             location,
+            qualifier,
             null,
             DeclI.Class.Object(
                     nil,
@@ -66,16 +69,16 @@ fun DeclI.generate(cg: ClassGenerator) = when (this) {
 }
 
 fun DeclI.Class.generate(cg: ClassGenerator) {
-    val name = "${cg.info.name}$name"
+    val name = "${cg.info.name}$name".name
 
     cg.visitProgramGeneratorLater {
         copy(name = name).generate(this)
     }
 
     cg.visitInnerClass(
-            name,
-            cg.info.name,
-            this.name,
+            name.toString(),
+            cg.info.name.toString(),
+            this.name.toString(),
             Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC
     )
 }
@@ -104,7 +107,7 @@ fun DeclI.Method.generate(cg: ClassGenerator) {
 fun DeclI.Field.generate(cg: ClassGenerator) {
     cg.visitField(
             Opcodes.ACC_PUBLIC,
-            name,
+            name.toString(),
             type.descriptor,
             type.signature,
             null

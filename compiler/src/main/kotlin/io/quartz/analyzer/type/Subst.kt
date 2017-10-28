@@ -2,12 +2,13 @@ package io.quartz.analyzer.type
 
 import io.quartz.analyzer.Env
 import io.quartz.analyzer.mapTypes
+import io.quartz.tree.Name
 
 /**
  * @author Aedan Smith
  */
 
-typealias Subst = Map<String, TypeK>
+typealias Subst = Map<Name, TypeK>
 
 val emptySubst: Subst = emptyMap()
 
@@ -28,9 +29,9 @@ fun apply(subst: Subst, type: TypeK): TypeK = when (type) {
 
 fun apply(subst: Subst, env: Env): Env = env.mapTypes { apply(subst, it) }
 
-val SchemeK.freeTypeVariables: Set<String> get() = type.freeTypeVariables - generics.map { it.name }.toSet()
+val SchemeK.freeTypeVariables: Set<Name> get() = type.freeTypeVariables - generics.map { it.name }.toSet()
 
-val TypeK.freeTypeVariables: Set<String> get() = when (this) {
+val TypeK.freeTypeVariables: Set<Name> get() = when (this) {
     is TypeK.Const -> emptySet()
     is TypeK.Var -> setOf(name)
     is TypeK.Apply -> t1.freeTypeVariables + t2.freeTypeVariables

@@ -1,8 +1,8 @@
 package io.quartz.analyzer.type
 
-import io.quartz.tree.nil
 import io.quartz.analyzer.Env
 import io.quartz.analyzer.fresh
+import io.quartz.tree.*
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.ast.GenericT
 import io.quartz.tree.ast.SchemeT
@@ -13,7 +13,7 @@ import io.quartz.tree.ir.*
  * @author Aedan Smith
  */
 
-data class GenericK(val name: String, val type: TypeK) {
+data class GenericK(val name: Name, val type: TypeK) {
     override fun toString() = "$name :: $type"
 }
 
@@ -22,12 +22,12 @@ data class SchemeK(val generics: List<GenericK>, val type: TypeK) {
 }
 
 sealed class TypeK {
-    data class Const(val name: String) : TypeK() {
-        override fun toString() = name
+    data class Const(val name: QualifiedName) : TypeK() {
+        override fun toString() = name.toString()
     }
 
-    data class Var(val name: String) : TypeK() {
-        override fun toString() = name
+    data class Var(val name: Name) : TypeK() {
+        override fun toString() = name.toString()
     }
 
     data class Apply(val t1: TypeK, val t2: TypeK) : TypeK() {
@@ -56,7 +56,7 @@ val TypeK.scheme get() = SchemeK(nil, this)
 
 fun TypeK.generalize(env: Env, subst: Subst) = SchemeK(
         freeTypeVariables.filterNot { name ->
-            env.getType(name).let { it != null && it.generics.any { it.name == name } }
+            env.getType(name.qualifiedLocal).let { it != null && it.generics.any { it.name == name } }
         }.map {
             GenericK(it, subst[it] ?: TypeK.any)
         },
@@ -89,15 +89,15 @@ val TypeK.typeI: TypeI get() = when (this) {
     is TypeK.Apply -> t1.typeI.apply(t2.typeI)
 }
 
-val DeclT.Class.schemeK get() = SchemeK(nil, name.typeK)
+fun DeclT.Class.schemeK(env: Env) = SchemeK(nil, name.qualify(env.`package`).typeK)
 
 val Class<*>.schemeK get() = run {
-    val typeK = typeParameters.fold(TypeK.Const(name) as TypeK) {
-        a, b -> TypeK.Apply(a, TypeK.Var(b.name))
+    val typeK = typeParameters.fold(TypeK.Const(qualifiedName) as TypeK) {
+        a, b -> TypeK.Apply(a, TypeK.Var(b.name.name))
     }
-    SchemeK(typeParameters.asIterable().map { GenericK(it.name, TypeK.any) }, typeK)
+    SchemeK(typeParameters.asIterable().map { GenericK(it.name.name, TypeK.any) }, typeK)
 }
 
-val String.typeK get() = TypeK.Const(this)
+val QualifiedName.typeK get() = TypeK.Const(this)
 
-val Class<*>.typeK get() = typeName.typeK
+val Class<*>.typeK get() = qualifiedName.typeK

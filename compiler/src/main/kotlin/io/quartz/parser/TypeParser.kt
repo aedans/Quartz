@@ -3,7 +3,10 @@ package io.quartz.parser
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
+import io.quartz.tree.QualifiedName
 import io.quartz.tree.ast.*
+import io.quartz.tree.name
+import io.quartz.tree.nil
 
 /**
  * @author Aedan Smith
@@ -27,11 +30,11 @@ val QuartzGrammar<*>.atomicTypeT: Parser<TypeT> get() = parser { constTypeT } or
         parser { parenthesizedTypeT }
 
 val QuartzGrammar<*>.constTypeT: Parser<TypeT> get() = CONST use {
-    TypeT.Const(text)
+    TypeT.Const(QualifiedName(nil, text))
 }
 
 val QuartzGrammar<*>.varTypeT: Parser<TypeT> get() = VAR use {
-    TypeT.Var(text)
+    TypeT.Var(text.name)
 }
 
 val QuartzGrammar<*>.unitTypeT: Parser<TypeT> get() = O_PAREN and C_PAREN use { TypeT.unit }

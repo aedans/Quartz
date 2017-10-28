@@ -2,6 +2,8 @@ package io.quartz.tree.ir
 
 import io.quartz.tree.Locatable
 import io.quartz.tree.Location
+import io.quartz.tree.Name
+import io.quartz.tree.Qualifier
 
 /**
  * @author Aedan Smith
@@ -25,7 +27,7 @@ sealed class ExprI : Locatable {
 
     data class LocalField(
             override val location: Location,
-            val name: String,
+            val name: Name,
             val type: TypeI
     ) : ExprI()
 
@@ -34,7 +36,7 @@ sealed class ExprI : Locatable {
             val expr: ExprI,
             val owner: TypeI,
             val type: TypeI,
-            val name: String,
+            val name: Name,
             val args: List<Pair<ExprI, TypeI>>,
             val dispatch: Dispatch
     ) : ExprI() {
@@ -48,7 +50,7 @@ sealed class ExprI : Locatable {
             override val location: Location,
             val owner: TypeI,
             val type: TypeI,
-            val name: String,
+            val name: Name,
             val args: List<Pair<ExprI, TypeI>>
     ) : ExprI()
 
@@ -61,6 +63,7 @@ sealed class ExprI : Locatable {
 
     data class AnonymousObject(
             override val location: Location,
+            val qualifier: Qualifier,
             val obj: DeclI.Class.Object,
             val closures: List<Pair<ExprI.LocalField, TypeI>>
     ) : ExprI()
@@ -68,7 +71,7 @@ sealed class ExprI : Locatable {
     data class Set(
             override val location: Location,
             val owner: TypeI,
-            val name: String,
+            val name: Name,
             val type: TypeI,
             val expr1: ExprI,
             val expr2: ExprI

@@ -3,6 +3,7 @@ package io.quartz.parser
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import com.github.h0tk3y.betterParse.parser.Parser
+import io.quartz.tree.Qualifier
 import java.io.InputStream
 import java.util.*
 
@@ -11,7 +12,7 @@ import java.util.*
  */
 
 @Suppress("PropertyName")
-abstract class QuartzGrammar<out T>(val file: String) : Grammar<T>() {
+abstract class QuartzGrammar<out T>(val uri: String) : Grammar<T>() {
     val WS by token("\\s+", ignore = true)
     val COMMENT by token("\\/\\/.+", ignore = true)
     val O_PAREN by token("\\(")
@@ -32,6 +33,7 @@ abstract class QuartzGrammar<out T>(val file: String) : Grammar<T>() {
     val TRUE by token("true\\b")
     val FALSE by token("false\\b")
     val IMPORT by token("import\\b")
+    val PACKAGE by token("package\\b")
     val CONST by token("[A-Z][_a-zA-Z0-9]*")
     val VAR by token("[_a-z][_a-zA-Z0-9]*")
 
@@ -41,7 +43,10 @@ abstract class QuartzGrammar<out T>(val file: String) : Grammar<T>() {
     fun parse(input: Scanner) = parseToEnd(input)
 
     companion object {
-        fun <T> create(file: String, func: QuartzGrammar<*>.() -> Parser<T>) = object : QuartzGrammar<T>(file) {
+        fun <T> create(
+                file: String,
+                func: QuartzGrammar<*>.() -> Parser<T>
+        ) = object : QuartzGrammar<T>(file) {
             override val rootParser: Parser<T> = func(this)
         }
     }

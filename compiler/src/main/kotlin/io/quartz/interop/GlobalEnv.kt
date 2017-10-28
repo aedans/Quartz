@@ -4,6 +4,7 @@ import io.quartz.analyzer.Env
 import io.quartz.analyzer.MemLoc
 import io.quartz.analyzer.schemeK
 import io.quartz.analyzer.type.schemeK
+import io.quartz.tree.*
 import io.quartz.tree.ast.DeclT
 
 /**
@@ -12,26 +13,31 @@ import io.quartz.tree.ast.DeclT
 
 data class GlobalEnv(
         private val cp: ClassPath,
-        private val sp: SourcePath
+        private val sp: SourcePath,
+        override val `package`: Qualifier
 ) : Env {
-    override fun getType(name: String) = spGetType(name) ?: cpGetType(name)
+    override fun getType(name: QualifiedName) = spGetType(name) ?: cpGetType(name)
 
-    private fun spGetType(name: String) = (sp.getDecl(name) as? DeclT.Class)?.schemeK
-    private fun cpGetType(name: String) = cp.getClass(name)?.schemeK
+    private fun spGetType(name: QualifiedName) = (sp.getDecl(name) as? DeclT.Class)
+            ?.schemeK(this)
 
-    override fun getVar(name: String) = spGetVar(name) ?: cpGetVar(name)
+    private fun cpGetType(name: QualifiedName) = cp.getClass(name)?.schemeK
 
-    private fun spGetVar(name: String) = (sp.getDecl(name) as? DeclT.Value)?.schemeK(this)
-    private fun cpGetVar(name: String) = cp.getClass("\$Get${name.capitalize()}")
+    override fun getVar(name: Name) = spGetVar(name) ?: cpGetVar(name)
+
+    private fun spGetVar(name: Name) = (sp.getDecl(name.qualify(`package`)) as? DeclT.Value)
+            ?.schemeK(this)
+
+    private fun cpGetVar(name: Name) = cp.getClass("\$Get${name.capitalize()}".name.qualify(`package`))
             ?.getMethod("get${name.capitalize()}")
             ?.returnType
             ?.schemeK
 
-    override fun getMemLoc(name: String) = spGetMemLoc(name) ?: cpGetMemLoc(name)
+    override fun getMemLoc(name: Name) = spGetMemLoc(name) ?: cpGetMemLoc(name)
 
-    private fun spGetMemLoc(name: String) = (sp.getDecl(name) as? DeclT.Value)
+    private fun spGetMemLoc(name: Name) = (sp.getDecl(name.qualify(`package`)) as? DeclT.Value)
             ?.let { MemLoc.Global(name) }
 
-    private fun cpGetMemLoc(name: String) = cp.getClass("\$Get${name.capitalize()}")
+    private fun cpGetMemLoc(name: Name) = cp.getClass("\$Get${name.capitalize()}".name.qualify(`package`))
             ?.let { MemLoc.Global(name) }
 }

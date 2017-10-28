@@ -7,4 +7,4 @@ import io.quartz.tree.Location
  * @author Aedan Smith
  */
 
-fun TokenMatch.location(file: String) = Location(file, column, position)
+fun TokenMatch.location(grammar: QuartzGrammar<*>) = Location(grammar.uri, column, position)

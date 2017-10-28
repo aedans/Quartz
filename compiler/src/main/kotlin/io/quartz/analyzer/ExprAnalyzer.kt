@@ -1,13 +1,12 @@
 package io.quartz.analyzer
 
 import io.quartz.analyzer.type.*
-import io.quartz.tree.Location
+import io.quartz.tree.*
 import io.quartz.tree.ast.ExprT
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.ExprI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.ir.typeI
-import io.quartz.tree.nil
 
 /**
  * @author Aedan Smith
@@ -27,7 +26,7 @@ fun ExprT.Unit.analyze() = ExprI.InvokeStatic(
         location,
         TypeI.unit,
         TypeI.unit,
-        "getInstance",
+        "getInstance".name,
         nil
 )
 
@@ -44,9 +43,9 @@ fun ExprT.Var.analyze(env: Env) = run {
         )
         is MemLoc.Global -> ExprI.InvokeStatic(
                 location,
-                "\$Get${name.capitalize()}".typeI,
+                "\$Get${name.capitalize()}".name.qualify(env.`package`).typeI,
                 env.getVar(name)!!.instantiate().typeI,
-                "get${name.capitalize()}",
+                "get${name.capitalize()}".name,
                 nil
         )
     }
@@ -63,7 +62,7 @@ fun ExprT.Apply.analyze(env: Env) = run {
             expr1I,
             TypeI.function,
             arrowK.t2.typeI,
-            "invoke",
+            "invoke".name,
             listOf(expr2I to expr1TypeK.typeI),
             ExprI.Invoke.Dispatch.INTERFACE
     )
@@ -92,7 +91,7 @@ fun ExprT.Lambda.analyze(env: Env) = run {
     }
     val exprI = expr.analyze(localEnv)
     val invokeScheme = DeclI.Method.Scheme(nil, listOf(argTypeK.typeI), returnTypeK.typeI)
-    val invokeDecl = DeclI.Method("invoke", location, invokeScheme, exprI)
+    val invokeDecl = DeclI.Method("invoke".name, location, env.`package`, invokeScheme, exprI)
     val obj = DeclI.Class.Object(genericsK.map { it.genericI }, listOf(typeK.typeI), listOf(invokeDecl))
-    ExprI.AnonymousObject(location, obj, closuresI)
+    ExprI.AnonymousObject(location, env.`package`, obj, closuresI)
 }

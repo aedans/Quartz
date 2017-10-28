@@ -1,13 +1,13 @@
 package io.quartz.tree.ir
 
-import io.quartz.tree.nil
+import io.quartz.tree.*
 
 /**
  * @author Aedan Smith
  */
 
 data class GenericI(
-        val name: String,
+        val name: Name,
         val type: TypeI
 )
 
@@ -15,8 +15,8 @@ data class SchemeI(val generics: List<GenericI>, val type: TypeI)
 
 interface TypeI {
     val generics: List<TypeI>
-    val qualifiedName: String
-    val locatableName: String
+    val qualifiedName: QualifiedName
+    val locatableName: LocatableName
     val descriptor: String
     fun getSignature(generics: List<TypeI>): String
 
@@ -36,10 +36,10 @@ interface TypeI {
     }
 }
 
-data class ClassTypeI(val name: String) : TypeI {
+data class ClassTypeI(val name: QualifiedName) : TypeI {
     override val generics get() = nil
     override val qualifiedName get() = name
-    override val locatableName get() = name.replace('.', '/')
+    override val locatableName get() = name.locatableName
     override val descriptor get() = "L$locatableName;"
     override fun getSignature(generics: List<TypeI>) = "L$locatableName" + when (generics) {
         nil -> ""
@@ -49,10 +49,10 @@ data class ClassTypeI(val name: String) : TypeI {
     override fun toString() = "ClassTypeI($name)"
 }
 
-data class GenericTypeI(val name: String) : TypeI {
+data class GenericTypeI(val name: Name) : TypeI {
     override val generics get() = nil
-    override val qualifiedName get() = name
-    override val locatableName get() = name
+    override val qualifiedName get() = name.qualifiedLocal
+    override val locatableName get() = qualifiedName.locatableName
     override val descriptor get() = "T$name;"
     override fun getSignature(generics: List<TypeI>) = "T$name" + when (generics) {
         nil -> ""
@@ -64,15 +64,15 @@ data class GenericTypeI(val name: String) : TypeI {
 
 object VoidTypeI : TypeI {
     override val generics get() = nil
-    override val qualifiedName get() = "void"
-    override val locatableName get() = "void"
+    override val qualifiedName get() = "void".name.qualifiedLocal
+    override val locatableName get() = qualifiedName.locatableName
     override val descriptor get() = "V"
     override fun getSignature(generics: List<TypeI>) = "V"
 }
 
-val String.typeI: TypeI get() = ClassTypeI(this)
+val QualifiedName.typeI get() = ClassTypeI(this)
 
-val Class<*>.typeI: TypeI get() = ClassTypeI(typeName)
+val Class<*>.typeI: TypeI get() = qualifiedName.typeI
 
 val TypeI.signature get() = getSignature(generics)
 

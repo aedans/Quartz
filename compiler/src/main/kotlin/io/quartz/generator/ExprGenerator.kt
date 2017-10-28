@@ -3,14 +3,13 @@ package io.quartz.generator
 import io.quartz.generator.asm.MethodGenerator
 import io.quartz.generator.asm.method
 import io.quartz.generator.asm.type
-import io.quartz.tree.Location
+import io.quartz.tree.*
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.ExprI
 import io.quartz.tree.ir.ExprI.Invoke.Dispatch.INTERFACE
 import io.quartz.tree.ir.ExprI.Invoke.Dispatch.VIRTUAL
 import io.quartz.tree.ir.VoidTypeI
 import io.quartz.tree.ir.typeI
-import io.quartz.tree.nil
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.commons.GeneratorAdapter
@@ -116,11 +115,15 @@ fun ExprI.Arg.push(mg: MethodGenerator) {
 
 fun ExprI.LocalField.push(mg: MethodGenerator) {
     mg.ga.loadThis()
-    mg.ga.getField(mg.classGenerator.info.name.typeI.type(), name, type.type())
+    mg.ga.getField(
+            mg.classGenerator.info.name.qualify(mg.classGenerator.info.qualifier).typeI.type(),
+            name.toString(),
+            type.type()
+    )
 }
 
 fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
-    val name = "${mg.classGenerator.info.name}$${mg.classGenerator.i++}"
+    val name = "${mg.classGenerator.info.name}$${mg.classGenerator.i++}".name.qualify(qualifier)
     val typeI = name.typeI
 
     val block = closures.mapIndexed { i, it -> ExprI.Set(
@@ -143,10 +146,16 @@ fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
 
     mg.visitClassGeneratorLater {
         visitProgramGeneratorLater {
-            DeclI.Class(name, location, constructor, obj.copy(decls = newFields + obj.decls)).generate(this)
+            DeclI.Class(
+                    name.unqualified,
+                    location,
+                    qualifier,
+                    constructor,
+                    obj.copy(decls = newFields + obj.decls)
+            ).generate(this)
         }
 
-        visitInnerClass(name, null, null, Opcodes.ACC_PUBLIC)
+        visitInnerClass(name.toString(), null, null, Opcodes.ACC_PUBLIC)
     }
 
     val type = Type.getType(typeI.descriptor)
@@ -160,17 +169,17 @@ fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
 
     mg.ga.invokeConstructor(
             type,
-            method(VoidTypeI, "<init>", closures.map { it.second })
+            method(VoidTypeI, "<init>".name, closures.map { it.second })
     )
 }
 
 fun ExprI.Set.push(mg: MethodGenerator) {
     generate(mg)
-    mg.ga.getField(owner.type(), name, type.type())
+    mg.ga.getField(owner.type(), name.toString(), type.type())
 }
 
 fun ExprI.Set.generate(mg: MethodGenerator) {
     expr1.push(mg)
     expr2.push(mg)
-    mg.ga.putField(owner.type(), name, type.type())
+    mg.ga.putField(owner.type(), name.toString(), type.type())
 }

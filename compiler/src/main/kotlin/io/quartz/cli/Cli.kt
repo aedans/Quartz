@@ -9,6 +9,7 @@ import io.quartz.interop.classPath
 import io.quartz.interop.sourcePath
 import io.quartz.parser.QuartzGrammar
 import io.quartz.parser.fileT
+import io.quartz.tree.nil
 import java.io.File
 
 /**
@@ -20,12 +21,12 @@ fun main(args: Array<String>) {
         val options = Options(args)
         val classPath = options.cp.classPath()
         val sourcePath = options.sp.sourcePath()
-        val globalEnv = GlobalEnv(classPath, sourcePath)
+        val globalEnv = GlobalEnv(classPath, sourcePath, nil)
 
         options.src.forEach {
             val grammar = QuartzGrammar.create(it.name) { fileT }
             val ast = grammar.parse(it.reader())
-            val ir = ast.decls.analyze(globalEnv)
+            val ir = ast.analyze(globalEnv)
             ir.generate(ProgramGenerator { File(options.out, "${it.info.name}.class").writeBytes(it.toByteArray()) })
         }
     } catch (e: ShowHelpException) {
