@@ -11,10 +11,6 @@ import org.funktionale.collections.prependTo
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
-/**
- * @author Aedan Smith
- */
-
 fun DeclI.generate(pg: ProgramGenerator) = when (this) {
     is DeclI.Class -> generate(pg)
     is DeclI.Method -> generate(pg)

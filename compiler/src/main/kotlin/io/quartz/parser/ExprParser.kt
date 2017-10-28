@@ -6,10 +6,6 @@ import com.github.h0tk3y.betterParse.parser.Parser
 import io.quartz.tree.ast.*
 import io.quartz.tree.name
 
-/**
- * @author Aedan Smith
- */
-
 val QuartzGrammar<*>.exprT: Parser<ExprT> get() = parser { lambdaExprT } or
         parser { ifExprT } or
         parser { applyExprT }

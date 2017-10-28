@@ -4,13 +4,10 @@ import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
 import io.quartz.tree.QualifiedName
-import io.quartz.tree.ast.*
+import io.quartz.tree.ast.TypeT
+import io.quartz.tree.ast.apply
 import io.quartz.tree.name
 import io.quartz.tree.nil
-
-/**
- * @author Aedan Smith
- */
 
 val QuartzGrammar<*>.typeT: Parser<TypeT> get() = parser { functionTypeT }
 

@@ -3,10 +3,6 @@ package io.quartz.analyzer
 import io.quartz.tree.Name
 import io.quartz.tree.ast.ExprT
 
-/**
- * @author Aedan Smith
- */
-
 val ExprT.freeVariables: Set<Name> get() = when (this) {
     is ExprT.Unit,
     is ExprT.Bool -> emptySet()

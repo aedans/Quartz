@@ -9,18 +9,17 @@ import io.quartz.tree.ast.SchemeT
 import io.quartz.tree.ast.TypeT
 import io.quartz.tree.ir.*
 
-/**
- * @author Aedan Smith
- */
-
+/** Class representing a generic for compiler analysis */
 data class GenericK(val name: Name, val type: TypeK) {
     override fun toString() = "$name :: $type"
 }
 
+/** Class representing a type scheme for compiler analysis */
 data class SchemeK(val generics: List<GenericK>, val type: TypeK) {
     override fun toString() = "$generics => $type"
 }
 
+/** Sealed class representing all types for compiler analysis */
 sealed class TypeK {
     data class Const(val name: QualifiedName) : TypeK() {
         override fun toString() = name.toString()
@@ -34,15 +33,17 @@ sealed class TypeK {
         override fun toString() = "($t1 $t2)"
     }
 
-    data class Arrow(val t1: TypeK, val t2: TypeK)
+    /** Convenience class representing a type of (Function t1) t2 */
+    data class Arrow(val t1: TypeK, val t2: TypeK) {
+        val type get() = TypeK.Apply(TypeK.Apply(TypeK.function, t1), t2)
+        override fun toString() = "($t1 -> $t2)"
+    }
 
     companion object {
         val any = java.lang.Object::class.java.typeK
         val function = quartz.lang.Function::class.java.typeK
     }
 }
-
-val TypeK.Arrow.type get() = TypeK.Apply(TypeK.Apply(TypeK.function, t1), t2)
 
 val TypeK.arrow get() = run {
     this as TypeK.Apply
@@ -54,6 +55,7 @@ val TypeK.arrow get() = run {
 
 val TypeK.scheme get() = SchemeK(nil, this)
 
+/** Generalizes a type to a type scheme by pulling all type variables into generics */
 fun TypeK.generalize(env: Env, subst: Subst) = SchemeK(
         freeTypeVariables.filterNot { name ->
             env.getType(name.qualifiedLocal).let { it != null && it.generics.any { it.name == name } }
@@ -63,10 +65,11 @@ fun TypeK.generalize(env: Env, subst: Subst) = SchemeK(
         this
 )
 
+/** Instantiates a type scheme by replacing all generics with fresh variables */
 fun SchemeK.instantiate(): TypeK = run {
     val namesP = generics.map { TypeK.Var(fresh()) }
     val namesZ: Subst = (generics.map { it.name } zip namesP).toMap()
-    apply(namesZ, type)
+    apply(type, namesZ)
 }
 
 fun GenericT.genericK(env: Env) = GenericK(name, type.typeK(env))

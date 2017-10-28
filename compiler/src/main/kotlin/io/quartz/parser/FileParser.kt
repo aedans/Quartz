@@ -7,10 +7,6 @@ import io.quartz.tree.Qualifier
 import io.quartz.tree.ast.FileT
 import io.quartz.tree.nil
 
-/**
- * @author Aedan Smith
- */
-
 val QuartzGrammar<*>.fileT: Parser<FileT> get() = optional(parser { packageT }) and
         zeroOrMore(parser { importT }) and
         zeroOrMore(parser { declT }) use {

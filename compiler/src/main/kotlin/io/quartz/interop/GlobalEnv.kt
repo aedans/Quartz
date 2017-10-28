@@ -7,10 +7,6 @@ import io.quartz.analyzer.type.schemeK
 import io.quartz.tree.*
 import io.quartz.tree.ast.DeclT
 
-/**
- * @author Aedan Smith
- */
-
 data class GlobalEnv(
         private val cp: ClassPath,
         private val sp: SourcePath,

@@ -6,10 +6,6 @@ import com.github.h0tk3y.betterParse.parser.Parser
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.name
 
-/**
- * @author Aedan Smith
- */
-
 val QuartzGrammar<*>.declT: Parser<DeclT> get() = parser { classDeclT } or
         parser { valueDeclT }
 

@@ -2,10 +2,7 @@ package io.quartz.tree.ast
 
 import io.quartz.tree.Qualifier
 
-/**
- * @author Aedan Smith
- */
-
+/** Class representing a file's AST */
 data class FileT(
         val `package`: Qualifier,
         val imports: List<Qualifier>,

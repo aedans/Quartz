@@ -6,10 +6,6 @@ import io.quartz.tree.ir.DeclI
 import io.quartz.tree.name
 import io.quartz.tree.nil
 
-/**
- * @author Aedan Smith
- */
-
 fun DeclT.analyze(env: Env): DeclI = when (this) {
     is DeclT.Class -> analyze(env)
     is DeclT.Value -> analyze(env)
@@ -34,5 +30,5 @@ fun DeclT.Value.schemeK(env: Env) = run {
     val (s1, exprType) = expr.infer(env)
     val schemeK = type?.typeK(env)?.generalize(env, s1)
     val s2 = unify(exprType, schemeK?.instantiate() ?: TypeK.Var(fresh()))
-    schemeK ?: apply(s2 compose s1, exprType).generalize(env, s2)
+    schemeK ?: apply(exprType, s2 compose s1).generalize(env, s2)
 }

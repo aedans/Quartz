@@ -1,16 +1,12 @@
 package io.quartz.generator.asm
 
 import io.quartz.tree.LocatableName
-import io.quartz.tree.Location
 import io.quartz.tree.Name
 import io.quartz.tree.Qualifier
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 
-/**
- * @author Aedan Smith
- */
-
+/** Wrapper class for ASM's ClassWriter */
 class ClassGenerator(val info: ClassInfo) : ClassWriter(ClassWriter.COMPUTE_FRAMES) {
     init {
         visit(

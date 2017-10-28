@@ -5,10 +5,7 @@ import io.quartz.tree.Location
 import io.quartz.tree.Name
 import io.quartz.tree.Qualifier
 
-/**
- * @author Aedan Smith
- */
-
+/** Sealed class representing all IR expressions */
 sealed class ExprI : Locatable {
     data class Bool(
             override val location: Location,

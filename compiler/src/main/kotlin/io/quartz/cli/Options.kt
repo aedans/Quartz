@@ -4,10 +4,6 @@ import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 import java.io.File
 
-/**
- * @author Aedan Smith
- */
-
 class Options(args: Array<out String>) {
     val parser = ArgParser(args)
 

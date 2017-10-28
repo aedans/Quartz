@@ -1,14 +1,12 @@
 package io.quartz.tree
 
-/**
- * @author Aedan Smith
- */
-
+/** Class for representing local or unresolved identifiers */
 data class SimpleName(val string: String) {
     fun capitalize() = string.capitalize().name
     override fun toString() = string
 }
 
+// For convenience
 typealias Name = SimpleName
 
 val QualifiedName.unqualified get() = Name(name)

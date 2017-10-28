@@ -5,10 +5,7 @@ import io.quartz.tree.Location
 import io.quartz.tree.Name
 import io.quartz.tree.Qualifier
 
-/**
- * @author Aedan Smith
- */
-
+/** Sealed class representing all IR declarations */
 sealed class DeclI : Locatable {
     abstract val name: Name
 

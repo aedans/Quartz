@@ -1,16 +1,15 @@
 package io.quartz.analyzer
 
 import io.quartz.analyzer.type.*
-import io.quartz.tree.*
+import io.quartz.tree.Location
 import io.quartz.tree.ast.ExprT
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.ExprI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.ir.typeI
-
-/**
- * @author Aedan Smith
- */
+import io.quartz.tree.name
+import io.quartz.tree.nil
+import io.quartz.tree.qualify
 
 fun ExprT.analyze(env: Env): ExprI = when (this) {
     is ExprT.Unit -> analyze()

@@ -3,13 +3,8 @@ package io.quartz.parser
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import com.github.h0tk3y.betterParse.parser.Parser
-import io.quartz.tree.Qualifier
 import java.io.InputStream
 import java.util.*
-
-/**
- * @author Aedan Smith
- */
 
 @Suppress("PropertyName")
 abstract class QuartzGrammar<out T>(val uri: String) : Grammar<T>() {

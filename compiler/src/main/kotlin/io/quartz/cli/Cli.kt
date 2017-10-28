@@ -12,10 +12,7 @@ import io.quartz.parser.fileT
 import io.quartz.tree.nil
 import java.io.File
 
-/**
- * @author Aedan Smith
- */
-
+/** The main entry point for the Quartz compiler */
 object Cli {
     @JvmStatic
     fun main(args: Array<String>) {

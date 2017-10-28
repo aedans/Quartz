@@ -4,10 +4,7 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.commons.GeneratorAdapter
 import org.objectweb.asm.commons.Method
 
-/**
- * @author Aedan Smith
- */
-
+/** Wrapper class for ASM's GeneratorAdapter */
 class MethodGenerator(
         val info: MethodInfo,
         val classGenerator: ClassGenerator

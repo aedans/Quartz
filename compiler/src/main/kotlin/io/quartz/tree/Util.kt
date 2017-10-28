@@ -1,9 +1,4 @@
 package io.quartz.tree
 
-/**
- * @author Aedan Smith
- */
-
+/** The empty list, used for pattern matching */
 val nil = emptyList<Nothing>()
-
-val <A, B> Pair<A, B>.swapped get() = second to first

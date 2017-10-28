@@ -6,11 +6,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author Aedan Smith
+ * Annotation for representing higher kinded type parameters
  */
-
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE_PARAMETER)
 public @interface Kind {
+    /**
+     * The kind of the type parameter in the form
+     * kind ::= '*'
+     *        | '(' kind ')'
+     *        | kind '->' kind
+     */
     String value();
 }

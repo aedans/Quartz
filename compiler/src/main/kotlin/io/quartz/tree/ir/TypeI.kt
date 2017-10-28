@@ -2,17 +2,13 @@ package io.quartz.tree.ir
 
 import io.quartz.tree.*
 
-/**
- * @author Aedan Smith
- */
+/** Class representing any IR generic */
+data class GenericI(val name: Name, val type: TypeI)
 
-data class GenericI(
-        val name: Name,
-        val type: TypeI
-)
-
+/** Class representing any IR type scheme */
 data class SchemeI(val generics: List<GenericI>, val type: TypeI)
 
+/** Interface representing any IR type */
 interface TypeI {
     val generics: List<TypeI>
     val qualifiedName: QualifiedName

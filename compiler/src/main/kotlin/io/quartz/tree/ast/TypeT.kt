@@ -1,17 +1,19 @@
 package io.quartz.tree.ast
 
-import io.quartz.tree.*
+import io.quartz.tree.Name
+import io.quartz.tree.QualifiedName
+import io.quartz.tree.nil
+import io.quartz.tree.qualifiedName
 
-/**
- * @author Aedan Smith
- */
-
+/** Class representing all AST generics */
 data class GenericT(val name: Name, val type: TypeT)
 
+/** Class representing all AST type schemes */
 data class SchemeT(val generics: List<GenericT>, val type: TypeT) {
     override fun toString() = "$generics => $type"
 }
 
+/** Sealed class representing all AST types */
 sealed class TypeT {
     data class Const(val name: QualifiedName) : TypeT() {
         override fun toString() = name.toString()

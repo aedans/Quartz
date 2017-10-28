@@ -7,10 +7,6 @@ import io.quartz.tree.ir.signature
 import io.quartz.tree.nil
 import org.objectweb.asm.commons.Method
 
-/**
- * @author Aedan Smith
- */
-
 fun method(returnType: TypeI, name: Name, args: List<TypeI>) = Method.getMethod(
         "${returnType.qualifiedName} $name ${args.joinToString(prefix = "(", postfix = ")") { it.qualifiedName.toString() }}"
 )!!

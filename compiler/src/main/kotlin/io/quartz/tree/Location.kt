@@ -1,13 +1,10 @@
 package io.quartz.tree
 
-/**
- * @author Aedan Smith
- */
-
 interface Locatable {
     val location: Location
 }
 
+/** Class containing the source location of a token */
 data class Location(
         val uri: String,
         val line: Int,
@@ -16,6 +13,7 @@ data class Location(
     override fun toString() = "$uri:$line, $position"
 
     companion object {
+        /** Location for auto-generated code */
         val unknown = Location("???", -1, -1)
     }
 }

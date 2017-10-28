@@ -14,10 +14,6 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.commons.GeneratorAdapter
 
-/**
- * @author Aedan Smith
- */
-
 fun ExprI.generate(mg: MethodGenerator) = when (this) {
     is ExprI.Block -> generate(mg)
     is ExprI.Set -> generate(mg)

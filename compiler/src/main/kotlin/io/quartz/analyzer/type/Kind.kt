@@ -11,10 +11,6 @@ import com.github.h0tk3y.betterParse.parser.Parser
 import io.quartz.tree.nil
 import java.lang.reflect.TypeVariable
 
-/**
- * @author Aedan Smith
- */
-
 sealed class Kind {
     object Type : Kind() {
         override fun toString() = "*"

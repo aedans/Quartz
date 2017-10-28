@@ -4,15 +4,9 @@ import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import io.quartz.parser.QuartzGrammar
 import io.quartz.parser.fileT
 import io.quartz.tree.QualifiedName
-import io.quartz.tree.Qualifier
 import io.quartz.tree.ast.DeclT
-import io.quartz.tree.nil
 import io.quartz.tree.qualify
 import java.io.File
-
-/**
- * @author Aedan Smith
- */
 
 interface SourcePath {
     fun getDecl(name: QualifiedName): DeclT?

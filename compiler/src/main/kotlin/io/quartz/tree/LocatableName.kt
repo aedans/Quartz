@@ -1,9 +1,6 @@
 package io.quartz.tree
 
-/**
- * @author Aedan Smith
- */
-
+/** Class for representing identifiers in the form p1/p2/Name */
 data class LocatableName(val qualifier: Qualifier, val name: String) {
     override fun toString() = (qualifier + name).joinToString(prefix = "", postfix = "", separator = "/")
 }

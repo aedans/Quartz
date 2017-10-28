@@ -4,10 +4,7 @@ import io.quartz.tree.Locatable
 import io.quartz.tree.Location
 import io.quartz.tree.Name
 
-/**
- * @author Aedan Smith
- */
-
+/** Sealed class representing all AST declarations */
 sealed class DeclT : Locatable {
     abstract val name: Name
 

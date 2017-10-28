@@ -6,10 +6,6 @@ import io.quartz.tree.QualifiedName
 import io.quartz.tree.Qualifier
 import io.quartz.tree.name
 
-/**
- * @author Aedan Smith
- */
-
 interface Env {
     val `package`: Qualifier
     fun getType(name: QualifiedName): SchemeK?
