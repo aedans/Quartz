@@ -11,6 +11,8 @@ typealias Qualifier = List<String>
 fun Name.qualify(qualifier: Qualifier) = QualifiedName(qualifier, string)
 val Name.qualifiedLocal get() = qualify(nil)
 
+val LocatableName.qualifiedName get() = QualifiedName(qualifier, name)
+
 val Class<*>.qualifiedName get() = typeName
         .split('.')
         .let { QualifiedName(it.dropLast(1), it.last()) }

@@ -1,13 +1,16 @@
 package io.quartz.analyzer.type
 
+import io.quartz.analyzer.EitherE
 import io.quartz.analyzer.Env
 import io.quartz.analyzer.fresh
+import io.quartz.analyzer.monadErrorE
 import io.quartz.tree.*
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.ast.GenericT
 import io.quartz.tree.ast.SchemeT
 import io.quartz.tree.ast.TypeT
 import io.quartz.tree.ir.*
+import kategory.*
 
 /** Class representing a generic for compiler analysis */
 data class GenericK(val name: Name, val type: TypeK) {
@@ -40,7 +43,9 @@ sealed class TypeK {
     }
 
     companion object {
+        val bool = java.lang.Boolean::class.java.typeK
         val any = java.lang.Object::class.java.typeK
+        val unit = quartz.lang.Unit::class.java.typeK
         val function = quartz.lang.Function::class.java.typeK
     }
 }
@@ -58,7 +63,10 @@ val TypeK.scheme get() = SchemeK(nil, this)
 /** Generalizes a type to a type scheme by pulling all type variables into generics */
 fun TypeK.generalize(env: Env, subst: Subst) = SchemeK(
         freeTypeVariables.filterNot { name ->
-            env.getType(name.qualifiedLocal).let { it != null && it.generics.any { it.name == name } }
+            env.getType(name.qualifiedLocal).bimap(
+                    { false },
+                    { it.generics.any { it.name == name } }
+            ).fold(::identity, ::identity)
         }.map {
             GenericK(it, subst[it] ?: TypeK.any)
         },
@@ -72,14 +80,18 @@ fun SchemeK.instantiate(): TypeK = run {
     apply(type, namesZ)
 }
 
-fun GenericT.genericK(env: Env) = GenericK(name, type.typeK(env))
+fun GenericT.genericK(env: Env) = type.typeK(env).map { GenericK(name, it) }
 
-fun SchemeT.schemeK(env: Env) = SchemeK(generics.map { it.genericK(env) }, type.typeK(env))
+fun SchemeT.schemeK(env: Env) = Either.monadErrorE().binding {
+    yields(SchemeK(generics.map { it.genericK(env).bind() }, type.typeK(env).bind()))
+}.ev()
 
-fun TypeT.typeK(env: Env): TypeK = when (this) {
-    is TypeT.Const -> env.getType(name)?.instantiate() ?: throw Exception(this.toString())
-    is TypeT.Var -> TypeK.Var(name)
-    is TypeT.Apply -> TypeK.Apply(type.typeK(env), apply.typeK(env))
+fun TypeT.typeK(env: Env): EitherE<TypeK> = when (this) {
+    is TypeT.Const -> env.getType(name).map { it.instantiate() }
+    is TypeT.Var -> TypeK.Var(name).right()
+    is TypeT.Apply -> Either.monadErrorE()
+            .tupled(type.typeK(env), apply.typeK(env))
+            .map { (a, b) -> TypeK.Apply(a, b) }.ev()
 }
 
 val GenericK.genericI get() = GenericI(name, type.typeI)

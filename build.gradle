@@ -5,5 +5,7 @@ allprojects {
     repositories {
         mavenCentral()
         jcenter()
+        maven { url 'https://kotlin.bintray.com/kotlinx' }
+        maven { url 'https://dl.bintray.com/kategory/maven' }
     }
 }

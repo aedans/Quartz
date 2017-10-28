@@ -15,6 +15,8 @@ buildscript {
 
 apply plugin: 'java'
 apply plugin: 'kotlin'
+apply plugin: 'kotlin-kapt'
+apply from: rootProject.file('gradle/generated-kotlin-sources.gradle')
 
 sourceCompatibility = 1.8
 
@@ -26,6 +28,10 @@ dependencies {
     compile 'com.github.h0tk3y.betterParse:better-parse:0.2.1'
     compile 'org.ow2.asm:asm-all:5.2'
     compile 'com.xenomachina:kotlin-argparser:2.0.3'
+    compile 'io.kategory:kategory:0.3.10'
+    kapt    'io.kategory:kategory-annotations-processor:0.3.10'
+    compile 'io.kategory:kategory-effects:0.3.10'
+    compile 'io.kategory:kategory-optics:0.3.10'
 }
 
 compileKotlin {
@@ -34,4 +40,10 @@ compileKotlin {
 
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
 }

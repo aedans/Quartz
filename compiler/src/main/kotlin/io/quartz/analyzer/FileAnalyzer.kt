@@ -1,9 +1,12 @@
 package io.quartz.analyzer
 
 import io.quartz.tree.ast.FileT
-import io.quartz.tree.ir.DeclI
+import kategory.Either
+import kategory.binding
+import kategory.ev
 
-fun FileT.analyze(env: Env): List<DeclI> = run {
+fun FileT.analyze(env: Env) = Either.monadErrorE().binding {
     val localEnv = env.withPackage(`package`)
-    decls.map { it.analyze(localEnv) }
-}
+    val it = decls.map { it.analyze(localEnv).bind() }
+    yields(it)
+}.ev()
