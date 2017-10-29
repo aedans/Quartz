@@ -36,8 +36,8 @@ data class GlobalEnv(
                     ::identity
             )
 
-    private fun cpGetVar(name: QualifiedName) = cp.getClass("_Get${name.name.capitalize()}".name.qualify(name.qualifier))
-            ?.getMethod("get${name.name.capitalize()}")
+    private fun cpGetVar(name: QualifiedName) = cp.getClass("_Get${name.string.capitalize()}".name.qualify(name.qualifier))
+            ?.getMethod("get${name.string.capitalize()}")
             ?.returnType
             ?.schemeK
 
@@ -48,6 +48,6 @@ data class GlobalEnv(
     private fun spGetMemLoc(name: QualifiedName) = (sp.getDecl(name) as? DeclT.Value)
             ?.let { MemLoc.Global(name) }
 
-    private fun cpGetMemLoc(name: QualifiedName) = cp.getClass("_Get${name.name.capitalize()}".name.qualify(name.qualifier))
+    private fun cpGetMemLoc(name: QualifiedName) = cp.getClass("_Get${name.string.capitalize()}".name.qualify(name.qualifier))
             ?.let { MemLoc.Global(name) }
 }

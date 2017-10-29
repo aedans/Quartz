@@ -119,7 +119,7 @@ fun ExprI.LocalField.push(mg: MethodGenerator) {
 }
 
 fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
-    val name = "${mg.classGenerator.info.name.name}$${mg.classGenerator.i++}".name
+    val name = "${mg.classGenerator.info.name.string}$${mg.classGenerator.i++}".name
     val typeI = name.qualify(qualifier).typeI
 
     val block = closures.mapIndexed { i, it -> ExprI.Set(

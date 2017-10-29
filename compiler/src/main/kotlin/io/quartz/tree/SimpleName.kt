@@ -9,7 +9,7 @@ data class SimpleName(val string: String) {
 // For convenience
 typealias Name = SimpleName
 
-val QualifiedName.unqualified get() = Name(name)
+val QualifiedName.unqualified get() = Name(string)
 
 val String.name get() = Name(this)
 
