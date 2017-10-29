@@ -3,6 +3,7 @@ package io.quartz.tree.ast
 import io.quartz.tree.Locatable
 import io.quartz.tree.Location
 import io.quartz.tree.Name
+import io.quartz.tree.QualifiedName
 
 /** Sealed class representing all AST expressions */
 sealed class ExprT : Locatable {
@@ -29,7 +30,7 @@ sealed class ExprT : Locatable {
 
     data class Var(
             override val location: Location,
-            val name: Name
+            val name: QualifiedName
     ) : ExprT() {
         override fun toString() = name.toString()
     }

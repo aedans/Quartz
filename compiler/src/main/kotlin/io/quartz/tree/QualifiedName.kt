@@ -8,6 +8,8 @@ data class QualifiedName(val qualifier: Qualifier, val name: String) {
 /** Represents the package that qualifies a name */
 typealias Qualifier = List<String>
 
+val List<String>.qualifiedName get() = QualifiedName(dropLast(1), last())
+
 fun Name.qualify(qualifier: Qualifier) = QualifiedName(qualifier, string)
 val Name.qualifiedLocal get() = qualify(nil)
 

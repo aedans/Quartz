@@ -1,8 +1,6 @@
 package io.quartz.generator.asm
 
 import io.quartz.tree.LocatableName
-import io.quartz.tree.Name
-import io.quartz.tree.Qualifier
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 
@@ -27,8 +25,7 @@ class ClassGenerator(val info: ClassInfo) : ClassWriter(ClassWriter.COMPUTE_FRAM
 
 data class ClassInfo(
         val access: Int,
-        val qualifier: Qualifier,
-        val name: Name,
+        val name: LocatableName,
         val signature: String,
         val superClass: LocatableName,
         val interfaces: List<LocatableName>

@@ -112,15 +112,15 @@ fun ExprI.Arg.push(mg: MethodGenerator) {
 fun ExprI.LocalField.push(mg: MethodGenerator) {
     mg.ga.loadThis()
     mg.ga.getField(
-            mg.classGenerator.info.name.qualify(mg.classGenerator.info.qualifier).typeI.type(),
+            mg.classGenerator.info.name.qualifiedName.typeI.type(),
             name.toString(),
             type.type()
     )
 }
 
 fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
-    val name = "${mg.classGenerator.info.name}$${mg.classGenerator.i++}".name.qualify(qualifier)
-    val typeI = name.typeI
+    val name = "${mg.classGenerator.info.name.name}$${mg.classGenerator.i++}".name
+    val typeI = name.qualify(qualifier).typeI
 
     val block = closures.mapIndexed { i, it -> ExprI.Set(
             Location.unknown,
@@ -143,7 +143,7 @@ fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
     mg.visitClassGeneratorLater {
         visitProgramGeneratorLater {
             DeclI.Class(
-                    name.unqualified,
+                    name,
                     location,
                     qualifier,
                     constructor,
@@ -151,7 +151,7 @@ fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
             ).generate(this)
         }
 
-        visitInnerClass(name.toString(), null, null, Opcodes.ACC_PUBLIC)
+        visitInnerClass(typeI.locatableName.toString(), null, null, Opcodes.ACC_PUBLIC)
     }
 
     val type = Type.getType(typeI.descriptor)

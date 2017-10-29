@@ -18,12 +18,12 @@ fun List<File>.sourcePath() = object : SourcePath {
     override fun getDecl(name: QualifiedName) = decls[name]
 }
 
-fun File.decls(): List<Pair<QualifiedName, DeclT>> = if (isFile) {
+fun File.decls(): List<Pair<QualifiedName, DeclT>> = if (!isDirectory) {
     val grammar = QuartzGrammar.create(name) { fileT }
     val file = grammar.parseToEnd(reader())
     file.decls.map { it.name.qualify(file.`package`) to it }
 } else {
     listFiles()
-            .filter { it.extension == "qz" }
+            .filter { it.isDirectory || it.extension == "qz" }
             .flatMap { it.decls() }
 }

@@ -19,6 +19,7 @@ class UnknownTypeOf(name: QualifiedName) : CompilerError("Could not infer type o
 typealias EitherE<T> = Either<CompilerError, T>
 typealias ValidatedE<T> = ValidatedNel<CompilerError, T>
 
+@Suppress("unused")
 fun Either.Companion.monadErrorE() = Either.monadError<CompilerError>()
 
 fun <A, B> List<A>.validIfEmpty(b: B): ValidatedNel<A, B> = if (isNotEmpty())

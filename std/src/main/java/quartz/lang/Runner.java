@@ -4,6 +4,10 @@ package quartz.lang;
  * Utility class for running Quartz programs
  */
 public final class Runner {
+    private Runner() {
+        // Do not construct Runner
+    }
+
     /**
      * Runs a Quartz program's main function
      *

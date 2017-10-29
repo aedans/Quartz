@@ -31,7 +31,7 @@ fun DeclT.Value.analyze(env: Env) = Either.monadErrorE().binding {
 
 fun DeclT.Value.schemeK(env: Env) = Either.monadErrorE().binding {
     val (s1, exprType) = expr.infer(env).bind()
-    val schemeK = type?.typeK(env)?.bind()?.generalize(env, s1)
+    val schemeK = type?.typeK()?.bind()?.generalize(env, s1)
     val s2 = unify(exprType, schemeK?.instantiate() ?: TypeK.Var(fresh())).bind()
     yields(schemeK ?: apply(exprType, s2 compose s1).generalize(env, s2))
 }.ev()

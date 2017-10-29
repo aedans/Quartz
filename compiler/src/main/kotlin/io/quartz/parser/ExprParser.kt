@@ -3,8 +3,9 @@ package io.quartz.parser
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
-import io.quartz.tree.ast.*
+import io.quartz.tree.ast.ExprT
 import io.quartz.tree.name
+import io.quartz.tree.qualifiedName
 
 val QuartzGrammar<*>.exprT: Parser<ExprT> get() = parser { lambdaExprT } or
         parser { ifExprT } or
@@ -44,7 +45,7 @@ val QuartzGrammar<*>.parenthesizedExprT: Parser<ExprT> get() = skip(O_PAREN) and
         skip(C_PAREN)
 
 val QuartzGrammar<*>.varExprT: Parser<ExprT> get() = parser { VAR } use {
-    ExprT.Var(location(this@varExprT), text.name)
+    ExprT.Var(location(this@varExprT), text.split('/').qualifiedName)
 }
 
 val QuartzGrammar<*>.booleanExprT: Parser<ExprT> get() = TRUE or FALSE use {

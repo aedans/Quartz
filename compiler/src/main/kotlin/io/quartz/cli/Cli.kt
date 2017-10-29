@@ -1,17 +1,17 @@
 package io.quartz.cli
 
 import com.xenomachina.argparser.ShowHelpException
+import io.quartz.analyzer.ValidatedE
 import io.quartz.analyzer.analyze
 import io.quartz.analyzer.flatten
-import io.quartz.generator.asm.ProgramGenerator
 import io.quartz.generator.generate
 import io.quartz.interop.GlobalEnv
 import io.quartz.interop.classPath
 import io.quartz.interop.sourcePath
 import io.quartz.parser.QuartzGrammar
 import io.quartz.parser.fileT
+import io.quartz.tree.ir.DeclI
 import io.quartz.tree.nil
-import java.io.File
 
 /** The main entry point for the Quartz compiler */
 object Cli {
@@ -23,7 +23,7 @@ object Cli {
             val sourcePath = options.sp.sourcePath()
             val globalEnv = GlobalEnv(classPath, sourcePath, nil)
 
-            val ir = options.src.map {
+            val ir: ValidatedE<List<DeclI>> = options.src.map {
                 val grammar = QuartzGrammar.create(it.name) { fileT }
                 val ast = grammar.parse(it.reader())
                 ast.analyze(globalEnv)
@@ -36,9 +36,7 @@ object Cli {
                         }
                     },
                     {
-                        it.generate(ProgramGenerator {
-                            File(options.out, "${it.info.name}.class").writeBytes(it.toByteArray())
-                        })
+                        it.generate(options.out)
                     }
             )
         } catch (e: ShowHelpException) {

@@ -80,17 +80,17 @@ fun SchemeK.instantiate(): TypeK = run {
     apply(type, namesZ)
 }
 
-fun GenericT.genericK(env: Env) = type.typeK(env).map { GenericK(name, it) }
+fun GenericT.genericK() = type.typeK().map { GenericK(name, it) }
 
-fun SchemeT.schemeK(env: Env) = Either.monadErrorE().binding {
-    yields(SchemeK(generics.map { it.genericK(env).bind() }, type.typeK(env).bind()))
+fun SchemeT.schemeK() = Either.monadErrorE().binding {
+    yields(SchemeK(generics.map { it.genericK().bind() }, type.typeK().bind()))
 }.ev()
 
-fun TypeT.typeK(env: Env): EitherE<TypeK> = when (this) {
-    is TypeT.Const -> env.getType(name).map { it.instantiate() }
+fun TypeT.typeK(): EitherE<TypeK> = when (this) {
+    is TypeT.Const -> TypeK.Const(name).right()
     is TypeT.Var -> TypeK.Var(name).right()
     is TypeT.Apply -> Either.monadErrorE()
-            .tupled(type.typeK(env), apply.typeK(env))
+            .tupled(t1.typeK(), t2.typeK())
             .map { (a, b) -> TypeK.Apply(a, b) }.ev()
 }
 
@@ -104,7 +104,7 @@ val TypeK.typeI: TypeI get() = when (this) {
     is TypeK.Apply -> t1.typeI.apply(t2.typeI)
 }
 
-fun DeclT.Class.schemeK(env: Env) = SchemeK(nil, name.qualify(env.`package`).typeK)
+fun DeclT.Class.schemeK(`package`: Qualifier) = SchemeK(nil, name.qualify(`package`).typeK)
 
 val Class<*>.schemeK get() = run {
     val typeK = typeParameters.fold(TypeK.Const(qualifiedName) as TypeK) {

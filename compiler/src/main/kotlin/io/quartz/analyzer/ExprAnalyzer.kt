@@ -46,9 +46,9 @@ fun ExprT.Var.analyze(env: Env) = Either.monadErrorE().binding {
         )
         is MemLoc.Global -> ExprI.InvokeStatic(
                 location,
-                "\$Get${name.capitalize()}".name.qualify(env.`package`).typeI,
+                "_Get${memLoc.name.name.capitalize()}".name.qualify(memLoc.name.qualifier).typeI,
                 env.getVar(name).bind().instantiate().typeI,
-                "get${name.capitalize()}".name,
+                "get${name.name.capitalize()}".name,
                 nil
         )
     }
@@ -85,7 +85,7 @@ fun ExprT.Lambda.analyze(env: Env) = Either.monadErrorE().binding {
     val (s1, typeK) = infer(env).bind()
     val argTypeK = typeK.arrow.t1
     val returnTypeK = typeK.arrow.t2
-    val closures = freeVariables.map { GenericK(it, env.getVar(it).bind().instantiate()) }
+    val closures = freeVariables.map { GenericK(it.name.name, env.getVar(it).bind().instantiate()) }
     val typeSchemeK = typeK.generalize(env, s1)
     val genericsK = typeSchemeK.generics + closures.flatMap { it.type.generalize(env, s1).generics }
     val localEnv = env

@@ -5,8 +5,10 @@ import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.ir.VoidTypeI
 import io.quartz.tree.ir.signature
+import io.quartz.tree.locatableName
 import io.quartz.tree.name
 import io.quartz.tree.nil
+import io.quartz.tree.qualify
 import org.funktionale.collections.prependTo
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
@@ -21,8 +23,7 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
     val access = Opcodes.ACC_PUBLIC + (if (constructor == null) Opcodes.ACC_INTERFACE + Opcodes.ACC_ABSTRACT else 0)
     pg.generateClass(ClassInfo(
             access,
-            qualifier,
-            name,
+            name.qualify(qualifier).locatableName,
             classSignature(obj.generics, TypeI.any.prependTo(obj.superTypes)),
             TypeI.any.locatableName,
             obj.superTypes.map { it.locatableName }
@@ -46,7 +47,7 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
 
 fun DeclI.Method.generate(pg: ProgramGenerator) {
     DeclI.Class(
-            "$${name.capitalize()}".name,
+            "_${name.capitalize()}".name,
             location,
             qualifier,
             null,

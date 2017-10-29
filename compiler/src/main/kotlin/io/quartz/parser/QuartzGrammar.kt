@@ -19,6 +19,7 @@ abstract class QuartzGrammar<out T>(val uri: String) : Grammar<T>() {
     val BACKSLASH by token("\\\\")
     val DOT by token("\\.")
     val EQ by token("\\=")
+    val F_SLASH by token("\\/")
     val ARROW by token("\\-\\>")
     val EXTENDS by token("\\:\\:")
     val DEF by token("def\\b")
@@ -29,8 +30,8 @@ abstract class QuartzGrammar<out T>(val uri: String) : Grammar<T>() {
     val FALSE by token("false\\b")
     val IMPORT by token("import\\b")
     val PACKAGE by token("package\\b")
-    val CONST by token("[A-Z][_a-zA-Z0-9]*")
-    val VAR by token("[_a-z][_a-zA-Z0-9]*")
+    val CONST by token("([_a-z][_a-zA-Z0-9]*\\/)*[A-Z][_a-zA-Z0-9]*")
+    val VAR by token("([_a-z][_a-zA-Z0-9]*\\/)*[_a-z][_a-zA-Z0-9]*")
 
     fun parse(input: String) = parseToEnd(input)
     fun parse(input: InputStream) = parseToEnd(input)

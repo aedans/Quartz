@@ -23,8 +23,8 @@ sealed class TypeT {
         override fun toString() = name.toString()
     }
 
-    data class Apply(val type: TypeT, val apply: TypeT) : TypeT() {
-        override fun toString() = "($type) $apply"
+    data class Apply(val t1: TypeT, val t2: TypeT) : TypeT() {
+        override fun toString() = "($t1) $t2"
     }
 
     companion object {

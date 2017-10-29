@@ -1,14 +1,15 @@
 package io.quartz.analyzer
 
-import io.quartz.tree.Name
+import io.quartz.tree.QualifiedName
 import io.quartz.tree.ast.ExprT
+import io.quartz.tree.qualifiedLocal
 
-val ExprT.freeVariables: Set<Name> get() = when (this) {
+val ExprT.freeVariables: Set<QualifiedName> get() = when (this) {
     is ExprT.Unit,
     is ExprT.Bool -> emptySet()
     is ExprT.Cast -> expr.freeVariables
     is ExprT.Var -> setOf(name)
     is ExprT.Apply -> expr1.freeVariables + expr2.freeVariables
     is ExprT.If -> condition.freeVariables + expr1.freeVariables + expr2.freeVariables
-    is ExprT.Lambda -> expr.freeVariables - arg
+    is ExprT.Lambda -> expr.freeVariables - arg.qualifiedLocal
 }
