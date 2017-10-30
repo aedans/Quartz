@@ -5,18 +5,10 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 
 /** Wrapper class for ASM's ClassWriter */
-class ClassGenerator(val info: ClassInfo) : ClassWriter(ClassWriter.COMPUTE_FRAMES) {
-    init {
-        visit(
-                Opcodes.V1_8,
-                info.access,
-                info.name.toString(),
-                info.signature,
-                info.superClass.toString(),
-                info.interfaces.map { it.toString() }.toTypedArray()
-        )
-    }
-
+class ClassGenerator(
+        val info: ClassInfo,
+        val cw: ClassWriter
+) {
     var i = 0
 
     val programGeneratorLater = mutableListOf<ProgramGenerator.() -> Unit>()
@@ -31,9 +23,18 @@ data class ClassInfo(
         val interfaces: List<LocatableName>
 )
 
-fun ProgramGenerator.generateClass(info: ClassInfo, func: ClassGenerator.() -> Unit) = run {
-    val cg = ClassGenerator(info)
-    cg.func()
-    cg.visitEnd()
-    cg.programGeneratorLater.forEach { it() }
+fun ProgramGenerator.generateClass(info: ClassInfo, func: ClassGenerator.() -> Unit) {
+    ClassGenerator(info, ClassWriter(ClassWriter.COMPUTE_FRAMES)).apply {
+        cw.visit(
+                Opcodes.V1_8,
+                info.access,
+                info.name.toString(),
+                info.signature,
+                info.superClass.toString(),
+                info.interfaces.map { it.toString() }.toTypedArray()
+        )
+        func()
+        cw.visitEnd()
+        programGeneratorLater.forEach { it() }
+    }
 }

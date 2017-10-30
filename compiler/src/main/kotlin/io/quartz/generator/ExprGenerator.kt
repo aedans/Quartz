@@ -151,7 +151,7 @@ fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
             ).generate(this)
         }
 
-        visitInnerClass(typeI.locatableName.toString(), null, null, Opcodes.ACC_PUBLIC)
+        cw.visitInnerClass(typeI.locatableName.toString(), null, null, Opcodes.ACC_PUBLIC)
     }
 
     val type = Type.getType(typeI.descriptor)

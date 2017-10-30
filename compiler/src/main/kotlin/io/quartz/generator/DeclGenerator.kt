@@ -72,7 +72,7 @@ fun DeclI.Class.generate(cg: ClassGenerator) {
         copy(name = name).generate(this)
     }
 
-    cg.visitInnerClass(
+    cg.cw.visitInnerClass(
             name.toString(),
             cg.info.name.toString(),
             this.name.toString(),
@@ -102,7 +102,7 @@ fun DeclI.Method.generate(cg: ClassGenerator) {
 }
 
 fun DeclI.Field.generate(cg: ClassGenerator) {
-    cg.visitField(
+    cg.cw.visitField(
             Opcodes.ACC_PUBLIC,
             name.toString(),
             type.descriptor,

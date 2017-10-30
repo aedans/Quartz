@@ -1,5 +1,6 @@
 package io.quartz.generator.asm
 
+import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Type
 import org.objectweb.asm.commons.GeneratorAdapter
 import org.objectweb.asm.commons.Method
@@ -7,10 +8,9 @@ import org.objectweb.asm.commons.Method
 /** Wrapper class for ASM's GeneratorAdapter */
 class MethodGenerator(
         val info: MethodInfo,
-        val classGenerator: ClassGenerator
+        val classGenerator: ClassGenerator,
+        val ga: GeneratorAdapter
 ) {
-    val ga = GeneratorAdapter(info.access, info.method, info.signature, null, classGenerator)
-
     var i = 0
 
     val classGeneratorLater = mutableListOf<ClassGenerator.() -> Unit>()
@@ -23,8 +23,10 @@ data class MethodInfo(
         val signature: String
 )
 
+fun MethodInfo.generatorAdapter(cw: ClassWriter) = GeneratorAdapter(access, method, signature, null, cw)
+
 fun ClassGenerator.generateMethod(info: MethodInfo, fn: MethodGenerator.() -> Unit) {
-    MethodGenerator(info, this).run {
+    MethodGenerator(info, this, info.generatorAdapter(cw)).run {
         fn()
         ga.endMethod()
         classGeneratorLater.forEach { it() }
@@ -32,7 +34,7 @@ fun ClassGenerator.generateMethod(info: MethodInfo, fn: MethodGenerator.() -> Un
 }
 
 fun ClassGenerator.generateConstructor(info: MethodInfo, fn: MethodGenerator.() -> Unit) {
-    MethodGenerator(info, this).run {
+    MethodGenerator(info, this, info.generatorAdapter(cw)).apply {
         ga.loadThis()
         ga.invokeConstructor(
                 Type.getType("Ljava/lang/Object;"),

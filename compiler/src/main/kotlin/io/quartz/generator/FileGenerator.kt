@@ -13,6 +13,6 @@ fun List<DeclI>.generate(file: File) = run {
         val locatableName = it.info.name
         File(file, "$locatableName.class")
                 .also { it.parentFile.mkdirs() }
-                .writeBytes(it.toByteArray())
+                .writeBytes(it.cw.toByteArray())
     })
 }
