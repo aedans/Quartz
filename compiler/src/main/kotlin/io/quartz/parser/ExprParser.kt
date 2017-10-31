@@ -21,7 +21,7 @@ val QuartzGrammar<*>.ifExprT: Parser<ExprT> get() = IF and
 }
 
 val QuartzGrammar<*>.lambdaExprT: Parser<ExprT.Lambda> get() = skip(BACKSLASH) and
-        VAR and
+        ID and
         skip(ARROW) and
         exprT use {
     ExprT.Lambda(t1.location(this@lambdaExprT), t1.text.name, t2)
@@ -34,7 +34,7 @@ val QuartzGrammar<*>.applyExprT: Parser<ExprT> get() = parser { atomicExprT } an
 val QuartzGrammar<*>.atomicExprT: Parser<ExprT> get() = parser { unitExprT } or
         parser { parenthesizedExprT } or
         parser { booleanExprT } or
-        parser { varExprT }
+        parser { idExprT }
 
 val QuartzGrammar<*>.unitExprT: Parser<ExprT> get() = O_PAREN and skip(C_PAREN) use {
     ExprT.Unit(location(this@unitExprT))
@@ -44,8 +44,8 @@ val QuartzGrammar<*>.parenthesizedExprT: Parser<ExprT> get() = skip(O_PAREN) and
         parser { exprT } and
         skip(C_PAREN)
 
-val QuartzGrammar<*>.varExprT: Parser<ExprT> get() = parser { VAR } use {
-    ExprT.Var(location(this@varExprT), text.split('/').qualifiedName)
+val QuartzGrammar<*>.idExprT: Parser<ExprT> get() = parser { ID } use {
+    ExprT.Id(location(this@idExprT), text.split('/').qualifiedName)
 }
 
 val QuartzGrammar<*>.booleanExprT: Parser<ExprT> get() = TRUE or FALSE use {

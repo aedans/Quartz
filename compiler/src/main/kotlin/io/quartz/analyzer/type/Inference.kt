@@ -14,9 +14,9 @@ typealias InferState = Pair<Subst, TypeK>
 fun ExprT.infer(env: Env): Infer = when (this) {
     is ExprT.Unit -> (emptySubst to TypeK.unit).right()
     is ExprT.Bool -> (emptySubst to TypeK.bool).right()
-    is ExprT.Var -> env.getVar(name).map { emptySubst to it.instantiate() }
+    is ExprT.Id -> env.getVar(name).map { emptySubst to it.instantiate() }
     is ExprT.Cast -> Either.monadErrorE().binding {
-        val typeK = type.typeK().bind()
+        val typeK = type.typeK(env).bind()
         val (s1, exprType) = expr.infer(env).bind()
         val s2 = unify(exprType, typeK).bind()
         yields(s2 compose s1 to apply(exprType, s2))

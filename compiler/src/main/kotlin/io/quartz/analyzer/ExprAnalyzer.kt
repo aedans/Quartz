@@ -19,7 +19,7 @@ fun ExprT.analyze(env: Env): EitherE<ExprI> = when (this) {
     is ExprT.Unit -> analyze()
     is ExprT.Bool -> analyze()
     is ExprT.Cast -> TODO()
-    is ExprT.Var -> analyze(env)
+    is ExprT.Id -> analyze(env)
     is ExprT.Apply -> analyze(env)
     is ExprT.If -> analyze(env)
     is ExprT.Lambda -> analyze(env)
@@ -35,7 +35,7 @@ fun ExprT.Unit.analyze() = ExprI.InvokeStatic(
 
 fun ExprT.Bool.analyze() = ExprI.Bool(location, boolean).right()
 
-fun ExprT.Var.analyze(env: Env) = Either.monadErrorE().binding {
+fun ExprT.Id.analyze(env: Env) = Either.monadErrorE().binding {
     val memLoc = env.getMemLoc(name).bind()
     val it = when (memLoc) {
         is MemLoc.Arg -> ExprI.Arg(location, memLoc.index)

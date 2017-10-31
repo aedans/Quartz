@@ -19,9 +19,9 @@ sealed class DeclT : Locatable {
     data class Value(
             override val name: Name,
             override val location: Location,
-            val type: TypeT?,
+            val schemeT: SchemeT?,
             val expr: ExprT
     ) : DeclT() {
-        override fun toString() = "def $name :: $type = $expr"
+        override fun toString() = "def $name :: $schemeT = $expr"
     }
 }

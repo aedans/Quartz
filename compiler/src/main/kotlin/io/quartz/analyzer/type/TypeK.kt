@@ -1,9 +1,6 @@
 package io.quartz.analyzer.type
 
-import io.quartz.analyzer.EitherE
-import io.quartz.analyzer.Env
-import io.quartz.analyzer.fresh
-import io.quartz.analyzer.monadErrorE
+import io.quartz.analyzer.*
 import io.quartz.tree.*
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.ast.GenericT
@@ -80,17 +77,19 @@ fun SchemeK.instantiate(): TypeK = run {
     apply(type, namesZ)
 }
 
-fun GenericT.genericK() = type.typeK().map { GenericK(name, it) }
+fun GenericT.genericK(env: Env) = type.typeK(env).map { GenericK(name, it) }
 
-fun SchemeT.schemeK() = Either.monadErrorE().binding {
-    yields(SchemeK(generics.map { it.genericK().bind() }, type.typeK().bind()))
+fun SchemeT.schemeK(env: Env) = Either.monadErrorE().binding {
+    val localEnv = generics.fold(env) { a, b ->
+        a.withType(b.name.qualifiedLocal, b.type.typeK(env).bind().scheme)
+    }
+    yields(SchemeK(generics.map { it.genericK(localEnv).bind() }, type.typeK(localEnv).bind()))
 }.ev()
 
-fun TypeT.typeK(): EitherE<TypeK> = when (this) {
-    is TypeT.Const -> TypeK.Const(name).right()
-    is TypeT.Var -> TypeK.Var(name).right()
+fun TypeT.typeK(env: Env): EitherE<TypeK> = when (this) {
+    is TypeT.Id -> env.getType(name.qualifiedLocal).map { it.instantiate() }
     is TypeT.Apply -> Either.monadErrorE()
-            .tupled(t1.typeK(), t2.typeK())
+            .tupled(t1.typeK(env), t2.typeK(env))
             .map { (a, b) -> TypeK.Apply(a, b) }.ev()
 }
 
@@ -107,9 +106,9 @@ val TypeK.typeI: TypeI get() = when (this) {
 fun DeclT.Class.schemeK(`package`: Qualifier) = SchemeK(nil, name.qualify(`package`).typeK)
 
 val Class<*>.schemeK get() = run {
-    val typeK = typeParameters.fold(TypeK.Const(qualifiedName) as TypeK) {
-        a, b -> TypeK.Apply(a, TypeK.Var(b.name.name))
-    }
+//    val typeK = typeParameters.fold(TypeK.Const(qualifiedName) as TypeK) {
+//        a, b -> TypeK.Apply(a, TypeK.Var(b.name.name))
+//    }
     SchemeK(typeParameters.asIterable().map { GenericK(it.name.name, TypeK.any) }, typeK)
 }
 

@@ -25,7 +25,6 @@ fun Env.mapTypes(map: (SchemeK) -> SchemeK) = object : Env by this {
     override fun getType(name: QualifiedName) = this@mapTypes.getType(name).map(map)
 }
 
-fun Env.withTypes(list: List<Pair<QualifiedName, SchemeK>>) = list.fold(this) { e, (a, b) -> e.withType(a, b) }
 fun Env.withType(name: QualifiedName, scheme: SchemeK) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name
@@ -34,7 +33,6 @@ fun Env.withType(name: QualifiedName, scheme: SchemeK) = run {
     }
 }
 
-fun Env.withVars(list: List<Pair<Name, SchemeK>>) = list.fold(this) { e, (a, b) -> e.withVar(a, b) }
 fun Env.withVar(name: Name, scheme: SchemeK) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name.qualifiedLocal

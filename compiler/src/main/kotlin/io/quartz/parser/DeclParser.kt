@@ -10,7 +10,7 @@ val QuartzGrammar<*>.declT: Parser<DeclT> get() = parser { classDeclT } or
         parser { valueDeclT }
 
 val QuartzGrammar<*>.classDeclT: Parser<DeclT.Class> get() = skip(DEF) and
-        CONST and
+        ID and
         skip(O_BRACKET) and
         zeroOrMore(parser { declT }) and
         skip(C_BRACKET) use {
@@ -18,8 +18,8 @@ val QuartzGrammar<*>.classDeclT: Parser<DeclT.Class> get() = skip(DEF) and
 }
 
 val QuartzGrammar<*>.valueDeclT: Parser<DeclT.Value> get() = skip(DEF) and
-        VAR and
-        optional(skip(EXTENDS) and parser { typeT }) and
+        ID and
+        optional(skip(EXTENDS) and parser { schemeT }) and
         skip(EQ) and
         parser { exprT } use {
     DeclT.Value(t1.text.name, t1.location(this@valueDeclT), t2, t3)

@@ -28,7 +28,7 @@ sealed class ExprT : Locatable {
         override fun toString() = "$expr :: $type"
     }
 
-    data class Var(
+    data class Id(
             override val location: Location,
             val name: QualifiedName
     ) : ExprT() {

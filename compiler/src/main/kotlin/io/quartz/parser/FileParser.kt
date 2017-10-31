@@ -17,6 +17,6 @@ val QuartzGrammar<*>.packageT: Parser<Qualifier> get() = skip(PACKAGE) and quali
 
 val QuartzGrammar<*>.importT: Parser<Qualifier> get() = skip(IMPORT) and qualifier
 
-val QuartzGrammar<*>.qualifier: Parser<Qualifier> get() = zeroOrMore(VAR and DOT) and (VAR or CONST) use {
+val QuartzGrammar<*>.qualifier: Parser<Qualifier> get() = zeroOrMore(ID and DOT) and ID use {
     t1.map { it.t1.text } + t2.text
 }

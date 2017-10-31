@@ -3,10 +3,16 @@ package io.quartz.parser
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
+import io.quartz.tree.ast.GenericT
+import io.quartz.tree.ast.SchemeT
 import io.quartz.tree.ast.TypeT
 import io.quartz.tree.ast.apply
 import io.quartz.tree.name
-import io.quartz.tree.qualifiedName
+import io.quartz.tree.nil
+
+val QuartzGrammar<*>.schemeT: Parser<SchemeT> get() = optional(oneOrMore(ID) and skip(FAT_ARROW)) and parser { typeT } use {
+    SchemeT(t1?.map { GenericT(it.text.name, TypeT.any) } ?: nil, t2)
+}
 
 val QuartzGrammar<*>.typeT: Parser<TypeT> get() = parser { functionTypeT }
 
@@ -20,17 +26,12 @@ val QuartzGrammar<*>.applyTypeT: Parser<TypeT> get() = parser { atomicTypeT } an
     t2.fold(t1) { a, b -> a.apply(b) }
 }
 
-val QuartzGrammar<*>.atomicTypeT: Parser<TypeT> get() = parser { constTypeT } or
-        parser { varTypeT } or
+val QuartzGrammar<*>.atomicTypeT: Parser<TypeT> get() = parser { idType } or
         parser { unitTypeT } or
         parser { parenthesizedTypeT }
 
-val QuartzGrammar<*>.constTypeT: Parser<TypeT> get() = CONST use {
-    TypeT.Const(text.split('/').qualifiedName)
-}
-
-val QuartzGrammar<*>.varTypeT: Parser<TypeT> get() = VAR use {
-    TypeT.Var(text.name)
+val QuartzGrammar<*>.idType: Parser<TypeT> get() = ID use {
+    TypeT.Id(text.name)
 }
 
 val QuartzGrammar<*>.unitTypeT: Parser<TypeT> get() = O_PAREN and C_PAREN use { TypeT.unit }

@@ -1,9 +1,8 @@
 package io.quartz.tree.ast
 
 import io.quartz.tree.Name
-import io.quartz.tree.QualifiedName
+import io.quartz.tree.name
 import io.quartz.tree.nil
-import io.quartz.tree.qualifiedName
 
 /** Class representing all AST generics */
 data class GenericT(val name: Name, val type: TypeT)
@@ -15,11 +14,7 @@ data class SchemeT(val generics: List<GenericT>, val type: TypeT) {
 
 /** Sealed class representing all AST types */
 sealed class TypeT {
-    data class Const(val name: QualifiedName) : TypeT() {
-        override fun toString() = name.toString()
-    }
-
-    data class Var(val name: Name) : TypeT() {
+    data class Id(val name: Name) : TypeT() {
         override fun toString() = name.toString()
     }
 
@@ -49,4 +44,4 @@ fun TypeT.apply(generics: List<TypeT>): TypeT = when (generics) {
 
 fun TypeT.apply(generic: TypeT) = TypeT.Apply(this, generic)
 
-val Class<*>.typeT get() = TypeT.Const(qualifiedName)
+val Class<*>.typeT get() = TypeT.Id(name.name)
