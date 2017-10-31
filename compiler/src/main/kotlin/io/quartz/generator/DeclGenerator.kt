@@ -66,7 +66,7 @@ fun DeclI.generate(cg: ClassGenerator) = when (this) {
 }
 
 fun DeclI.Class.generate(cg: ClassGenerator) {
-    val name = "${cg.info.name}$name".name
+    val name = "${cg.info.name}\$$name".name
 
     cg.visitProgramGeneratorLater {
         copy(name = name).generate(this)
