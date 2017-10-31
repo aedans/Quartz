@@ -1,7 +1,9 @@
 package io.quartz.interop
 
 import io.quartz.analyzer.*
+import io.quartz.analyzer.type.scheme
 import io.quartz.analyzer.type.schemeK
+import io.quartz.analyzer.type.typeK
 import io.quartz.tree.QualifiedName
 import io.quartz.tree.Qualifier
 import io.quartz.tree.ast.DeclT
@@ -23,7 +25,7 @@ data class GlobalEnv(
     private fun spGetType(name: QualifiedName) = (sp.getDecl(name) as? DeclT.Class)
             ?.schemeK(name.qualifier)
 
-    private fun cpGetType(name: QualifiedName) = cp.getClass(name)?.schemeK
+    private fun cpGetType(name: QualifiedName) = cp.getClass(name)?.typeK?.scheme
 
     override fun getVar(name: QualifiedName) = spGetVar(name)
             ?: cpGetVar(name)?.right()
@@ -39,7 +41,8 @@ data class GlobalEnv(
     private fun cpGetVar(name: QualifiedName) = cp.getClass("_Get${name.string.capitalize()}".name.qualify(name.qualifier))
             ?.getMethod("get${name.string.capitalize()}")
             ?.returnType
-            ?.schemeK
+            ?.typeK
+            ?.scheme
 
     override fun getMemLoc(name: QualifiedName) = spGetMemLoc(name)?.right()
             ?: cpGetMemLoc(name)?.right()

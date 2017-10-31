@@ -9,7 +9,7 @@ import java.util.*
 @Suppress("PropertyName")
 abstract class QuartzGrammar<out T>(val uri: String) : Grammar<T>() {
     val WS by token("\\s+", ignore = true)
-    val COMMENT by token("\\/\\/.+", ignore = true)
+    val COMMENT by token("\\/\\/.*", ignore = true)
     val FAT_ARROW by token("\\=\\>")
     val F_SLASH by token("\\/")
     val ARROW by token("\\-\\>")

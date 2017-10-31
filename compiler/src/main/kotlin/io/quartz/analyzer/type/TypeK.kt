@@ -81,7 +81,7 @@ fun GenericT.genericK(env: Env) = type.typeK(env).map { GenericK(name, it) }
 
 fun SchemeT.schemeK(env: Env) = Either.monadErrorE().binding {
     val localEnv = generics.fold(env) { a, b ->
-        a.withType(b.name.qualifiedLocal, b.type.typeK(env).bind().scheme)
+        a.withType(b.name.qualifiedLocal, TypeK.Var(b.name).scheme)
     }
     yields(SchemeK(generics.map { it.genericK(localEnv).bind() }, type.typeK(localEnv).bind()))
 }.ev()
@@ -104,13 +104,6 @@ val TypeK.typeI: TypeI get() = when (this) {
 }
 
 fun DeclT.Class.schemeK(`package`: Qualifier) = SchemeK(nil, name.qualify(`package`).typeK)
-
-val Class<*>.schemeK get() = run {
-//    val typeK = typeParameters.fold(TypeK.Const(qualifiedName) as TypeK) {
-//        a, b -> TypeK.Apply(a, TypeK.Var(b.name.name))
-//    }
-    SchemeK(typeParameters.asIterable().map { GenericK(it.name.name, TypeK.any) }, typeK)
-}
 
 val QualifiedName.typeK get() = TypeK.Const(this)
 
