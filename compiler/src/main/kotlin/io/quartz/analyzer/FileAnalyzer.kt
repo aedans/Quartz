@@ -1,9 +1,32 @@
 package io.quartz.analyzer
 
+import io.quartz.tree.QualifiedName
 import io.quartz.tree.ast.FileT
+import io.quartz.tree.ast.ImportT
 import io.quartz.tree.ir.DeclI
+import io.quartz.tree.qualifiedLocal
+import kategory.*
 
-fun FileT.analyze(env: Env): ValidatedE<List<DeclI>> = run {
-    val localEnv = env.withPackage(`package`)
-    decls.map { it.analyze(localEnv) }.validated()
+fun FileT.analyze(env: Env): EitherE<List<DeclI>> = Either.monadErrorE().binding {
+    val localEnv = imports
+            .fold(env.withPackage(`package`).right()) { a: EitherE<Env>, b ->
+                a.flatMap { b.import(it) }
+            }.bind()
+    val it = decls.map { it.analyze(localEnv).bind() }
+    yields(it)
+}.ev()
+
+fun ImportT.import(env: Env) = when (this) {
+    is ImportT.Star -> TODO()
+    is ImportT.Qualified -> Ior.fromOptions(
+            env.getVar(qualifiedName).toOption(),
+            env.getType(qualifiedName).toOption()
+    ).toEither { UnknownPackage(qualifiedName) }.map {
+        it.bimap(
+                { { env: Env -> env.withVar(alias.qualifiedLocal, it.right(), env.getMemLoc(qualifiedName)) } },
+                { { env: Env -> env.withType(alias.qualifiedLocal, it.right()) } }
+        ).fold({ it }, { it }, { a, b -> { a(b(it)) } })(env)
+    }
 }
+
+class UnknownPackage(qualifiedName: QualifiedName) : CompilerError("Could not find package $qualifiedName")

@@ -3,9 +3,9 @@ package io.quartz.parser
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
-import io.quartz.tree.Qualifier
+import io.quartz.tree.*
 import io.quartz.tree.ast.FileT
-import io.quartz.tree.nil
+import io.quartz.tree.ast.ImportT
 
 val QuartzGrammar<*>.fileT: Parser<FileT> get() = optional(parser { packageT }) and
         zeroOrMore(parser { importT }) and
@@ -15,7 +15,14 @@ val QuartzGrammar<*>.fileT: Parser<FileT> get() = optional(parser { packageT }) 
 
 val QuartzGrammar<*>.packageT: Parser<Qualifier> get() = skip(PACKAGE) and qualifier
 
-val QuartzGrammar<*>.importT: Parser<Qualifier> get() = skip(IMPORT) and qualifier
+val QuartzGrammar<*>.importT: Parser<ImportT> get() = skip(IMPORT) and
+        qualifier and
+        optional(skip(AS) and ID) use {
+    ImportT.Qualified(
+            t1.qualifiedName,
+            t2?.text?.name ?: t1.qualifiedName.unqualified
+    )
+}
 
 val QuartzGrammar<*>.qualifier: Parser<Qualifier> get() = zeroOrMore(ID and DOT) and ID use {
     t1.map { it.t1.text } + t2.text

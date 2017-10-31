@@ -1,17 +1,18 @@
 package io.quartz.cli
 
 import com.xenomachina.argparser.ShowHelpException
-import io.quartz.analyzer.ValidatedE
 import io.quartz.analyzer.analyze
-import io.quartz.analyzer.flatten
+import io.quartz.analyzer.monadErrorE
 import io.quartz.generator.generate
 import io.quartz.interop.GlobalEnv
 import io.quartz.interop.classPath
 import io.quartz.interop.sourcePath
 import io.quartz.parser.QuartzGrammar
 import io.quartz.parser.fileT
-import io.quartz.tree.ir.DeclI
 import io.quartz.tree.nil
+import kategory.Either
+import kategory.binding
+import kategory.ev
 
 /** The main entry point for the Quartz compiler */
 object Cli {
@@ -23,17 +24,18 @@ object Cli {
             val sourcePath = options.sp.sourcePath()
             val globalEnv = GlobalEnv(classPath, sourcePath, nil)
 
-            val ir: ValidatedE<List<DeclI>> = options.src.map {
-                val grammar = QuartzGrammar.create(it.name) { fileT }
-                val ast = grammar.parse(it.reader())
-                ast.analyze(globalEnv)
-            }.flatten().map { it.flatten() }
+            val ir = Either.monadErrorE().binding {
+                val it = options.src.flatMap {
+                    val grammar = QuartzGrammar.create(it.name) { fileT }
+                    val ast = grammar.parse(it.reader())
+                    ast.analyze(globalEnv).bind()
+                }
+                yields(it)
+            }.ev()
 
             ir.bimap(
                     {
-                        it.all.forEach {
-                            System.err.println(it.message)
-                        }
+                        System.err.println(it.message)
                     },
                     {
                         it.generate(options.out)

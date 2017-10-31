@@ -1,15 +1,12 @@
 package io.quartz.analyzer
 
 import io.quartz.analyzer.type.*
-import io.quartz.tree.Location
+import io.quartz.tree.*
 import io.quartz.tree.ast.ExprT
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.ExprI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.ir.typeI
-import io.quartz.tree.name
-import io.quartz.tree.nil
-import io.quartz.tree.qualify
 import kategory.Either
 import kategory.binding
 import kategory.ev
@@ -46,7 +43,7 @@ fun ExprT.Id.analyze(env: Env) = Either.monadErrorE().binding {
         )
         is MemLoc.Global -> ExprI.InvokeStatic(
                 location,
-                "_Get${memLoc.name.string.capitalize()}".name.qualify(memLoc.name.qualifier).typeI,
+                "\$Get${memLoc.name.string.capitalize()}".name.qualify(memLoc.name.qualifier).typeI,
                 env.getVar(name).bind().instantiate().typeI,
                 "get${name.string.capitalize()}".name,
                 nil
@@ -89,9 +86,8 @@ fun ExprT.Lambda.analyze(env: Env) = Either.monadErrorE().binding {
     val typeSchemeK = typeK.generalize(env, s1)
     val genericsK = typeSchemeK.generics + closures.flatMap { it.type.generalize(env, s1).generics }
     val localEnv = env
-            .withMemLocs(closures.map { (a, _) -> a to MemLoc.Field(a) })
-            .withVar(arg, argTypeK.scheme)
-            .withMemLoc(arg, MemLoc.Arg(0))
+            .withMemLocs(closures.map { (a, _) -> a.qualifiedLocal to MemLoc.Field(a).right() })
+            .withVar(arg.qualifiedLocal, argTypeK.scheme.right(), MemLoc.Arg(0).right())
     val closuresI = closures.map { (a, b) ->
         ExprI.LocalField(Location.unknown, a, b.typeI).let { it to it.type }
     }

@@ -34,11 +34,11 @@ data class GlobalEnv(
     private fun spGetVar(name: QualifiedName) = (sp.getDecl(name) as? DeclT.Value)
             ?.schemeK(this)
             ?.bimap(
-                    { UnknownTypeOf(name) },
+                    { UnknownType(name) },
                     ::identity
             )
 
-    private fun cpGetVar(name: QualifiedName) = cp.getClass("_Get${name.string.capitalize()}".name.qualify(name.qualifier))
+    private fun cpGetVar(name: QualifiedName) = cp.getClass("\$Get${name.string.capitalize()}".name.qualify(name.qualifier))
             ?.getMethod("get${name.string.capitalize()}")
             ?.returnType
             ?.typeK
@@ -51,6 +51,6 @@ data class GlobalEnv(
     private fun spGetMemLoc(name: QualifiedName) = (sp.getDecl(name) as? DeclT.Value)
             ?.let { MemLoc.Global(name) }
 
-    private fun cpGetMemLoc(name: QualifiedName) = cp.getClass("_Get${name.string.capitalize()}".name.qualify(name.qualifier))
+    private fun cpGetMemLoc(name: QualifiedName) = cp.getClass("\$Get${name.string.capitalize()}".name.qualify(name.qualifier))
             ?.let { MemLoc.Global(name) }
 }

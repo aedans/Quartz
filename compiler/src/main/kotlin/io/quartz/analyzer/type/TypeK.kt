@@ -81,7 +81,7 @@ fun GenericT.genericK(env: Env) = type.typeK(env).map { GenericK(name, it) }
 
 fun SchemeT.schemeK(env: Env) = Either.monadErrorE().binding {
     val localEnv = generics.fold(env) { a, b ->
-        a.withType(b.name.qualifiedLocal, TypeK.Var(b.name).scheme)
+        a.withType(b.name.qualifiedLocal, TypeK.Var(b.name).scheme.right())
     }
     yields(SchemeK(generics.map { it.genericK(localEnv).bind() }, type.typeK(localEnv).bind()))
 }.ev()

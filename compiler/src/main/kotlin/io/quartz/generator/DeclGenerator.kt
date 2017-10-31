@@ -47,7 +47,7 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
 
 fun DeclI.Method.generate(pg: ProgramGenerator) {
     DeclI.Class(
-            "_${name.capitalize()}".name,
+            "\$${name.capitalize()}".name,
             location,
             qualifier,
             null,

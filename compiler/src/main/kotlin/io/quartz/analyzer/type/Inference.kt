@@ -2,10 +2,8 @@ package io.quartz.analyzer.type
 
 import io.quartz.analyzer.*
 import io.quartz.tree.ast.ExprT
-import kategory.Either
-import kategory.binding
-import kategory.ev
-import kategory.right
+import io.quartz.tree.qualifiedLocal
+import kategory.*
 
 typealias Infer = EitherE<InferState>
 typealias InferState = Pair<Subst, TypeK>
@@ -30,7 +28,7 @@ fun ExprT.infer(env: Env): Infer = when (this) {
     }.ev()
     is ExprT.Lambda -> Either.monadErrorE().binding {
         val argVar = TypeK.Var(fresh())
-        val envP = env.withVar(arg, argVar.scheme)
+        val envP = env.withVar(arg.qualifiedLocal, argVar.scheme.right(), InvalidMemoryLocation(arg.qualifiedLocal).left())
         val (s1, exprType) = expr.infer(envP).bind()
         yields(s1 to TypeK.Arrow(apply(argVar, s1), exprType).type)
     }.ev()

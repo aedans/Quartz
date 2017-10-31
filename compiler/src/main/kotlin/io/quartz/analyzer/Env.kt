@@ -1,8 +1,10 @@
 package io.quartz.analyzer
 
 import io.quartz.analyzer.type.SchemeK
-import io.quartz.tree.*
-import kategory.right
+import io.quartz.tree.Name
+import io.quartz.tree.QualifiedName
+import io.quartz.tree.Qualifier
+import io.quartz.tree.name
 
 interface Env {
     val `package`: Qualifier
@@ -25,28 +27,28 @@ fun Env.mapTypes(map: (SchemeK) -> SchemeK) = object : Env by this {
     override fun getType(name: QualifiedName) = this@mapTypes.getType(name).map(map)
 }
 
-fun Env.withType(name: QualifiedName, scheme: SchemeK) = run {
+fun Env.withType(name: QualifiedName, scheme: EitherE<SchemeK>) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name
     object : Env by this {
-        override fun getType(name: QualifiedName) = if (name == _name) scheme.right() else this@withType.getType(name)
+        override fun getType(name: QualifiedName) = if (name == _name) scheme else this@withType.getType(name)
     }
 }
 
-fun Env.withVar(name: Name, scheme: SchemeK) = run {
+fun Env.withVar(name: QualifiedName, scheme: EitherE<SchemeK>, memLoc: EitherE<MemLoc>) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
-    val _name = name.qualifiedLocal
+    val _name = name
     object : Env by this {
-        override fun getVar(name: QualifiedName) = if (name == _name) scheme.right() else this@withVar.getVar(name)
-    }
+        override fun getVar(name: QualifiedName) = if (name == _name) scheme else this@withVar.getVar(name)
+    }.withMemLoc(name, memLoc)
 }
 
-fun Env.withMemLocs(list: List<Pair<Name, MemLoc>>) = list.fold(this) { e, (a, b) -> e.withMemLoc(a, b) }
-fun Env.withMemLoc(name: Name, memLoc: MemLoc) = run {
+fun Env.withMemLocs(list: List<Pair<QualifiedName, EitherE<MemLoc>>>) = list.fold(this) { e, (a, b) -> e.withMemLoc(a, b) }
+fun Env.withMemLoc(name: QualifiedName, memLoc: EitherE<MemLoc>) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
-    val _name = name.qualifiedLocal
+    val _name = name
     object : Env by this {
-        override fun getMemLoc(name: QualifiedName) = if (name == _name) memLoc.right() else this@withMemLoc.getMemLoc(name)
+        override fun getMemLoc(name: QualifiedName) = if (name == _name) memLoc else this@withMemLoc.getMemLoc(name)
     }
 }
 
