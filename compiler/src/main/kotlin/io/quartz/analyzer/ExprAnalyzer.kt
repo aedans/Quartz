@@ -33,18 +33,18 @@ fun ExprT.Unit.analyze() = ExprI.InvokeStatic(
 fun ExprT.Bool.analyze() = ExprI.Bool(location, boolean).right()
 
 fun ExprT.Id.analyze(env: Env) = Either.monadErrorE().binding {
-    val memLoc = env.getMemLoc(name).bind()
+    val memLoc = env.getVar(name).bind().varLoc
     val it = when (memLoc) {
-        is MemLoc.Arg -> ExprI.Arg(location, memLoc.index)
-        is MemLoc.Field -> ExprI.LocalField(
+        is VarLoc.Arg -> ExprI.Arg(location, memLoc.index)
+        is VarLoc.Field -> ExprI.LocalField(
                 location,
                 memLoc.name,
-                env.getVar(name).bind().instantiate().typeI
+                env.getVar(name).bind().scheme.instantiate().typeI
         )
-        is MemLoc.Global -> ExprI.InvokeStatic(
+        is VarLoc.Global -> ExprI.InvokeStatic(
                 location,
                 "\$Get${memLoc.name.string.capitalize()}".name.qualify(memLoc.name.qualifier).typeI,
-                env.getVar(name).bind().instantiate().typeI,
+                env.getVar(name).bind().scheme.instantiate().typeI,
                 "get${name.string.capitalize()}".name,
                 nil
         )
@@ -82,12 +82,12 @@ fun ExprT.Lambda.analyze(env: Env) = Either.monadErrorE().binding {
     val (s1, typeK) = infer(env).bind()
     val argTypeK = typeK.arrow.t1
     val returnTypeK = typeK.arrow.t2
-    val closures = freeVariables.map { GenericK(it.string.name, env.getVar(it).bind().instantiate()) }
+    val closures = freeVariables.map { GenericK(it.string.name, env.getVar(it).bind().scheme.instantiate()) }
     val typeSchemeK = typeK.generalize(env, s1)
     val genericsK = typeSchemeK.generics + closures.flatMap { it.type.generalize(env, s1).generics }
-    val localEnv = env
-            .withMemLocs(closures.map { (a, _) -> a.qualifiedLocal to MemLoc.Field(a).right() })
-            .withVar(arg.qualifiedLocal, argTypeK.scheme.right(), MemLoc.Arg(0).right())
+    val localEnv = closures.map { (a, _) -> a.qualifiedLocal to VarLoc.Field(a) }
+            .fold(env) { e, (a, b) -> e.withVarLoc(a, b) }
+            .withVar(arg.qualifiedLocal, VarInfo(argTypeK.scheme, VarLoc.Arg(0)).right())
     val closuresI = closures.map { (a, b) ->
         ExprI.LocalField(Location.unknown, a, b.typeI).let { it to it.type }
     }

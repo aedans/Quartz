@@ -9,9 +9,7 @@ import io.quartz.tree.Qualifier
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.name
 import io.quartz.tree.qualify
-import kategory.identity
-import kategory.left
-import kategory.right
+import kategory.*
 
 data class GlobalEnv(
         private val cp: ClassPath,
@@ -20,21 +18,27 @@ data class GlobalEnv(
 ) : Env {
     override fun getType(name: QualifiedName) = spGetType(name)?.right()
             ?: cpGetType(name)?.right()
-            ?: UnknownVariable(name).left()
+            ?: UnknownType(name).left()
 
     private fun spGetType(name: QualifiedName) = (sp.getDecl(name) as? DeclT.Class)
             ?.schemeK(name.qualifier)
 
     private fun cpGetType(name: QualifiedName) = cp.getClass(name)?.typeK?.scheme
 
-    override fun getVar(name: QualifiedName) = spGetVar(name)
+    override fun getVar(name: QualifiedName) = Either.monadErrorE().binding {
+        val scheme = getVarType(name).bind()
+        val varLoc = getVarLoc(name).bind()
+        yields(VarInfo(scheme, varLoc))
+    }.ev()
+
+    private fun getVarType(name: QualifiedName) = spGetVar(name)
             ?: cpGetVar(name)?.right()
             ?: UnknownVariable(name).left()
 
     private fun spGetVar(name: QualifiedName) = (sp.getDecl(name) as? DeclT.Value)
             ?.schemeK(this)
             ?.bimap(
-                    { UnknownType(name) },
+                    { UnableToType(name) },
                     ::identity
             )
 
@@ -44,13 +48,13 @@ data class GlobalEnv(
             ?.typeK
             ?.scheme
 
-    override fun getMemLoc(name: QualifiedName) = spGetMemLoc(name)?.right()
+    private fun getVarLoc(name: QualifiedName) = spGetMemLoc(name)?.right()
             ?: cpGetMemLoc(name)?.right()
             ?: UnknownVariable(name).left()
 
     private fun spGetMemLoc(name: QualifiedName) = (sp.getDecl(name) as? DeclT.Value)
-            ?.let { MemLoc.Global(name) }
+            ?.let { VarLoc.Global(name) }
 
     private fun cpGetMemLoc(name: QualifiedName) = cp.getClass("\$Get${name.string.capitalize()}".name.qualify(name.qualifier))
-            ?.let { MemLoc.Global(name) }
+            ?.let { VarLoc.Global(name) }
 }

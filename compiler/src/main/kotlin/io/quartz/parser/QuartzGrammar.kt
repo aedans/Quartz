@@ -23,6 +23,7 @@ abstract class QuartzGrammar<out T>(val uri: String) : Grammar<T>() {
     val C_BRACKET by token("\\}")
     val BACKSLASH by token("\\\\")
     val DOT by token("\\.")
+    val STAR by token("\\*")
     val PACKAGE by token("package\\b")
     val IMPORT by token("import\\b")
     val FALSE by token("false\\b")

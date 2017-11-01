@@ -17,16 +17,38 @@ fun FileT.analyze(env: Env): EitherE<List<DeclI>> = Either.monadErrorE().binding
 }.ev()
 
 fun ImportT.import(env: Env) = when (this) {
-    is ImportT.Star -> TODO()
-    is ImportT.Qualified -> Ior.fromOptions(
-            env.getVar(qualifiedName).toOption(),
-            env.getType(qualifiedName).toOption()
-    ).toEither { UnknownPackage(qualifiedName) }.map {
-        it.bimap(
-                { { env: Env -> env.withVar(alias.qualifiedLocal, it.right(), env.getMemLoc(qualifiedName)) } },
-                { { env: Env -> env.withType(alias.qualifiedLocal, it.right()) } }
-        ).fold({ it }, { it }, { a, b -> { a(b(it)) } })(env)
-    }
+    is ImportT.Star -> env.mapVars { name, value ->
+        value.fold(
+                { err ->
+                    when (err) {
+                        UnknownVariable(name) -> env.getVar(QualifiedName(qualifier, name.string)).bimap({ err }, ::identity)
+                        else -> err.left()
+                    }
+                },
+                { it.right() }
+        )
+    }.mapTypes { name, value ->
+        value.fold(
+                { err ->
+                    when (err) {
+                        UnknownType(name) -> env.getType(QualifiedName(qualifier, name.string)).bimap({ err }, ::identity)
+                        else -> err.left()
+                    }
+                },
+                { it.right() }
+        )
+    }.right()
+    is ImportT.Qualified -> import(env)
+}
+
+fun ImportT.Qualified.import(env: Env) = Ior.fromOptions(
+        env.getVar(qualifiedName).toOption(),
+        env.getType(qualifiedName).toOption()
+).toEither { UnknownPackage(qualifiedName) }.map {
+    it.bimap(
+            { { env: Env -> env.withVar(alias.qualifiedLocal, it.right()) } },
+            { { env: Env -> env.withType(alias.qualifiedLocal, it.right()) } }
+    ).fold(::identity, ::identity, { a, b -> { a(b(it)) } })(env)
 }
 
 class UnknownPackage(qualifiedName: QualifiedName) : CompilerError("Could not find package $qualifiedName")

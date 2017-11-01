@@ -15,13 +15,20 @@ val QuartzGrammar<*>.fileT: Parser<FileT> get() = optional(parser { packageT }) 
 
 val QuartzGrammar<*>.packageT: Parser<Qualifier> get() = skip(PACKAGE) and qualifier
 
-val QuartzGrammar<*>.importT: Parser<ImportT> get() = skip(IMPORT) and
+val QuartzGrammar<*>.importT: Parser<ImportT> get() = parser { importTStar } or
+        parser { importTQualified }
+
+val QuartzGrammar<*>.importTQualified: Parser<ImportT.Qualified> get() = skip(IMPORT) and
         qualifier and
         optional(skip(AS) and ID) use {
     ImportT.Qualified(
             t1.qualifiedName,
             t2?.text?.name ?: t1.qualifiedName.unqualified
     )
+}
+
+val QuartzGrammar<*>.importTStar: Parser<ImportT.Star> get() = skip(IMPORT) and skip(STAR) and qualifier use {
+    ImportT.Star(this)
 }
 
 val QuartzGrammar<*>.qualifier: Parser<Qualifier> get() = zeroOrMore(ID and DOT) and ID use {

@@ -29,7 +29,7 @@ fun apply(type: TypeK, subst: Subst): TypeK = when (type) {
 }
 
 /** Lazily applies a substitution to all types in an environment */
-fun apply(env: Env, subst: Subst): Env = env.mapTypes { apply(it, subst) }
+fun apply(env: Env, subst: Subst): Env = env.mapTypes { _, it -> it.map { apply(it, subst) } }
 
 /** Returns all type variables not captured by a scheme's generics */
 val SchemeK.freeTypeVariables: Set<Name> get() = type.freeTypeVariables - generics.map { it.name }.toSet()

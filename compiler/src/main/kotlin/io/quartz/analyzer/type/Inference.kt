@@ -3,7 +3,10 @@ package io.quartz.analyzer.type
 import io.quartz.analyzer.*
 import io.quartz.tree.ast.ExprT
 import io.quartz.tree.qualifiedLocal
-import kategory.*
+import kategory.Either
+import kategory.binding
+import kategory.ev
+import kategory.right
 
 typealias Infer = EitherE<InferState>
 typealias InferState = Pair<Subst, TypeK>
@@ -12,7 +15,7 @@ typealias InferState = Pair<Subst, TypeK>
 fun ExprT.infer(env: Env): Infer = when (this) {
     is ExprT.Unit -> (emptySubst to TypeK.unit).right()
     is ExprT.Bool -> (emptySubst to TypeK.bool).right()
-    is ExprT.Id -> env.getVar(name).map { emptySubst to it.instantiate() }
+    is ExprT.Id -> env.getVar(name).map { emptySubst to it.scheme.instantiate() }
     is ExprT.Cast -> Either.monadErrorE().binding {
         val typeK = type.typeK(env).bind()
         val (s1, exprType) = expr.infer(env).bind()
@@ -28,7 +31,7 @@ fun ExprT.infer(env: Env): Infer = when (this) {
     }.ev()
     is ExprT.Lambda -> Either.monadErrorE().binding {
         val argVar = TypeK.Var(fresh())
-        val envP = env.withVar(arg.qualifiedLocal, argVar.scheme.right(), InvalidMemoryLocation(arg.qualifiedLocal).left())
+        val envP = env.withVar(arg.qualifiedLocal, VarInfo(argVar.scheme, VarLoc.Arg(0)).right())
         val (s1, exprType) = expr.infer(envP).bind()
         yields(s1 to TypeK.Arrow(apply(argVar, s1), exprType).type)
     }.ev()
