@@ -1,6 +1,7 @@
 package io.quartz.analyzer.type
 
 import io.quartz.analyzer.Env
+import io.quartz.analyzer.TypeInfo
 import io.quartz.analyzer.mapTypes
 import io.quartz.tree.Name
 
@@ -29,7 +30,13 @@ fun apply(type: TypeK, subst: Subst): TypeK = when (type) {
 }
 
 /** Lazily applies a substitution to all types in an environment */
-fun apply(env: Env, subst: Subst): Env = env.mapTypes { _, it -> it.map { apply(it, subst) } }
+fun apply(env: Env, subst: Subst): Env = env.mapTypes { _, it ->
+    it.map { apply(it, subst) }
+}
+
+fun apply(typeInfo: TypeInfo, subst: Subst): TypeInfo = typeInfo.copy(
+        scheme = apply(typeInfo.scheme, subst)
+)
 
 /** Returns all type variables not captured by a scheme's generics */
 val SchemeK.freeTypeVariables: Set<Name> get() = type.freeTypeVariables - generics.map { it.name }.toSet()

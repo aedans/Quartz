@@ -16,14 +16,19 @@ data class GlobalEnv(
         private val sp: SourcePath,
         override val `package`: Qualifier
 ) : Env {
-    override fun getType(name: QualifiedName) = spGetType(name)?.right()
-            ?: cpGetType(name)?.right()
-            ?: UnknownType(name).left()
+    override fun getType(name: QualifiedName) = Either.monadErrorE().binding {
+        val scheme = getTypeScheme(name).bind()
+        yields(TypeInfo(scheme))
+    }.ev()
 
-    private fun spGetType(name: QualifiedName) = (sp.getDecl(name) as? DeclT.Class)
+    private fun getTypeScheme(name: QualifiedName) = spGetTypeScheme(name)?.right() ?:
+            cpGetTypeScheme(name)?.right() ?:
+            UnknownType(name).left()
+
+    private fun spGetTypeScheme(name: QualifiedName) = (sp.getDecl(name) as? DeclT.Class)
             ?.schemeK(name.qualifier)
 
-    private fun cpGetType(name: QualifiedName) = cp.getClass(name)?.typeK?.scheme
+    private fun cpGetTypeScheme(name: QualifiedName) = cp.getClass(name)?.typeK?.scheme
 
     override fun getVar(name: QualifiedName) = Either.monadErrorE().binding {
         val scheme = getVarType(name).bind()
@@ -31,18 +36,18 @@ data class GlobalEnv(
         yields(VarInfo(scheme, varLoc))
     }.ev()
 
-    private fun getVarType(name: QualifiedName) = spGetVar(name)
-            ?: cpGetVar(name)?.right()
+    private fun getVarType(name: QualifiedName) = spGetVarType(name)
+            ?: cpGetVarType(name)?.right()
             ?: UnknownVariable(name).left()
 
-    private fun spGetVar(name: QualifiedName) = (sp.getDecl(name) as? DeclT.Value)
+    private fun spGetVarType(name: QualifiedName) = (sp.getDecl(name) as? DeclT.Value)
             ?.schemeK(this)
             ?.bimap(
                     { UnableToType(name) },
                     ::identity
             )
 
-    private fun cpGetVar(name: QualifiedName) = cp.getClass("\$Get${name.string.capitalize()}".name.qualify(name.qualifier))
+    private fun cpGetVarType(name: QualifiedName) = cp.getClass("\$Get${name.string.capitalize()}".name.qualify(name.qualifier))
             ?.getMethod("get${name.string.capitalize()}")
             ?.returnType
             ?.typeK

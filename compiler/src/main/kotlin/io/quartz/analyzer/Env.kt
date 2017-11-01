@@ -8,7 +8,7 @@ import io.quartz.tree.name
 
 interface Env {
     val `package`: Qualifier
-    fun getType(name: QualifiedName): EitherE<SchemeK>
+    fun getType(name: QualifiedName): EitherE<TypeInfo>
     fun getVar(name: QualifiedName): EitherE<VarInfo>
 }
 
@@ -19,13 +19,20 @@ sealed class VarLoc {
     data class Field(val name: Name) : VarLoc()
 }
 
-data class VarInfo(val scheme: SchemeK, val varLoc: VarLoc)
+data class VarInfo(
+        val scheme: SchemeK,
+        val varLoc: VarLoc
+)
+
+data class TypeInfo(
+        val scheme: SchemeK
+)
 
 fun Env.withPackage(`package`: Qualifier) = object : Env by this {
     override val `package` = `package`
 }
 
-fun Env.mapTypes(map: (QualifiedName, EitherE<SchemeK>) -> EitherE<SchemeK>) = object : Env by this {
+fun Env.mapTypes(map: (QualifiedName, EitherE<TypeInfo>) -> EitherE<TypeInfo>) = object : Env by this {
     override fun getType(name: QualifiedName) = map(name, this@mapTypes.getType(name))
 }
 
@@ -33,7 +40,7 @@ fun Env.mapVars(map: (QualifiedName, EitherE<VarInfo>) -> EitherE<VarInfo>) = ob
     override fun getVar(name: QualifiedName) = map(name, this@mapVars.getVar(name))
 }
 
-fun Env.withType(name: QualifiedName, scheme: EitherE<SchemeK>) = run {
+fun Env.withType(name: QualifiedName, scheme: EitherE<TypeInfo>) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name
     object : Env by this {

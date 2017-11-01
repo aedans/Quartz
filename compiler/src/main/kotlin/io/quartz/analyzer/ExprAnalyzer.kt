@@ -20,6 +20,7 @@ fun ExprT.analyze(env: Env): EitherE<ExprI> = when (this) {
     is ExprT.Apply -> analyze(env)
     is ExprT.If -> analyze(env)
     is ExprT.Lambda -> analyze(env)
+    is ExprT.Dot -> TODO()
 }
 
 fun ExprT.Unit.analyze() = ExprI.InvokeStatic(

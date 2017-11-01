@@ -62,7 +62,7 @@ fun TypeK.generalize(env: Env, subst: Subst) = SchemeK(
         freeTypeVariables.filterNot { name ->
             env.getType(name.qualifiedLocal).bimap(
                     { false },
-                    { it.generics.any { it.name == name } }
+                    { it.scheme.generics.any { it.name == name } }
             ).fold(::identity, ::identity)
         }.map {
             GenericK(it, subst[it] ?: TypeK.any)
@@ -81,13 +81,13 @@ fun GenericT.genericK(env: Env) = type.typeK(env).map { GenericK(name, it) }
 
 fun SchemeT.schemeK(env: Env) = Either.monadErrorE().binding {
     val localEnv = generics.fold(env) { a, b ->
-        a.withType(b.name.qualifiedLocal, TypeK.Var(b.name).scheme.right())
+        a.withType(b.name.qualifiedLocal, TypeInfo(TypeK.Var(b.name).scheme).right())
     }
     yields(SchemeK(generics.map { it.genericK(localEnv).bind() }, type.typeK(localEnv).bind()))
 }.ev()
 
 fun TypeT.typeK(env: Env): EitherE<TypeK> = when (this) {
-    is TypeT.Id -> env.getType(name.qualifiedLocal).map { it.instantiate() }
+    is TypeT.Id -> env.getType(name.qualifiedLocal).map { it.scheme.instantiate() }
     is TypeT.Apply -> Either.monadErrorE()
             .tupled(t1.typeK(env), t2.typeK(env))
             .map { (a, b) -> TypeK.Apply(a, b) }.ev()

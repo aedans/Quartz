@@ -27,8 +27,12 @@ val QuartzGrammar<*>.lambdaExprT: Parser<ExprT.Lambda> get() = skip(BACKSLASH) a
     ExprT.Lambda(t1.location(this@lambdaExprT), t1.text.name, t2)
 }
 
-val QuartzGrammar<*>.applyExprT: Parser<ExprT> get() = parser { atomicExprT } and oneOrMore(parser { atomicExprT }) use {
+val QuartzGrammar<*>.applyExprT: Parser<ExprT> get() = parser { dotExprT } and oneOrMore(parser { dotExprT }) use {
     t2.fold(t1) { a, b -> ExprT.Apply(b.location, a, b) }
+} or parser { dotExprT }
+
+val QuartzGrammar<*>.dotExprT: Parser<ExprT> get() = parser { atomicExprT } and skip(DOT) and parser { ID } use {
+    ExprT.Dot(t2.location(this@dotExprT), t1, t2.text.name)
 } or parser { atomicExprT }
 
 val QuartzGrammar<*>.atomicExprT: Parser<ExprT> get() = parser { unitExprT } or

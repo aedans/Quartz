@@ -47,4 +47,13 @@ fun ExprT.infer(env: Env): Infer = when (this) {
             throw Exception()
         yields((s5 compose s4 compose s3 compose s2 compose s1) to t1)
     }.ev()
+    is ExprT.Dot -> Either.monadErrorE().binding {
+        val (s1, exprType) = expr.infer(env).bind()
+        val it = when (exprType) {
+            is TypeK.Const -> TODO()
+            is TypeK.Var -> TODO()
+            is TypeK.Apply -> TODO()
+        }
+        yields(s1 to it)
+    }.ev()
 }
