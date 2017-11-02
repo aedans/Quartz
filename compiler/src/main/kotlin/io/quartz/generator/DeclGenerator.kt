@@ -1,6 +1,7 @@
 package io.quartz.generator
 
 import io.quartz.generator.asm.*
+import io.quartz.interop.capitalizeOrUnderscore
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.ir.VoidTypeI
@@ -47,7 +48,7 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
 
 fun DeclI.Method.generate(pg: ProgramGenerator) {
     DeclI.Class(
-            "\$$name".name,
+            "\$${name.capitalizeOrUnderscore()}".name,
             location,
             `package`,
             null,
