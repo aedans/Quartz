@@ -12,7 +12,6 @@ import io.quartz.tree.qualify
 import org.funktionale.collections.prependTo
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
-import java.io.File
 
 fun DeclI.generate(pg: ProgramGenerator) = when (this) {
     is DeclI.Class -> generate(pg)
@@ -48,7 +47,7 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
 
 fun DeclI.Method.generate(pg: ProgramGenerator) {
     DeclI.Class(
-            "\$${name.capitalize()}".name,
+            "\$$name".name,
             location,
             `package`,
             null,
