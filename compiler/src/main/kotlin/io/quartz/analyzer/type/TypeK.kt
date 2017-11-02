@@ -80,16 +80,16 @@ fun SchemeK.instantiate(): TypeK = run {
 
 fun GenericT.genericK(env: Env) = type.typeK(env).map { GenericK(name, it) }
 
-fun SchemeT.schemeK(env: Env) = Either.monadErrorE().binding {
+fun SchemeT.schemeK(env: Env) = monadErrorE().binding {
     val localEnv = generics.fold(env) { a, b ->
         a.withType(b.name.qualifiedLocal, TypeInfo(TypeK.Var(b.name).scheme).right())
     }
     yields(SchemeK(generics.map { it.genericK(localEnv).bind() }, type.typeK(localEnv).bind()))
 }.ev()
 
-fun TypeT.typeK(env: Env): EitherE<TypeK> = when (this) {
+fun TypeT.typeK(env: Env): Err<TypeK> = when (this) {
     is TypeT.Id -> env.getType(name.qualifiedLocal).map { it.scheme.instantiate() }
-    is TypeT.Apply -> Either.monadErrorE()
+    is TypeT.Apply -> monadErrorE()
             .tupled(t1.typeK(env), t2.typeK(env))
             .map { (a, b) -> TypeK.Apply(a, b) }.ev()
 }

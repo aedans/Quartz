@@ -4,12 +4,10 @@ import io.quartz.analyzer.type.SchemeK
 import io.quartz.tree.Name
 import io.quartz.tree.QualifiedName
 import io.quartz.tree.name
-import kategory.flatMap
-import kategory.left
 
 interface Env {
-    fun getType(name: QualifiedName): EitherE<TypeInfo>
-    fun getVar(name: QualifiedName): EitherE<VarInfo>
+    fun getType(name: QualifiedName): Err<TypeInfo>
+    fun getVar(name: QualifiedName): Err<VarInfo>
 }
 
 /** ADT representing where an identifier is located */
@@ -28,25 +26,15 @@ data class TypeInfo(
         val scheme: SchemeK
 )
 
-val emptyEnv = object : Env {
-    override fun getType(name: QualifiedName) = UnknownType(name).left()
-    override fun getVar(name: QualifiedName) = UnknownVar(name).left()
-}
-
-infix fun Env.compose(env: Env) = object : Env {
-    override fun getType(name: QualifiedName) = this@compose.getType(name).flatMap { env.getType(name) }
-    override fun getVar(name: QualifiedName) = this@compose.getVar(name).flatMap { env.getVar(name) }
-}
-
-fun Env.mapTypes(map: (QualifiedName, EitherE<TypeInfo>) -> EitherE<TypeInfo>) = object : Env by this {
+fun Env.mapTypes(map: (QualifiedName, Err<TypeInfo>) -> Err<TypeInfo>) = object : Env by this {
     override fun getType(name: QualifiedName) = map(name, this@mapTypes.getType(name))
 }
 
-fun Env.mapVars(map: (QualifiedName, EitherE<VarInfo>) -> EitherE<VarInfo>) = object : Env by this {
+fun Env.mapVars(map: (QualifiedName, Err<VarInfo>) -> Err<VarInfo>) = object : Env by this {
     override fun getVar(name: QualifiedName) = map(name, this@mapVars.getVar(name))
 }
 
-fun Env.withType(name: QualifiedName, scheme: EitherE<TypeInfo>) = run {
+fun Env.withType(name: QualifiedName, scheme: Err<TypeInfo>) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name
     object : Env by this {
@@ -54,7 +42,7 @@ fun Env.withType(name: QualifiedName, scheme: EitherE<TypeInfo>) = run {
     }
 }
 
-fun Env.withVar(name: QualifiedName, varInfo: EitherE<VarInfo>) = run {
+fun Env.withVar(name: QualifiedName, varInfo: Err<VarInfo>) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name
     object : Env by this {

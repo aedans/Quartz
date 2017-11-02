@@ -12,7 +12,6 @@ import io.quartz.interop.classPath
 import io.quartz.interop.withSource
 import io.quartz.parser.QuartzGrammar
 import io.quartz.parser.fileT
-import kategory.Either
 import kategory.binding
 import kategory.ev
 import java.io.File
@@ -31,14 +30,14 @@ object Cli {
                         .writeBytes(it.cw.toByteArray())
             }
 
-            val ir = Either.monadErrorE().binding {
+            val ir = monadErrorE().binding {
                 val globalEnv = ClassPathEnv(options.cp.classPath())
                         .withSource(options.sp, pg).bind()
 
                 val it = options.src.flatMap {
                     val grammar = QuartzGrammar.create(it.name) { fileT }
                     val fileT = grammar.parse(it.reader())
-                    val localEnv = globalEnv.import(fileT.imports).bind()
+                    val localEnv = globalEnv.import(fileT.imports)
                     fileT.decls
                             .foldMap(localEnv) { env, decl -> decl.analyze(env, fileT.`package`) }.b
                             .map { it.bind() }

@@ -11,13 +11,14 @@ open class CompilerError(message: String) : Throwable(message) {
     override fun toString() = "CompilerError(\"$message\")"
 }
 
-class UnknownVar(name: QualifiedName) : CompilerError("Could not find var $name")
+class UnknownVar(name: QualifiedName) : CompilerError("could not find var $name")
 
-class UnknownType(name: QualifiedName) : CompilerError("Could not find type $name")
+class UnknownType(name: QualifiedName) : CompilerError("could not find type $name")
 
-class UnableToType(name: QualifiedName) : CompilerError("Could not infer type for $name")
+class UnknownClass(name: QualifiedName) : CompilerError("could not find class $name")
 
-typealias EitherE<T> = Either<CompilerError, T>
+infix fun CompilerError.and(e: CompilerError) = CompilerError("$message and ${e.message}")
 
-@Suppress("unused")
-fun Either.Companion.monadErrorE() = Either.monadError<CompilerError>()
+typealias Err<T> = Either<CompilerError, T>
+
+fun monadErrorE() = Either.monadError<CompilerError>()

@@ -28,6 +28,7 @@ dependencies {
     compile 'com.github.h0tk3y.betterParse:better-parse:0.2.1'
     compile 'org.ow2.asm:asm-all:5.2'
     compile 'com.xenomachina:kotlin-argparser:2.0.3'
+    compile 'io.github.aedans:kotlin-cons:2.0.1'
     compile 'io.kategory:kategory:0.3.10'
     kapt    'io.kategory:kategory-annotations-processor:0.3.10'
     compile 'io.kategory:kategory-effects:0.3.10'

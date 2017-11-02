@@ -1,16 +1,19 @@
 package io.quartz.analyzer.type
 
 import io.quartz.analyzer.CompilerError
-import io.quartz.analyzer.EitherE
+import io.quartz.analyzer.Err
 import io.quartz.analyzer.monadErrorE
-import kategory.*
+import kategory.binding
+import kategory.ev
+import kategory.left
+import kategory.right
 
 class UnableToUnify(t1: TypeK, t2: TypeK) : CompilerError("Unable to unify $t1 with $t2")
 class InfiniteBind(tVar: TypeK.Var, type: TypeK) : CompilerError("Infinite type $tVar in $type")
 
 /** Unifies two types if possible, returning a substitution that, when applied to both types, yields the same type */
-fun unify(t1: TypeK, t2: TypeK): EitherE<Subst> = when {
-    t1 is TypeK.Apply && t2 is TypeK.Apply -> Either.monadErrorE().binding {
+fun unify(t1: TypeK, t2: TypeK): Err<Subst> = when {
+    t1 is TypeK.Apply && t2 is TypeK.Apply -> monadErrorE().binding {
         val s1 = unify(t1.t1, t2.t1).bind()
         val s2 = unify(apply(t1.t2, s1), apply(t2.t2, s1)).bind()
         yields(s2 compose s1)

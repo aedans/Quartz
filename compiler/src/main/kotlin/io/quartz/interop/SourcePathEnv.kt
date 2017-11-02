@@ -6,20 +6,19 @@ import io.quartz.generator.asm.ProgramGenerator
 import io.quartz.generator.generate
 import io.quartz.parser.QuartzGrammar
 import io.quartz.parser.fileT
-import kategory.Either
 import kategory.binding
 import kategory.ev
 import java.io.File
 
-fun Env.withSource(files: List<File>, pg: ProgramGenerator) = Either.monadErrorE().binding {
+fun Env.withSource(files: List<File>, pg: ProgramGenerator) = monadErrorE().binding {
     yields(files.fold(this@withSource) { a, b -> a.withSource(b, pg).bind() })
 }.ev()
 
-fun Env.withSource(file: File, pg: ProgramGenerator): EitherE<Env> = Either.monadErrorE().binding {
+fun Env.withSource(file: File, pg: ProgramGenerator): Err<Env> = monadErrorE().binding {
     val it = if (!file.isDirectory) {
         val grammar = QuartzGrammar.create(file.name) { fileT }
         val fileT = grammar.parseToEnd(file.reader())
-        val localEnv = import(fileT.imports).bind()
+        val localEnv = import(fileT.imports)
         fileT.decls.fold(localEnv) { env, decl ->
             decl.analyze(env, fileT.`package`).let {
                 it.b.map { it.generate(pg) }

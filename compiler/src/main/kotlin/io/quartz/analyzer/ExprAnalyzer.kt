@@ -16,7 +16,7 @@ import io.quartz.tree.qualifiedLocal
 import io.quartz.tree.unqualified
 import kategory.*
 
-fun ExprT.analyze(env: Env, p: Package): EitherE<ExprI> = when (this) {
+fun ExprT.analyze(env: Env, p: Package): Err<ExprI> = when (this) {
     is ExprT.Unit -> analyze()
     is ExprT.Bool -> analyze()
     is ExprT.Cast -> TODO()
@@ -37,7 +37,7 @@ fun ExprT.Unit.analyze() = ExprI.InvokeStatic(
 
 fun ExprT.Bool.analyze() = ExprI.Bool(location, boolean).right()
 
-fun ExprT.Id.analyze(env: Env) = Either.monadErrorE().binding {
+fun ExprT.Id.analyze(env: Env) = monadErrorE().binding {
     val memLoc = env.getVar(name).bind().varLoc
     val it = when (memLoc) {
         is VarLoc.Arg -> ExprI.Arg(location, memLoc.index)
@@ -57,7 +57,7 @@ fun ExprT.Id.analyze(env: Env) = Either.monadErrorE().binding {
     yields(it)
 }.ev()
 
-fun ExprT.Apply.analyze(env: Env, p: Package) = Either.monadErrorE().binding {
+fun ExprT.Apply.analyze(env: Env, p: Package) = monadErrorE().binding {
     val (_, _) = infer(env).bind()
     val (_, expr1TypeK) = expr1.infer(env).bind()
     val arrowK = expr1TypeK.arrow
@@ -75,7 +75,7 @@ fun ExprT.Apply.analyze(env: Env, p: Package) = Either.monadErrorE().binding {
     yields(it)
 }.ev()
 
-fun ExprT.If.analyze(env: Env, p: Package) = Either.monadErrorE().binding {
+fun ExprT.If.analyze(env: Env, p: Package) = monadErrorE().binding {
     val conditionI = condition.analyze(env, p).bind()
     val expr1I = expr1.analyze(env, p).bind()
     val expr2I = expr2.analyze(env, p).bind()
@@ -83,7 +83,7 @@ fun ExprT.If.analyze(env: Env, p: Package) = Either.monadErrorE().binding {
     yields(it)
 }.ev()
 
-fun ExprT.Lambda.analyze(env: Env, p: Package) = Either.monadErrorE().binding {
+fun ExprT.Lambda.analyze(env: Env, p: Package) = monadErrorE().binding {
     val (s1, typeK) = infer(env).bind()
     val argTypeK = typeK.arrow.t1
     val returnTypeK = typeK.arrow.t2
