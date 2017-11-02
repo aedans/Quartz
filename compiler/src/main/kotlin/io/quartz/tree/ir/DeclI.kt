@@ -3,7 +3,7 @@ package io.quartz.tree.ir
 import io.quartz.tree.Locatable
 import io.quartz.tree.Location
 import io.quartz.tree.Name
-import io.quartz.tree.Qualifier
+import io.quartz.tree.ast.Package
 
 /** Sealed class representing all IR declarations */
 sealed class DeclI : Locatable {
@@ -12,7 +12,7 @@ sealed class DeclI : Locatable {
     data class Class(
             override val name: Name,
             override val location: Location,
-            val qualifier: Qualifier,
+            val `package`: Package,
             val constructor: Constructor?,
             val obj: Object
     ) : DeclI() {
@@ -31,7 +31,7 @@ sealed class DeclI : Locatable {
     data class Method(
             override val name: Name,
             override val location: Location,
-            val qualifier: Qualifier,
+            val `package`: Package,
             val scheme: Scheme,
             val expr: ExprI
     ) : DeclI() {

@@ -68,21 +68,21 @@ fun ExprI.Block.push(mg: MethodGenerator) {
 
 fun ExprI.Invoke.push(mg: MethodGenerator) {
     expr.push(mg)
-    args.forEach { it.first.push(mg) }
+    args.forEach { it.a.push(mg) }
     (when (dispatch) {
         INTERFACE -> mg.ga::invokeInterface
         VIRTUAL -> mg.ga::invokeVirtual
     })(
             owner.type(),
-            method(type, name, args.map { it.second })
+            method(type, name, args.map { it.b })
     )
 }
 
 fun ExprI.InvokeStatic.push(mg: MethodGenerator) {
-    args.forEach { it.first.push(mg) }
+    args.forEach { it.a.push(mg) }
     mg.ga.invokeStatic(
             owner.type(),
-            method(type, name, args.map { it.second })
+            method(type, name, args.map { it.b })
     )
 }
 
@@ -120,19 +120,19 @@ fun ExprI.LocalField.push(mg: MethodGenerator) {
 
 fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
     val name = "${mg.classGenerator.info.name.string}$${mg.classGenerator.i++}".name
-    val typeI = name.qualify(qualifier).typeI
+    val typeI = name.qualify(`package`).typeI
 
     val block = closures.mapIndexed { i, it -> ExprI.Set(
             Location.unknown,
             typeI,
-            it.first.name,
-            it.second,
+            it.a.name,
+            it.b,
             ExprI.This(Location.unknown),
             ExprI.Arg(Location.unknown, i)
     ) }
 
     val constructor = DeclI.Class.Constructor(
-            closures.map { it.second },
+            closures.map { it.b },
             ExprI.Block(Location.unknown, block)
     )
 
@@ -145,7 +145,7 @@ fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
             DeclI.Class(
                     name,
                     location,
-                    qualifier,
+                    `package`,
                     constructor,
                     obj.copy(decls = newFields + obj.decls)
             ).generate(this)
@@ -160,12 +160,12 @@ fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
     mg.ga.dup()
 
     closures.forEach {
-        it.first.push(mg)
+        it.a.push(mg)
     }
 
     mg.ga.invokeConstructor(
             type,
-            method(VoidTypeI, "<init>".name, closures.map { it.second })
+            method(VoidTypeI, "<init>".name, closures.map { it.b })
     )
 }
 

@@ -3,11 +3,11 @@ package io.quartz.analyzer
 import io.quartz.analyzer.type.SchemeK
 import io.quartz.tree.Name
 import io.quartz.tree.QualifiedName
-import io.quartz.tree.Qualifier
 import io.quartz.tree.name
+import kategory.flatMap
+import kategory.left
 
 interface Env {
-    val `package`: Qualifier
     fun getType(name: QualifiedName): EitherE<TypeInfo>
     fun getVar(name: QualifiedName): EitherE<VarInfo>
 }
@@ -28,8 +28,14 @@ data class TypeInfo(
         val scheme: SchemeK
 )
 
-fun Env.withPackage(`package`: Qualifier) = object : Env by this {
-    override val `package` = `package`
+val emptyEnv = object : Env {
+    override fun getType(name: QualifiedName) = UnknownType(name).left()
+    override fun getVar(name: QualifiedName) = UnknownVar(name).left()
+}
+
+infix fun Env.compose(env: Env) = object : Env {
+    override fun getType(name: QualifiedName) = this@compose.getType(name).flatMap { env.getType(name) }
+    override fun getVar(name: QualifiedName) = this@compose.getVar(name).flatMap { env.getVar(name) }
 }
 
 fun Env.mapTypes(map: (QualifiedName, EitherE<TypeInfo>) -> EitherE<TypeInfo>) = object : Env by this {

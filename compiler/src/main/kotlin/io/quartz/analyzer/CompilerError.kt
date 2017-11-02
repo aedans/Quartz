@@ -8,10 +8,10 @@ import kategory.monadError
 open class CompilerError(message: String) : Throwable(message) {
     override fun equals(other: Any?) = other is CompilerError && other.message == message
     override fun hashCode() = message!!.hashCode()
-    override fun toString() = "CompilerError($message)"
+    override fun toString() = "CompilerError(\"$message\")"
 }
 
-class UnknownVariable(name: QualifiedName) : CompilerError("Could not find variable $name")
+class UnknownVar(name: QualifiedName) : CompilerError("Could not find var $name")
 
 class UnknownType(name: QualifiedName) : CompilerError("Could not find type $name")
 

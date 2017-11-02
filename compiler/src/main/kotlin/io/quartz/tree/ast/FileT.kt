@@ -6,7 +6,7 @@ import io.quartz.tree.Qualifier
 
 /** Class representing a file's AST */
 data class FileT(
-        val `package`: Qualifier,
+        val `package`: Package,
         val imports: List<ImportT>,
         val decls: List<DeclT>
 )
@@ -19,3 +19,5 @@ sealed class ImportT {
 
     data class Star(val qualifier: Qualifier) : ImportT()
 }
+
+typealias Package = Qualifier

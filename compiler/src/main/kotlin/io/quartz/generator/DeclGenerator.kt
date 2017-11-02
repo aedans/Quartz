@@ -12,6 +12,7 @@ import io.quartz.tree.qualify
 import org.funktionale.collections.prependTo
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
+import java.io.File
 
 fun DeclI.generate(pg: ProgramGenerator) = when (this) {
     is DeclI.Class -> generate(pg)
@@ -23,7 +24,7 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
     val access = Opcodes.ACC_PUBLIC + (if (constructor == null) Opcodes.ACC_INTERFACE + Opcodes.ACC_ABSTRACT else 0)
     pg.generateClass(ClassInfo(
             access,
-            name.qualify(qualifier).locatableName,
+            name.qualify(`package`).locatableName,
             classSignature(obj.generics, TypeI.any.prependTo(obj.superTypes)),
             TypeI.any.locatableName,
             obj.superTypes.map { it.locatableName }
@@ -49,7 +50,7 @@ fun DeclI.Method.generate(pg: ProgramGenerator) {
     DeclI.Class(
             "\$${name.capitalize()}".name,
             location,
-            qualifier,
+            `package`,
             null,
             DeclI.Class.Object(
                     nil,

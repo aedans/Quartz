@@ -103,7 +103,7 @@ val TypeK.typeI: TypeI get() = when (this) {
     is TypeK.Apply -> t1.typeI.apply(t2.typeI)
 }
 
-fun DeclT.Class.schemeK(`package`: Qualifier) = SchemeK(nil, name.qualify(`package`).typeK)
+fun DeclT.Class.schemeK(qualifier: Qualifier) = SchemeK(nil, name.qualify(qualifier).typeK)
 
 val QualifiedName.typeK get() = TypeK.Const(this)
 

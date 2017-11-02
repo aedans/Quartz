@@ -3,7 +3,8 @@ package io.quartz.tree.ir
 import io.quartz.tree.Locatable
 import io.quartz.tree.Location
 import io.quartz.tree.Name
-import io.quartz.tree.Qualifier
+import io.quartz.tree.ast.Package
+import kategory.Tuple2
 
 /** Sealed class representing all IR expressions */
 sealed class ExprI : Locatable {
@@ -34,7 +35,7 @@ sealed class ExprI : Locatable {
             val owner: TypeI,
             val type: TypeI,
             val name: Name,
-            val args: List<Pair<ExprI, TypeI>>,
+            val args: List<Tuple2<ExprI, TypeI>>,
             val dispatch: Dispatch
     ) : ExprI() {
         enum class Dispatch {
@@ -48,7 +49,7 @@ sealed class ExprI : Locatable {
             val owner: TypeI,
             val type: TypeI,
             val name: Name,
-            val args: List<Pair<ExprI, TypeI>>
+            val args: List<Tuple2<ExprI, TypeI>>
     ) : ExprI()
 
     data class If(
@@ -60,9 +61,9 @@ sealed class ExprI : Locatable {
 
     data class AnonymousObject(
             override val location: Location,
-            val qualifier: Qualifier,
+            val `package`: Package,
             val obj: DeclI.Class.Object,
-            val closures: List<Pair<ExprI.LocalField, TypeI>>
+            val closures: List<Tuple2<ExprI.LocalField, TypeI>>
     ) : ExprI()
 
     data class Set(
