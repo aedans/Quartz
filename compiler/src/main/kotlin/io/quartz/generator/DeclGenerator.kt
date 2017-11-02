@@ -8,7 +8,7 @@ import io.quartz.tree.ir.VoidTypeI
 import io.quartz.tree.ir.signature
 import io.quartz.tree.locatableName
 import io.quartz.tree.name
-import io.quartz.tree.nil
+import io.quartz.nil
 import io.quartz.tree.qualify
 import org.funktionale.collections.prependTo
 import org.objectweb.asm.Opcodes

@@ -8,7 +8,7 @@ import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
-import io.quartz.tree.nil
+import io.quartz.nil
 import java.lang.reflect.TypeVariable
 
 sealed class Kind {

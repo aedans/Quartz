@@ -6,7 +6,7 @@ import io.quartz.interop.varGetterName
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.ast.Package
 import io.quartz.tree.ir.DeclI
-import io.quartz.tree.nil
+import io.quartz.nil
 import io.quartz.tree.qualify
 import kategory.*
 

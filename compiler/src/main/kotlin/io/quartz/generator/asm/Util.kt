@@ -4,7 +4,7 @@ import io.quartz.tree.Name
 import io.quartz.tree.ir.GenericI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.ir.signature
-import io.quartz.tree.nil
+import io.quartz.nil
 import org.objectweb.asm.commons.Method
 
 fun method(returnType: TypeI, name: Name, args: List<TypeI>) = Method.getMethod(

@@ -3,13 +3,17 @@ package io.quartz.analyzer
 import io.quartz.analyzer.type.*
 import io.quartz.interop.varClassName
 import io.quartz.interop.varGetterName
-import io.quartz.tree.*
+import io.quartz.nil
+import io.quartz.tree.Location
 import io.quartz.tree.ast.ExprT
 import io.quartz.tree.ast.Package
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.ExprI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.ir.typeI
+import io.quartz.tree.name
+import io.quartz.tree.qualifiedLocal
+import io.quartz.tree.unqualified
 import kategory.*
 
 fun ExprT.analyze(env: Env, p: Package): EitherE<ExprI> = when (this) {

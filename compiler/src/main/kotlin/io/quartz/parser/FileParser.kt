@@ -3,9 +3,13 @@ package io.quartz.parser
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
-import io.quartz.tree.*
+import io.quartz.nil
+import io.quartz.tree.Qualifier
 import io.quartz.tree.ast.FileT
 import io.quartz.tree.ast.ImportT
+import io.quartz.tree.name
+import io.quartz.tree.qualifiedName
+import io.quartz.tree.unqualified
 
 val QuartzGrammar<*>.fileT: Parser<FileT> get() = optional(parser { packageT }) and
         zeroOrMore(parser { importT }) and

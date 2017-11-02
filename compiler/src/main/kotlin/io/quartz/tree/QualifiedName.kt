@@ -1,5 +1,7 @@
 package io.quartz.tree
 
+import io.quartz.nil
+
 /** Class for representing identifiers in the form p1.p2.Name */
 data class QualifiedName(val qualifier: Qualifier, val string: String) {
     override fun toString() = (qualifier + string).joinToString(prefix = "", postfix = "", separator = ".")

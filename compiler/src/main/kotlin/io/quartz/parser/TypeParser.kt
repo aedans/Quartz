@@ -8,7 +8,7 @@ import io.quartz.tree.ast.SchemeT
 import io.quartz.tree.ast.TypeT
 import io.quartz.tree.ast.apply
 import io.quartz.tree.name
-import io.quartz.tree.nil
+import io.quartz.nil
 
 val QuartzGrammar<*>.schemeT: Parser<SchemeT> get() = optional(oneOrMore(ID) and skip(FAT_ARROW)) and parser { typeT } use {
     SchemeT(t1?.map { GenericT(it.text.name, TypeT.any) } ?: nil, t2)

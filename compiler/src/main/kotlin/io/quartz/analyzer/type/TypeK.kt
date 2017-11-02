@@ -1,6 +1,7 @@
 package io.quartz.analyzer.type
 
 import io.quartz.analyzer.*
+import io.quartz.nil
 import io.quartz.tree.*
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.ast.GenericT
