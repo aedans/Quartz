@@ -37,7 +37,7 @@ fun ExprT.Unit.analyze() = ExprI.InvokeStatic(
 
 fun ExprT.Bool.analyze() = ExprI.Bool(location, boolean).right()
 
-fun ExprT.Id.analyze(env: Env) = monadErrorE().binding {
+fun ExprT.Id.analyze(env: Env) = errMonad().binding {
     val memLoc = env.getVar(name).bind().varLoc
     val it = when (memLoc) {
         is VarLoc.Arg -> ExprI.Arg(location, memLoc.index)
@@ -57,7 +57,7 @@ fun ExprT.Id.analyze(env: Env) = monadErrorE().binding {
     yields(it)
 }.ev()
 
-fun ExprT.Apply.analyze(env: Env, p: Package) = monadErrorE().binding {
+fun ExprT.Apply.analyze(env: Env, p: Package) = errMonad().binding {
     val (_, _) = infer(env).bind()
     val (_, expr1TypeK) = expr1.infer(env).bind()
     val arrowK = expr1TypeK.arrow
@@ -75,7 +75,7 @@ fun ExprT.Apply.analyze(env: Env, p: Package) = monadErrorE().binding {
     yields(it)
 }.ev()
 
-fun ExprT.If.analyze(env: Env, p: Package) = monadErrorE().binding {
+fun ExprT.If.analyze(env: Env, p: Package) = errMonad().binding {
     val conditionI = condition.analyze(env, p).bind()
     val expr1I = expr1.analyze(env, p).bind()
     val expr2I = expr2.analyze(env, p).bind()
@@ -83,7 +83,7 @@ fun ExprT.If.analyze(env: Env, p: Package) = monadErrorE().binding {
     yields(it)
 }.ev()
 
-fun ExprT.Lambda.analyze(env: Env, p: Package) = monadErrorE().binding {
+fun ExprT.Lambda.analyze(env: Env, p: Package) = errMonad().binding {
     val (s1, typeK) = infer(env).bind()
     val argTypeK = typeK.arrow.t1
     val returnTypeK = typeK.arrow.t2

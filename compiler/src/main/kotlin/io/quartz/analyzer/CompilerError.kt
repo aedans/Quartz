@@ -21,4 +21,4 @@ infix fun CompilerError.and(e: CompilerError) = CompilerError("$message and ${e.
 
 typealias Err<T> = Either<CompilerError, T>
 
-fun monadErrorE() = Either.monadError<CompilerError>()
+fun errMonad() = Either.monadError<CompilerError>()

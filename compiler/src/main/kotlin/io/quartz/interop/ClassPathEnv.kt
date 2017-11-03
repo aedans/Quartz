@@ -13,14 +13,14 @@ data class ClassPathEnv(private val cp: ClassPath) : Env {
     override fun getVar(name: QualifiedName) = cp.getVar(name)
 }
 
-fun ClassPath.getType(name: QualifiedName) = monadErrorE().binding {
+fun ClassPath.getType(name: QualifiedName) = errMonad().binding {
     val scheme = getTypeScheme(name).bind()
     yields(TypeInfo(scheme))
 }.ev()
 
 fun ClassPath.getTypeScheme(name: QualifiedName) = getClass(name).map { it.typeK.scheme }
 
-fun ClassPath.getVar(name: QualifiedName) = monadErrorE().binding {
+fun ClassPath.getVar(name: QualifiedName) = errMonad().binding {
     val scheme = getVarScheme(name).bind()
     val varLoc = getVarLoc(name).bind()
     yields(VarInfo(scheme, varLoc))

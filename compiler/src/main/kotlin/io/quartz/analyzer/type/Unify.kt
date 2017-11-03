@@ -2,7 +2,7 @@ package io.quartz.analyzer.type
 
 import io.quartz.analyzer.CompilerError
 import io.quartz.analyzer.Err
-import io.quartz.analyzer.monadErrorE
+import io.quartz.analyzer.errMonad
 import kategory.binding
 import kategory.ev
 import kategory.left
@@ -13,7 +13,7 @@ class InfiniteBind(tVar: TypeK.Var, type: TypeK) : CompilerError("Infinite type 
 
 /** Unifies two types if possible, returning a substitution that, when applied to both types, yields the same type */
 fun unify(t1: TypeK, t2: TypeK): Err<Subst> = when {
-    t1 is TypeK.Apply && t2 is TypeK.Apply -> monadErrorE().binding {
+    t1 is TypeK.Apply && t2 is TypeK.Apply -> errMonad().binding {
         val s1 = unify(t1.t1, t2.t1).bind()
         val s2 = unify(apply(t1.t2, s1), apply(t2.t2, s1)).bind()
         yields(s2 compose s1)

@@ -3,7 +3,7 @@ package io.quartz.cli
 import com.xenomachina.argparser.ShowHelpException
 import io.quartz.analyzer.analyze
 import io.quartz.analyzer.import
-import io.quartz.analyzer.monadErrorE
+import io.quartz.analyzer.errMonad
 import io.quartz.foldMap
 import io.quartz.generator.asm.ProgramGenerator
 import io.quartz.generator.generate
@@ -30,7 +30,7 @@ object Cli {
                         .writeBytes(it.cw.toByteArray())
             }
 
-            val ir = monadErrorE().binding {
+            val ir = errMonad().binding {
                 val globalEnv = ClassPathEnv(options.cp.classPath())
                         .withSource(options.sp, pg).bind()
 

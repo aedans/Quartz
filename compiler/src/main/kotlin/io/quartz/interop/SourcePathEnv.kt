@@ -10,11 +10,11 @@ import kategory.binding
 import kategory.ev
 import java.io.File
 
-fun Env.withSource(files: List<File>, pg: ProgramGenerator) = monadErrorE().binding {
+fun Env.withSource(files: List<File>, pg: ProgramGenerator) = errMonad().binding {
     yields(files.fold(this@withSource) { a, b -> a.withSource(b, pg).bind() })
 }.ev()
 
-fun Env.withSource(file: File, pg: ProgramGenerator): Err<Env> = monadErrorE().binding {
+fun Env.withSource(file: File, pg: ProgramGenerator): Err<Env> = errMonad().binding {
     val it = if (!file.isDirectory) {
         val grammar = QuartzGrammar.create(file.name) { fileT }
         val fileT = grammar.parseToEnd(file.reader())
