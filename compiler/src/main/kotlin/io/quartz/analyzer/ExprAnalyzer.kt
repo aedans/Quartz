@@ -14,12 +14,15 @@ import io.quartz.tree.ir.typeI
 import io.quartz.tree.name
 import io.quartz.tree.qualifiedLocal
 import io.quartz.tree.unqualified
-import kategory.*
+import kategory.binding
+import kategory.ev
+import kategory.right
+import kategory.toT
 
 fun ExprT.analyze(env: Env, p: Package): Err<ExprI> = when (this) {
     is ExprT.Unit -> analyze()
     is ExprT.Bool -> analyze()
-    is ExprT.Cast -> TODO()
+    is ExprT.Cast -> analyze(env, p)
     is ExprT.Id -> analyze(env)
     is ExprT.Apply -> analyze(env, p)
     is ExprT.If -> analyze(env, p)
@@ -36,6 +39,8 @@ fun ExprT.Unit.analyze() = ExprI.InvokeStatic(
 ).right()
 
 fun ExprT.Bool.analyze() = ExprI.Bool(location, boolean).right()
+
+fun ExprT.Cast.analyze(env: Env, p: Package) = expr.analyze(env, p)
 
 fun ExprT.Id.analyze(env: Env) = errMonad().binding {
     val memLoc = env.getVar(name).bind().varLoc
