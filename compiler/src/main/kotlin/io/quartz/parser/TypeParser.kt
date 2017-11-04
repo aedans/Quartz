@@ -3,15 +3,24 @@ package io.quartz.parser
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
+import io.quartz.nil
 import io.quartz.tree.ast.GenericT
 import io.quartz.tree.ast.SchemeT
 import io.quartz.tree.ast.TypeT
 import io.quartz.tree.ast.apply
 import io.quartz.tree.name
-import io.quartz.nil
+import org.funktionale.collections.prependTo
 
-val QuartzGrammar<*>.schemeT: Parser<SchemeT> get() = optional(oneOrMore(ID) and skip(FAT_ARROW)) and parser { typeT } use {
-    SchemeT(t1?.map { GenericT(it.text.name, TypeT.any) } ?: nil, t2)
+val QuartzGrammar<*>.schemeT: Parser<SchemeT> get() = optional(oneOrMore(generic) and skip(FAT_ARROW)) and parser { typeT } use {
+    SchemeT(t1 ?: nil, t2)
+}
+
+val QuartzGrammar<*>.generics: Parser<List<GenericT>> get() = (parser { generic } and parser { generics } use {
+    t1.prependTo(t2)
+}) or FAT_ARROW use { nil }
+
+val QuartzGrammar<*>.generic: Parser<GenericT> get() = ID and optional(skip(EXTENDS) and parser { typeT }) use {
+    GenericT(t1.text.name, t2 ?: TypeT.any)
 }
 
 val QuartzGrammar<*>.typeT: Parser<TypeT> get() = parser { functionTypeT }
