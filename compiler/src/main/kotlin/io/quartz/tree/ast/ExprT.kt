@@ -59,12 +59,4 @@ sealed class ExprT : Locatable {
     ) : ExprT() {
         override fun toString() = "\\$arg = $expr"
     }
-
-    data class Dot(
-            override val location: Location,
-            val expr: ExprT,
-            val name: Name
-    ) : ExprT() {
-        override fun toString() = "$expr.$name"
-    }
 }

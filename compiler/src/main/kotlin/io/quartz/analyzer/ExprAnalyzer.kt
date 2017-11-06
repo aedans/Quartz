@@ -27,7 +27,6 @@ fun ExprT.analyze(env: Env, p: Package): Err<ExprI> = when (this) {
     is ExprT.Apply -> analyze(env, p)
     is ExprT.If -> analyze(env, p)
     is ExprT.Lambda -> analyze(env, p)
-    is ExprT.Dot -> analyze(env, p)
 }
 
 fun ExprT.Unit.analyze() = ExprI.InvokeStatic(
@@ -109,15 +108,5 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = errMonad().binding {
     val invokeDecl = DeclI.Method("invoke".name, location, p, invokeScheme, exprI)
     val obj = DeclI.Class.Object(genericsK.map { it.genericI }, listOf(typeK.typeI), listOf(invokeDecl))
     val it = ExprI.AnonymousObject(location, p, obj, closuresI)
-    yields(it)
-}.ev()
-
-fun ExprT.Dot.analyze(env: Env, p: Package) = errMonad().binding {
-    val (_, type) = infer(env).bind()
-    val (_, exprType) = expr.infer(env).bind()
-    val exprI = expr.analyze(env, p).bind()
-    val exprTypeI = exprType.typeI
-    val typeI = type.typeI
-    val it = ExprI.Invoke(location, exprI, exprTypeI, typeI, name.varGetterName(), emptyList(), ExprI.Invoke.Dispatch.INTERFACE)
     yields(it)
 }.ev()

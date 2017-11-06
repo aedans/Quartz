@@ -32,12 +32,8 @@ val QuartzGrammar<*>.castExprT: Parser<ExprT> get() = parser { applyExprT } and
     t2?.run { ExprT.Cast(t1.location, t1, this) } ?: t1
 }
 
-val QuartzGrammar<*>.applyExprT: Parser<ExprT> get() = parser { dotExprT } and zeroOrMore(parser { dotExprT }) use {
+val QuartzGrammar<*>.applyExprT: Parser<ExprT> get() = parser { atomicExprT } and zeroOrMore(parser { atomicExprT }) use {
     t2.fold(t1) { a, b -> ExprT.Apply(b.location, a, b) }
-}
-
-val QuartzGrammar<*>.dotExprT: Parser<ExprT> get() = parser { atomicExprT } and optional(skip(DOT) and parser { ID }) use {
-    t2?.run { ExprT.Dot(location(this@dotExprT), t1, text.name) } ?: t1
 }
 
 val QuartzGrammar<*>.atomicExprT: Parser<ExprT> get() = parser { unitExprT } or

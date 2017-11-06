@@ -42,7 +42,6 @@ fun ClassPath.getVarLoc(name: QualifiedName) = getClass(name.varClassName())
 
 val Class<*>.schemeK: SchemeK get() = run {
     val generics = typeParameters.map { GenericK(it.name.name, TypeK.any) }
-    val localEnv = emptyEnv // TODO
-    val typeK = TypeK.Const(qualifiedName, localEnv)
+    val typeK = TypeK.Const(qualifiedName)
     SchemeK(generics, typeK)
 }

@@ -24,7 +24,7 @@ data class SchemeK(val generics: List<GenericK>, val type: TypeK) {
 
 /** Sealed class representing all types for compiler analysis */
 sealed class TypeK {
-    data class Const(val name: QualifiedName, val env: Env) : TypeK() {
+    data class Const(val name: QualifiedName) : TypeK() {
         override fun toString() = name.toString()
     }
 

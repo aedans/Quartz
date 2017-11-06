@@ -18,8 +18,8 @@ fun DeclT.analyze(env: Env, p: Package, local: Boolean): Tuple2<Env, Err<DeclI>>
 }
 
 fun DeclT.Class.analyze(env: Env, p: Package, local: Boolean) = run {
-    val (localEnv, declsI) = decls.foldMap(env) { env, decl -> decl.analyze(env, p, true) }
-    val typeInfo = TypeInfo(schemeK(p, localEnv))
+    val (_, declsI) = decls.foldMap(env) { env, decl -> decl.analyze(env, p, true) }
+    val typeInfo = TypeInfo(schemeK(p))
     val qualifiedName = if (local) name.qualifiedLocal else name.qualify(p)
     val envP = env.withType(qualifiedName, typeInfo.right())
     envP toT errMonad().binding {
@@ -43,7 +43,7 @@ fun DeclT.Value.analyze(env: Env, p: Package, local: Boolean) = run {
     }.ev()
 }
 
-fun DeclT.Class.schemeK(qualifier: Qualifier, localEnv: Env) = SchemeK(nil, TypeK.Const(name.qualify(qualifier), localEnv))
+fun DeclT.Class.schemeK(qualifier: Qualifier) = SchemeK(nil, TypeK.Const(name.qualify(qualifier)))
 
 fun DeclT.Value.schemeK(env: Env) = errMonad().binding {
     val schemeK = schemeT?.schemeK(env)?.bind()
