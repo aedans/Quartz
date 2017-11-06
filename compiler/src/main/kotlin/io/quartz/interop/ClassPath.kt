@@ -20,4 +20,6 @@ fun Array<URL>.classPath() = object : ClassPath {
     } catch (_: ClassNotFoundException) {
         UnknownClass(name).left()
     }
+
+    override fun toString() = this@classPath.contentDeepToString()
 }

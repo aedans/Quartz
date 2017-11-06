@@ -28,7 +28,9 @@ fun ExprT.infer(env: Env): Infer = when (this) {
     }.ev()
     is ExprT.Lambda -> errMonad().binding {
         val argVar = TypeK.Var(fresh())
-        val envP = env.withVar(arg.qualifiedLocal, VarInfo(argVar.scheme, VarLoc.Arg(0)).right())
+        val envP = env
+                .withVar(arg.qualifiedLocal, VarInfo(argVar.scheme, VarLoc.Arg(0)).right())
+                .withType(argVar.name.qualifiedLocal, TypeInfo(argVar.scheme).right())
         val (s1, exprType) = expr.infer(envP).bind()
         yields(s1 toT TypeK.Arrow(apply(argVar, s1), exprType).type)
     }.ev()
@@ -47,10 +49,11 @@ fun ExprT.infer(env: Env): Infer = when (this) {
     is ExprT.Dot -> errMonad().binding {
         val (s1, exprType) = expr.infer(env).bind()
         val it = when (exprType) {
-            is TypeK.Const -> TODO()
+            is TypeK.Const -> exprType.env.getVar(name.qualifiedLocal)
+                    .map { it.scheme.instantiate() }
             is TypeK.Var -> TODO()
             is TypeK.Apply -> TODO()
-        }
+        }.bind()
         yields(s1 toT it)
     }.ev()
 }

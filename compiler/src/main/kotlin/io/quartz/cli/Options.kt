@@ -25,7 +25,7 @@ class Options(args: Array<out String>) {
             .default(listOf(File(".")))
 
     val out by parser.storing(
-            "-o", "--output",
+            "-o", "--out",
             help = "specify where to place generated class files"
     ) { File(this) }
             .default(File("."))

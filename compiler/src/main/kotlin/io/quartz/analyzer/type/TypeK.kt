@@ -1,13 +1,15 @@
 package io.quartz.analyzer.type
 
 import io.quartz.analyzer.*
+import io.quartz.interop.schemeK
 import io.quartz.nil
-import io.quartz.tree.*
-import io.quartz.tree.ast.DeclT
+import io.quartz.tree.Name
+import io.quartz.tree.QualifiedName
 import io.quartz.tree.ast.GenericT
 import io.quartz.tree.ast.SchemeT
 import io.quartz.tree.ast.TypeT
 import io.quartz.tree.ir.*
+import io.quartz.tree.qualifiedLocal
 import kategory.*
 
 /** Class representing a generic for compiler analysis */
@@ -22,7 +24,7 @@ data class SchemeK(val generics: List<GenericK>, val type: TypeK) {
 
 /** Sealed class representing all types for compiler analysis */
 sealed class TypeK {
-    data class Const(val name: QualifiedName) : TypeK() {
+    data class Const(val name: QualifiedName, val env: Env) : TypeK() {
         override fun toString() = name.toString()
     }
 
@@ -41,10 +43,10 @@ sealed class TypeK {
     }
 
     companion object {
-        val bool = java.lang.Boolean::class.java.typeK
-        val any = java.lang.Object::class.java.typeK
-        val unit = quartz.lang.Unit::class.java.typeK
-        val function = quartz.lang.Function::class.java.typeK
+        val bool = java.lang.Boolean::class.java.schemeK.type
+        val any = java.lang.Object::class.java.schemeK.type
+        val unit = quartz.lang.Unit::class.java.schemeK.type
+        val function = quartz.lang.Function::class.java.schemeK.type
     }
 }
 
@@ -58,7 +60,7 @@ val TypeK.arrow get() = run {
 
 val TypeK.scheme get() = SchemeK(nil, this)
 
-/** Generalizes a type to a type scheme by pulling all type variables into generics */
+/** Generalizes a type to a returnType scheme by pulling all returnType variables into generics */
 fun TypeK.generalize(env: Env, subst: Subst) = SchemeK(
         freeTypeVariables.filterNot { name ->
             env.getType(name.qualifiedLocal).bimap(
@@ -81,11 +83,16 @@ fun SchemeK.instantiate(): TypeK = run {
 fun GenericT.genericK(env: Env) = type.typeK(env).map { GenericK(name, it) }
 
 fun SchemeT.schemeK(env: Env) = errMonad().binding {
-    val localEnv = generics.fold(env) { a, b ->
-        a.withType(b.name.qualifiedLocal, TypeInfo(TypeK.Var(b.name).scheme).right())
-    }
+    val localEnv = generics.localEnv(env)
     yields(SchemeK(generics.map { it.genericK(localEnv).bind() }, type.typeK(localEnv).bind()))
 }.ev()
+
+fun List<GenericT>.localEnv(env: Env) = fold(env) { envP, generic ->
+    envP.withType(
+            generic.name.qualifiedLocal,
+            TypeInfo(TypeK.Var(generic.name).scheme).right()
+    )
+}
 
 fun TypeT.typeK(env: Env): Err<TypeK> = when (this) {
     is TypeT.Id -> env.getType(name.qualifiedLocal).map { it.scheme.instantiate() }
@@ -103,9 +110,3 @@ val TypeK.typeI: TypeI get() = when (this) {
     is TypeK.Var -> GenericTypeI(name)
     is TypeK.Apply -> t1.typeI.apply(t2.typeI)
 }
-
-fun DeclT.Class.schemeK(qualifier: Qualifier) = SchemeK(nil, name.qualify(qualifier).typeK)
-
-val QualifiedName.typeK get() = TypeK.Const(this)
-
-val Class<*>.typeK get() = qualifiedName.typeK

@@ -27,7 +27,7 @@ fun ExprT.analyze(env: Env, p: Package): Err<ExprI> = when (this) {
     is ExprT.Apply -> analyze(env, p)
     is ExprT.If -> analyze(env, p)
     is ExprT.Lambda -> analyze(env, p)
-    is ExprT.Dot -> TODO()
+    is ExprT.Dot -> analyze(env, p)
 }
 
 fun ExprT.Unit.analyze() = ExprI.InvokeStatic(
@@ -92,11 +92,14 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = errMonad().binding {
     val (s1, typeK) = infer(env).bind()
     val argTypeK = typeK.arrow.t1
     val returnTypeK = typeK.arrow.t2
-    val closures = freeVariables.map { GenericK(it.string.name, env.getVar(it).bind().scheme.instantiate()) }
     val typeSchemeK = typeK.generalize(env, s1)
+    val closures = freeVariables.map { GenericK(it.string.name, env.getVar(it).bind().scheme.instantiate()) }
+    val closuresMap = closures.associate { it.name.qualifiedLocal to VarLoc.Field(it.name) }
     val genericsK = typeSchemeK.generics + closures.flatMap { it.type.generalize(env, s1).generics }
-    val localEnv = closures.map { (a, _) -> a.qualifiedLocal to VarLoc.Field(a) }
-            .fold(env) { e, (a, b) -> e.withVarLoc(a, b) }
+    val localEnv = env
+            .mapVars { name, err ->
+                err.map { closuresMap[name]?.let { varLoc -> it.copy(varLoc = varLoc) } ?: it }
+            }
             .withVar(arg.qualifiedLocal, VarInfo(argTypeK.scheme, VarLoc.Arg(0)).right())
     val closuresI = closures.map { (a, b) ->
         ExprI.LocalField(Location.unknown, a, b.typeI).let { it toT it.type }
@@ -106,5 +109,15 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = errMonad().binding {
     val invokeDecl = DeclI.Method("invoke".name, location, p, invokeScheme, exprI)
     val obj = DeclI.Class.Object(genericsK.map { it.genericI }, listOf(typeK.typeI), listOf(invokeDecl))
     val it = ExprI.AnonymousObject(location, p, obj, closuresI)
+    yields(it)
+}.ev()
+
+fun ExprT.Dot.analyze(env: Env, p: Package) = errMonad().binding {
+    val (_, type) = infer(env).bind()
+    val (_, exprType) = expr.infer(env).bind()
+    val exprI = expr.analyze(env, p).bind()
+    val exprTypeI = exprType.typeI
+    val typeI = type.typeI
+    val it = ExprI.Invoke(location, exprI, exprTypeI, typeI, name.varGetterName(), emptyList(), ExprI.Invoke.Dispatch.INTERFACE)
     yields(it)
 }.ev()

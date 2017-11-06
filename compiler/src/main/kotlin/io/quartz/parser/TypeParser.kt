@@ -19,9 +19,11 @@ val QuartzGrammar<*>.generics: Parser<List<GenericT>> get() = (parser { generic 
     t1.prependTo(t2)
 }) or FAT_ARROW use { nil }
 
-val QuartzGrammar<*>.generic: Parser<GenericT> get() = ID and optional(skip(EXTENDS) and parser { typeT }) use {
-    GenericT(t1.text.name, t2 ?: TypeT.any)
-}
+val QuartzGrammar<*>.generic: Parser<GenericT> get() = (ID use {
+    GenericT(text.name, TypeT.any)
+}) or (skip(O_PAREN) and ID and skip(EXTENDS) and parser { typeT } and skip(C_PAREN) use {
+    GenericT(t1.text.name, t2)
+})
 
 val QuartzGrammar<*>.typeT: Parser<TypeT> get() = parser { functionTypeT }
 

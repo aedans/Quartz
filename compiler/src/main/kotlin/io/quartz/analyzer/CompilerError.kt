@@ -11,7 +11,7 @@ open class CompilerError(message: String) : Throwable(message) {
     override fun toString() = "CompilerError(\"$message\")"
 }
 
-class UnknownVar(name: QualifiedName) : CompilerError("could not find var $name")
+class UnknownVariable(name: QualifiedName) : CompilerError("could not find variable $name")
 
 class UnknownType(name: QualifiedName) : CompilerError("could not find type $name")
 

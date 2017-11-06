@@ -15,13 +15,13 @@ fun ImportT.import(env: Env) = when (this) {
 fun ImportT.Star.import(env: Env) = env
         .mapVars { name, value ->
             when (value) {
-                is Either.Left -> env.getVar(QualifiedName(qualifier, name.string))
+                is Either.Left -> env.getVar(QualifiedName(qualifier, name.string)).bimap({ value.a }, { it })
                 else -> value
             }
         }
         .mapTypes { name, value ->
             when (value) {
-                is Either.Left -> env.getType(QualifiedName(qualifier, name.string))
+                is Either.Left -> env.getType(QualifiedName(qualifier, name.string)).bimap({ value.a }, { it })
                 else -> value
             }
         }

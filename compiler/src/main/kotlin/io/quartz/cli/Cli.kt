@@ -1,9 +1,7 @@
 package io.quartz.cli
 
 import com.xenomachina.argparser.ShowHelpException
-import io.quartz.analyzer.analyze
-import io.quartz.analyzer.import
-import io.quartz.analyzer.errMonad
+import io.quartz.analyzer.*
 import io.quartz.foldMap
 import io.quartz.generator.asm.ProgramGenerator
 import io.quartz.generator.generate
@@ -31,7 +29,7 @@ object Cli {
             }
 
             val ir = errMonad().binding {
-                val globalEnv = ClassPathEnv(options.cp.classPath())
+                val globalEnv = (emptyEnv compose ClassPathEnv(options.cp.classPath()))
                         .withSource(options.sp, pg).bind()
 
                 val it = options.src.flatMap {
@@ -39,7 +37,7 @@ object Cli {
                     val fileT = grammar.parse(it.reader())
                     val localEnv = globalEnv.import(fileT.imports)
                     fileT.decls
-                            .foldMap(localEnv) { env, decl -> decl.analyze(env, fileT.`package`) }.b
+                            .foldMap(localEnv) { env, decl -> decl.analyze(env, fileT.`package`, false) }.b
                             .map { it.bind() }
                 }
                 yields(it)

@@ -40,7 +40,7 @@ val String.kind get() = KindGrammar.parseToEnd(this)
 object KindGrammar : Grammar<Kind>() {
     val ws by token("\\s+", ignore = true)
     val star by token("\\*")
-    val arrow by token("\\-\\>")
+    val arrow by token("->")
     val oParen by token("\\(")
     val cParen by token("\\)")
 

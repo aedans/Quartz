@@ -1,8 +1,8 @@
 package io.quartz.tree.ast
 
+import io.quartz.nil
 import io.quartz.tree.Name
 import io.quartz.tree.name
-import io.quartz.nil
 
 /** Class representing all AST generics */
 data class GenericT(val name: Name, val type: TypeT)

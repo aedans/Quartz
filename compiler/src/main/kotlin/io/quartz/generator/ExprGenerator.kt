@@ -4,13 +4,16 @@ import io.quartz.generator.asm.MethodGenerator
 import io.quartz.generator.asm.method
 import io.quartz.generator.asm.type
 import io.quartz.nil
-import io.quartz.tree.*
+import io.quartz.tree.Location
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.ExprI
 import io.quartz.tree.ir.ExprI.Invoke.Dispatch.INTERFACE
 import io.quartz.tree.ir.ExprI.Invoke.Dispatch.VIRTUAL
 import io.quartz.tree.ir.VoidTypeI
 import io.quartz.tree.ir.typeI
+import io.quartz.tree.name
+import io.quartz.tree.qualifiedName
+import io.quartz.tree.qualify
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.commons.GeneratorAdapter
@@ -75,7 +78,7 @@ fun ExprI.Invoke.push(mg: MethodGenerator) {
         VIRTUAL -> mg.ga::invokeVirtual
     })(
             owner.type(),
-            method(type, name, args.map { it.b })
+            method(returnType, name, args.map { it.b })
     )
 }
 

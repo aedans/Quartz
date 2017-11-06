@@ -33,7 +33,7 @@ sealed class ExprI : Locatable {
             override val location: Location,
             val expr: ExprI,
             val owner: TypeI,
-            val type: TypeI,
+            val returnType: TypeI,
             val name: Name,
             val args: List<Tuple2<ExprI, TypeI>>,
             val dispatch: Dispatch

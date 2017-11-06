@@ -20,7 +20,7 @@ fun Env.withSource(file: File, pg: ProgramGenerator): Err<Env> = errMonad().bind
         val fileT = grammar.parseToEnd(file.reader())
         val localEnv = import(fileT.imports)
         fileT.decls.fold(localEnv) { env, decl ->
-            decl.analyze(env, fileT.`package`).let {
+            decl.analyze(env, fileT.`package`, false).let {
                 it.b.map { it.generate(pg) }
                 it.a
             }
