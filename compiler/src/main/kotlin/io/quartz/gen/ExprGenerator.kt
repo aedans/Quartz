@@ -1,8 +1,8 @@
-package io.quartz.generator
+package io.quartz.gen
 
-import io.quartz.generator.asm.MethodGenerator
-import io.quartz.generator.asm.method
-import io.quartz.generator.asm.type
+import io.quartz.gen.asm.MethodGenerator
+import io.quartz.gen.asm.method
+import io.quartz.gen.asm.type
 import io.quartz.nil
 import io.quartz.tree.Location
 import io.quartz.tree.ir.DeclI

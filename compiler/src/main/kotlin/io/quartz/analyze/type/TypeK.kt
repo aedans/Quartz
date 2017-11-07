@@ -1,6 +1,6 @@
-package io.quartz.analyzer.type
+package io.quartz.analyze.type
 
-import io.quartz.analyzer.*
+import io.quartz.analyze.*
 import io.quartz.interop.schemeK
 import io.quartz.nil
 import io.quartz.tree.Name
@@ -50,13 +50,11 @@ sealed class TypeK {
     }
 }
 
-val TypeK.arrow get() = run {
-    this as TypeK.Apply
-    t1 as TypeK.Apply
-    if (t1.t1 != TypeK.function)
-        throw Exception("Expected function, found $this")
-    TypeK.Arrow(t1.t2, t2)
-}
+val TypeK.arrow get() =
+    if (this is TypeK.Apply && t1 is TypeK.Apply && t1.t1 == TypeK.function)
+        TypeK.Arrow(t1.t2, t2).right()
+    else
+        CompilerError("Expected function, found $this").left()
 
 val TypeK.scheme get() = SchemeK(nil, this)
 

@@ -1,30 +1,33 @@
-package io.quartz.analyzer
+package io.quartz.analyze
 
-import io.quartz.analyzer.type.*
+import io.quartz.analyze.type.*
 import io.quartz.foldMap
 import io.quartz.interop.varGetterName
 import io.quartz.nil
+import io.quartz.singletonList
 import io.quartz.tree.Qualifier
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.ast.Package
 import io.quartz.tree.ir.DeclI
+import io.quartz.tree.name
 import io.quartz.tree.qualifiedLocal
 import io.quartz.tree.qualify
 import kategory.*
 
-fun DeclT.analyze(env: Env, p: Package, local: Boolean): Tuple2<Env, Err<DeclI>> = when (this) {
+fun DeclT.analyze(env: Env, p: Package, local: Boolean): Tuple2<Env, Err<List<DeclI>>> = when (this) {
     is DeclT.Class -> analyze(env, p, local)
     is DeclT.Value -> analyze(env, p, local)
 }
 
 fun DeclT.Class.analyze(env: Env, p: Package, local: Boolean) = run {
-    val (_, declsI) = decls.foldMap(env) { env, decl -> decl.analyze(env, p, true) }
+    val (_, declsIE) = decls.foldMap(env) { env, decl -> decl.analyze(env, p, true) }
     val typeInfo = TypeInfo(schemeK(p))
     val qualifiedName = if (local) name.qualifiedLocal else name.qualify(p)
     val envP = env.withType(qualifiedName, typeInfo.right())
     envP toT errMonad().binding {
-        val obj = DeclI.Class.Object(nil, nil, declsI.map { it.bind() })
-        yields(DeclI.Class(name, location, p, null, obj))
+        val declsI = declsIE.flatMap { it.bind() }
+        val obj = DeclI.Class.Object(nil, nil, declsI)
+        yields(DeclI.Class(name, location, p, null, obj).singletonList())
     }.ev()
 }
 
@@ -36,10 +39,15 @@ fun DeclT.Value.analyze(env: Env, p: Package, local: Boolean) = run {
     val nEnv = localEnv.withVar(qualifiedName, varInfo)
     nEnv toT errMonad().binding {
         val name = name.varGetterName()
-        val schemeI = schemeKE.bind().schemeI
+        val schemeK = schemeKE.bind()
+        val schemeI = schemeK.schemeI
         val scheme = DeclI.Method.Scheme(schemeI.generics, nil, schemeI.type)
         val exprI = expr.analyze(nEnv, p).bind()
-        yields(DeclI.Method(name, location, p, scheme, exprI))
+        val method = DeclI.Method(name, location, p, scheme, exprI)
+        val decls = method.singletonList()
+        val it = if (local) decls else
+            DeclI.Class("$$name".name, location, p, null, DeclI.Class.Object(nil, nil, decls)).singletonList()
+        yields(it)
     }.ev()
 }
 

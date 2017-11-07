@@ -1,7 +1,7 @@
 package io.quartz.interop
 
-import io.quartz.analyzer.Err
-import io.quartz.analyzer.UnknownClass
+import io.quartz.analyze.Err
+import io.quartz.analyze.UnknownClass
 import io.quartz.tree.QualifiedName
 import kategory.left
 import kategory.right

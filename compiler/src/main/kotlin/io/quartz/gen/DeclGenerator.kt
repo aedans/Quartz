@@ -1,7 +1,6 @@
-package io.quartz.generator
+package io.quartz.gen
 
-import io.quartz.generator.asm.*
-import io.quartz.interop.varClassName
+import io.quartz.gen.asm.*
 import io.quartz.nil
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.TypeI
@@ -14,9 +13,11 @@ import org.funktionale.collections.prependTo
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
+fun Iterable<DeclI>.generate(pg: ProgramGenerator) = forEach { it.generate(pg) }
+
 fun DeclI.generate(pg: ProgramGenerator) = when (this) {
     is DeclI.Class -> generate(pg)
-    is DeclI.Method -> generate(pg)
+    is DeclI.Method,
     is DeclI.Field -> throw Exception()
 }
 
@@ -44,20 +45,6 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
         }
         pg.out(this)
     }
-}
-
-fun DeclI.Method.generate(pg: ProgramGenerator) {
-    DeclI.Class(
-            name.varClassName(),
-            location,
-            `package`,
-            null,
-            DeclI.Class.Object(
-                    nil,
-                    nil,
-                    listOf(this)
-            )
-    ).generate(pg)
 }
 
 fun DeclI.generate(cg: ClassGenerator) = when (this) {

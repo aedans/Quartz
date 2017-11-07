@@ -1,6 +1,6 @@
-package io.quartz.analyzer
+package io.quartz.analyze
 
-import io.quartz.analyzer.type.*
+import io.quartz.analyze.type.*
 import io.quartz.interop.varClassName
 import io.quartz.interop.varGetterName
 import io.quartz.nil
@@ -64,7 +64,7 @@ fun ExprT.Id.analyze(env: Env) = errMonad().binding {
 fun ExprT.Apply.analyze(env: Env, p: Package) = errMonad().binding {
     val (_, _) = infer(env).bind()
     val (_, expr1TypeK) = expr1.infer(env).bind()
-    val arrowK = expr1TypeK.arrow
+    val arrowK = expr1TypeK.arrow.bind()
     val expr1I = expr1.analyze(env, p).bind()
     val expr2I = expr2.analyze(env, p).bind()
     val it = ExprI.Invoke(
@@ -89,8 +89,9 @@ fun ExprT.If.analyze(env: Env, p: Package) = errMonad().binding {
 
 fun ExprT.Lambda.analyze(env: Env, p: Package) = errMonad().binding {
     val (s1, typeK) = infer(env).bind()
-    val argTypeK = typeK.arrow.t1
-    val returnTypeK = typeK.arrow.t2
+    val arrow = typeK.arrow.bind()
+    val argTypeK = arrow.t1
+    val returnTypeK = arrow.t2
     val typeSchemeK = typeK.generalize(env, s1)
     val closures = freeVariables.map { GenericK(it.string.name, env.getVar(it).bind().scheme.instantiate()) }
     val closuresMap = closures.associate { it.name.qualifiedLocal to VarLoc.Field(it.name) }

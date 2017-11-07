@@ -1,8 +1,8 @@
-package io.quartz.analyzer.type
+package io.quartz.analyze.type
 
-import io.quartz.analyzer.CompilerError
-import io.quartz.analyzer.Err
-import io.quartz.analyzer.errMonad
+import io.quartz.analyze.CompilerError
+import io.quartz.analyze.Err
+import io.quartz.analyze.errMonad
 import kategory.binding
 import kategory.ev
 import kategory.left

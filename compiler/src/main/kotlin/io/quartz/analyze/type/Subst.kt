@@ -1,8 +1,8 @@
-package io.quartz.analyzer.type
+package io.quartz.analyze.type
 
-import io.quartz.analyzer.Env
-import io.quartz.analyzer.TypeInfo
-import io.quartz.analyzer.mapTypes
+import io.quartz.analyze.Env
+import io.quartz.analyze.TypeInfo
+import io.quartz.analyze.mapTypes
 import io.quartz.tree.Name
 
 /** A substitution that maps type variables to types */

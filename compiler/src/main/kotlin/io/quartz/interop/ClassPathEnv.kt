@@ -1,9 +1,9 @@
 package io.quartz.interop
 
-import io.quartz.analyzer.*
-import io.quartz.analyzer.type.GenericK
-import io.quartz.analyzer.type.SchemeK
-import io.quartz.analyzer.type.TypeK
+import io.quartz.analyze.*
+import io.quartz.analyze.type.GenericK
+import io.quartz.analyze.type.SchemeK
+import io.quartz.analyze.type.TypeK
 import io.quartz.tree.QualifiedName
 import io.quartz.tree.name
 import io.quartz.tree.qualifiedName

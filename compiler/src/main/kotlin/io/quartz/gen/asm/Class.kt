@@ -1,4 +1,4 @@
-package io.quartz.generator.asm
+package io.quartz.gen.asm
 
 import io.quartz.tree.LocatableName
 import org.objectweb.asm.ClassWriter

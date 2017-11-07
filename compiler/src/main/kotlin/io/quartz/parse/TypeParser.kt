@@ -1,4 +1,4 @@
-package io.quartz.parser
+package io.quartz.parse
 
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.parser

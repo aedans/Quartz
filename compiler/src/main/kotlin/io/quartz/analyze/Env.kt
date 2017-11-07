@@ -1,6 +1,6 @@
-package io.quartz.analyzer
+package io.quartz.analyze
 
-import io.quartz.analyzer.type.SchemeK
+import io.quartz.analyze.type.SchemeK
 import io.quartz.foldString
 import io.quartz.tree.Name
 import io.quartz.tree.QualifiedName

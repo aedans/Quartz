@@ -1,4 +1,4 @@
-package io.quartz.analyzer.type
+package io.quartz.analyze.type
 
 import com.github.h0tk3y.betterParse.combinators.and
 import com.github.h0tk3y.betterParse.combinators.or

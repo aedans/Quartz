@@ -1,6 +1,6 @@
-package io.quartz.analyzer.type
+package io.quartz.analyze.type
 
-import io.quartz.analyzer.*
+import io.quartz.analyze.*
 import io.quartz.tree.ast.ExprT
 import io.quartz.tree.qualifiedLocal
 import kategory.*

@@ -1,4 +1,4 @@
-package io.quartz.analyzer
+package io.quartz.analyze
 
 import io.quartz.tree.QualifiedName
 import io.quartz.tree.ast.ExprT

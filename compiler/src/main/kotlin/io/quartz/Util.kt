@@ -13,3 +13,5 @@ inline fun <A, B, S> Iterable<A>.foldMap(s: S, fn: (S, A) -> Tuple2<S, B>) =
         }
 
 fun Either<*, *>.foldString() = fold({ it.toString() }, { it.toString() })
+
+fun <A> A.singletonList() = listOf(this)

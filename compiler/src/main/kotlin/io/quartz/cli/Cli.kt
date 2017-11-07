@@ -1,15 +1,15 @@
 package io.quartz.cli
 
 import com.xenomachina.argparser.ShowHelpException
-import io.quartz.analyzer.*
+import io.quartz.analyze.*
 import io.quartz.foldMap
-import io.quartz.generator.asm.ProgramGenerator
-import io.quartz.generator.generate
+import io.quartz.gen.asm.ProgramGenerator
+import io.quartz.gen.generate
 import io.quartz.interop.ClassPathEnv
 import io.quartz.interop.classPath
 import io.quartz.interop.withSource
-import io.quartz.parser.QuartzGrammar
-import io.quartz.parser.fileT
+import io.quartz.parse.QuartzGrammar
+import io.quartz.parse.fileT
 import kategory.binding
 import kategory.ev
 import java.io.File
@@ -38,14 +38,14 @@ object Cli {
                     val localEnv = globalEnv.import(fileT.imports)
                     fileT.decls
                             .foldMap(localEnv) { env, decl -> decl.analyze(env, fileT.`package`, false) }.b
-                            .map { it.bind() }
+                            .flatMap { it.bind() }
                 }
                 yields(it)
             }.ev()
 
             ir.bimap(
                     { it.printStackTrace() },
-                    { it.forEach { it.generate(pg) } }
+                    { it.generate(pg) }
             )
         } catch (e: ShowHelpException) {
             val writer = System.out.writer()
