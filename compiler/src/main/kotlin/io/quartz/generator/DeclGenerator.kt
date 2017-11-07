@@ -1,14 +1,14 @@
 package io.quartz.generator
 
 import io.quartz.generator.asm.*
-import io.quartz.interop.capitalizeOrUnderscore
+import io.quartz.interop.varClassName
+import io.quartz.nil
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.ir.VoidTypeI
 import io.quartz.tree.ir.signature
 import io.quartz.tree.locatableName
 import io.quartz.tree.name
-import io.quartz.nil
 import io.quartz.tree.qualify
 import org.funktionale.collections.prependTo
 import org.objectweb.asm.Opcodes
@@ -48,7 +48,7 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
 
 fun DeclI.Method.generate(pg: ProgramGenerator) {
     DeclI.Class(
-            "\$${name.capitalizeOrUnderscore()}".name,
+            name.varClassName(),
             location,
             `package`,
             null,
