@@ -3,27 +3,19 @@ package io.quartz.parse
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
-import io.quartz.nil
-import io.quartz.tree.ast.GenericT
+import io.quartz.tree.ast.ConstraintT
 import io.quartz.tree.ast.SchemeT
 import io.quartz.tree.ast.TypeT
 import io.quartz.tree.ast.apply
 import io.quartz.tree.name
-import org.funktionale.collections.prependTo
 
-val QuartzGrammar<*>.schemeT: Parser<SchemeT> get() = optional(oneOrMore(generic) and skip(FAT_ARROW)) and parser { typeT } use {
-    SchemeT(t1 ?: nil, t2)
+val QuartzGrammar<*>.schemeT: Parser<SchemeT> get() = zeroOrMore(constraint and skip(FAT_ARROW)) and parser { typeT } use {
+    SchemeT(t1, t2)
 }
 
-val QuartzGrammar<*>.generics: Parser<List<GenericT>> get() = (parser { generic } and parser { generics } use {
-    t1.prependTo(t2)
-}) or FAT_ARROW use { nil }
-
-val QuartzGrammar<*>.generic: Parser<GenericT> get() = (ID use {
-    GenericT(text.name, TypeT.any)
-}) or (skip(O_PAREN) and ID and skip(EXTENDS) and parser { typeT } and skip(C_PAREN) use {
-    GenericT(t1.text.name, t2)
-})
+val QuartzGrammar<*>.constraint: Parser<ConstraintT> get() = parser { atomicTypeT } and ID use {
+    ConstraintT(t1, t2.text.name)
+} or (ID use { ConstraintT(TypeT.any, text.name) })
 
 val QuartzGrammar<*>.typeT: Parser<TypeT> get() = parser { functionTypeT }
 

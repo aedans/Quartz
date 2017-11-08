@@ -4,7 +4,7 @@ import io.quartz.analyze.Env
 import io.quartz.analyze.TypeInfo
 import io.quartz.analyze.VarInfo
 import io.quartz.analyze.VarLoc
-import io.quartz.analyze.type.GenericK
+import io.quartz.analyze.type.ConstraintK
 import io.quartz.analyze.type.SchemeK
 import io.quartz.analyze.type.TypeK
 import io.quartz.err.errMonad
@@ -45,7 +45,7 @@ fun ClassPath.getVarLoc(name: QualifiedName) = getClass(name.varClassName())
         .map { VarLoc.Global(name) }
 
 val Class<*>.schemeK: SchemeK get() = run {
-    val generics = typeParameters.map { GenericK(it.name.name, TypeK.any) }
+    val generics = typeParameters.map { ConstraintK(TypeK.any, it.name.name) }
     val typeK = TypeK.Const(qualifiedName)
     SchemeK(generics, typeK)
 }

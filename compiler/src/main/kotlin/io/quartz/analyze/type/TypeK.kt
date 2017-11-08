@@ -11,21 +11,21 @@ import io.quartz.interop.schemeK
 import io.quartz.nil
 import io.quartz.tree.Name
 import io.quartz.tree.QualifiedName
-import io.quartz.tree.ast.GenericT
+import io.quartz.tree.ast.ConstraintT
 import io.quartz.tree.ast.SchemeT
 import io.quartz.tree.ast.TypeT
 import io.quartz.tree.ir.*
 import io.quartz.tree.qualifiedLocal
 import kategory.*
 
-/** Class representing a generic for compiler analysis */
-data class GenericK(val name: Name, val type: TypeK) {
-    override fun toString() = "$name :: $type"
+/** Class representing a constraint for compiler analysis */
+data class ConstraintK(val type: TypeK, val name: Name) {
+    override fun toString() = "($type $name) =>"
 }
 
 /** Class representing a type scheme for compiler analysis */
-data class SchemeK(val generics: List<GenericK>, val type: TypeK) {
-    override fun toString() = "$generics => $type"
+data class SchemeK(val constraints: List<ConstraintK>, val type: TypeK) {
+    override fun toString() = "$constraints $type"
 }
 
 /** Sealed class representing all types for compiler analysis */
@@ -64,34 +64,35 @@ val TypeK.arrow get() =
 
 val TypeK.scheme get() = SchemeK(nil, this)
 
-/** Generalizes a type to a type scheme by pulling all type variables into generics */
+/** Generalizes a type to a type scheme by pulling all type variables into constraints */
 fun TypeK.generalize(env: Env, subst: Subst) = SchemeK(
         freeTypeVariables.filterNot { name ->
             env.getType(name.qualifiedLocal).bimap(
                     { false },
-                    { it.scheme.generics.any { it.name == name } }
+                    { it.scheme.constraints.any { it.name == name } }
             ).fold(::identity, ::identity)
         }.map {
-            GenericK(it, subst[it] ?: TypeK.any)
+            ConstraintK(subst[it] ?: TypeK.any, it)
         },
         this
 )
 
-/** Instantiates a type scheme by replacing all generics with fresh variables */
+/** Instantiates a type scheme by replacing all constraints with fresh variables */
 fun SchemeK.instantiate(): TypeK = run {
-    val namesP = generics.map { TypeK.Var(fresh()) }
-    val namesZ: Subst = (generics.map { it.name } zip namesP).toMap()
+    val namesP = constraints.map { TypeK.Var(fresh()) }
+    val namesZ: Subst = (constraints.map { it.name } zip namesP).toMap()
     apply(type, namesZ)
 }
 
-fun GenericT.genericK(env: Env) = type.typeK(env).map { GenericK(name, it) }
+fun ConstraintT.genericK(env: Env) = type.typeK(env)
+        .map { ConstraintK(it.scheme.instantiate(), name) }
 
 fun SchemeT.schemeK(env: Env) = errMonad().binding {
     val localEnv = generics.localEnv(env)
-    yields(SchemeK(generics.map { it.genericK(localEnv).bind() }, type.typeK(localEnv).bind()))
+    yields(SchemeK(generics.map { it.genericK(env).bind() }, type.typeK(localEnv).bind()))
 }.ev()
 
-fun List<GenericT>.localEnv(env: Env) = fold(env) { envP, generic ->
+fun List<ConstraintT>.localEnv(env: Env) = fold(env) { envP, generic ->
     envP.withType(
             generic.name.qualifiedLocal,
             TypeInfo(TypeK.Var(generic.name).scheme).right()
@@ -109,9 +110,9 @@ fun TypeT.typeK(env: Env): Err<TypeK> = when (this) {
             .qualify()
 }
 
-val GenericK.genericI get() = GenericI(name, type.typeI)
+val ConstraintK.genericI get() = if (type == TypeK.any) GenericI(name, type.typeI) else TODO()
 
-val SchemeK.schemeI get() = SchemeI(generics.map { it.genericI }, type.typeI)
+val SchemeK.schemeI get() = SchemeI(constraints.map { it.genericI }, type.typeI)
 
 val TypeK.typeI: TypeI get() = when (this) {
     is TypeK.Const -> ClassTypeI(name)

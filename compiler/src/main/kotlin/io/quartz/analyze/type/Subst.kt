@@ -18,8 +18,8 @@ infix fun Subst.compose(subst: Subst): Subst = (subst union this).mapValues { ap
 
 /** Replaces all free type variables in a scheme with types from a substitution */
 fun apply(scheme: SchemeK, subst: Subst): SchemeK = run {
-    val substP = scheme.generics.foldRight(subst) { a, b -> b - a.name }
-    SchemeK(scheme.generics, apply(scheme.type, substP))
+    val substP = scheme.constraints.foldRight(subst) { a, b -> b - a.name }
+    SchemeK(scheme.constraints, apply(scheme.type, substP))
 }
 
 /** Replaces all free type variables in a type with types from a substitution */
@@ -38,8 +38,8 @@ fun apply(typeInfo: TypeInfo, subst: Subst): TypeInfo = typeInfo.copy(
         scheme = apply(typeInfo.scheme, subst)
 )
 
-/** Returns all type variables not captured by a scheme's generics */
-val SchemeK.freeTypeVariables: Set<Name> get() = type.freeTypeVariables - generics.map { it.name }.toSet()
+/** Returns all type variables not captured by a scheme's constraints */
+val SchemeK.freeTypeVariables: Set<Name> get() = type.freeTypeVariables - constraints.map { it.name }.toSet()
 
 /** Returns all type variables contained in a type */
 val TypeK.freeTypeVariables: Set<Name> get() = when (this) {
