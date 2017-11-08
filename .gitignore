@@ -4,6 +4,7 @@
 build
 */out
 *.class
+*.jar
 
 # IDE Files
 
@@ -13,3 +14,4 @@ build
 # Misc
 
 tests
+repo

@@ -1,6 +1,6 @@
 allprojects {
     group 'io.quartz'
-    version '0.2.4'
+    version '0.10.0'
 
     repositories {
         mavenCentral()
@@ -16,6 +16,23 @@ allprojects {
 
         dependencies {
             dependencies.classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        }
+    }
+
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+            }
+        }
+
+        repositories {
+            maven {
+                url "$rootDir/repo"
+            }
         }
     }
 }
