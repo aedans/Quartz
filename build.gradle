@@ -1,7 +1,7 @@
-group 'io.quartz'
-version '0.2.3'
-
 allprojects {
+    group 'io.quartz'
+    version '0.2.4'
+
     repositories {
         mavenCentral()
         jcenter()
