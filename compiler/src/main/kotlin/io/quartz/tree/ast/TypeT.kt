@@ -1,6 +1,5 @@
 package io.quartz.tree.ast
 
-import io.quartz.analyze.type.TypeK
 import io.quartz.nil
 import io.quartz.tree.Locatable
 import io.quartz.tree.Location
@@ -11,8 +10,8 @@ import io.quartz.tree.name
 data class ConstraintT(val type: TypeT, val name: Name)
 
 /** Class representing all AST type schemes */
-data class SchemeT(val generics: List<ConstraintT>, val type: TypeT) {
-    override fun toString() = "$generics => $type"
+data class SchemeT(val constraints: List<ConstraintT>, val type: TypeT) {
+    override fun toString() = "$constraints => $type"
 }
 
 /** Sealed class representing all AST types */

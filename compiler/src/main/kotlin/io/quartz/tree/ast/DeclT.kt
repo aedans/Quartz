@@ -24,4 +24,12 @@ sealed class DeclT : Locatable {
     ) : DeclT() {
         override fun toString() = "def $name :: $schemeT = $expr"
     }
+
+    data class Abstract(
+            override val name: Name,
+            override val location: Location,
+            val schemeT: SchemeT
+    ) : DeclT() {
+        override fun toString() = "def $name :: $schemeT"
+    }
 }

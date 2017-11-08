@@ -33,7 +33,7 @@ sealed class DeclI : Locatable {
             override val location: Location,
             val `package`: Package,
             val scheme: Scheme,
-            val expr: ExprI
+            val expr: ExprI?
     ) : DeclI() {
         data class Scheme(
                 val generics: List<GenericI>,

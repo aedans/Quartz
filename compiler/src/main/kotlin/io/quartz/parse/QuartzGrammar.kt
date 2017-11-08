@@ -2,6 +2,7 @@ package io.quartz.parse
 
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
+import com.github.h0tk3y.betterParse.lexer.TokenMatch
 import com.github.h0tk3y.betterParse.parser.Parser
 import java.io.InputStream
 import java.util.*
@@ -39,6 +40,8 @@ abstract class QuartzGrammar<out T>(val uri: String) : Grammar<T>() {
     fun parse(input: InputStream) = parseToEnd(input)
     fun parse(input: Readable) = parseToEnd(input)
     fun parse(input: Scanner) = parseToEnd(input)
+
+    val TokenMatch.location get() = location(this@QuartzGrammar)
 
     companion object {
         fun <T> create(

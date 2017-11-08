@@ -18,6 +18,7 @@ import kategory.*
 fun DeclT.analyze(env: Env, p: Package, local: Boolean): Tuple2<Env, Errs<DeclI>> = when (this) {
     is DeclT.Class -> analyze(env, p, local)
     is DeclT.Value -> analyze(env, p, local)
+    is DeclT.Abstract -> analyze(env, p, local)
 }.let { (a, b) -> a toT b.qualifyAll() }
 
 fun DeclT.Class.analyze(env: Env, p: Package, local: Boolean) = run {
@@ -33,7 +34,7 @@ fun DeclT.Class.analyze(env: Env, p: Package, local: Boolean) = run {
 }
 
 fun DeclT.Value.analyze(env: Env, p: Package, local: Boolean) = run {
-    val localEnv = schemeT?.generics?.localEnv(env) ?: env
+    val localEnv = schemeT?.constraints?.localEnv(env) ?: env
     val qualifiedName = if (local) name.qualifiedLocal else name.qualify(p)
     val schemeKE = schemeK(localEnv)
     val varInfo = schemeKE.map { schemeK -> VarInfo(schemeK, VarLoc.Global(qualifiedName)) }
@@ -51,6 +52,26 @@ fun DeclT.Value.analyze(env: Env, p: Package, local: Boolean) = run {
     }.ev()
 }
 
+fun DeclT.Abstract.analyze(env: Env, p: Package, local: Boolean) = run {
+    if (!local) {
+        env toT CompilerError({ "cannot have abstract definitions at top level" }).singletonList().left()
+    } else {
+        val localEnv = schemeT.constraints.localEnv(env)
+        val qualifiedName = name.qualifiedLocal
+        val schemeKE = schemeK(localEnv)
+        val varInfo = schemeKE.map { schemeK -> VarInfo(schemeK, VarLoc.Global(qualifiedName)) }
+        val nEnv = localEnv.withVar(qualifiedName, varInfo)
+        nEnv toT errsMonad().binding {
+            val name = name.varGetterName()
+            val schemeK = schemeKE.errs().bind()
+            val schemeI = schemeK.schemeI
+            val scheme = DeclI.Method.Scheme(schemeI.generics, nil, schemeI.type)
+            val method = DeclI.Method(name, location, p, scheme, null)
+            yields(method)
+        }.ev()
+    }
+}
+
 fun DeclT.Class.schemeK(qualifier: Qualifier) = SchemeK(nil, TypeK.Const(name.qualify(qualifier)))
 
 fun DeclT.Value.schemeK(env: Env) = errMonad().binding {
@@ -59,3 +80,5 @@ fun DeclT.Value.schemeK(env: Env) = errMonad().binding {
     val s2 = unify(exprType, schemeK?.instantiate() ?: TypeK.Var(fresh())).bind()
     yields(schemeK ?: apply(exprType, s2 compose s1).generalize(env, s2))
 }.ev()
+
+fun DeclT.Abstract.schemeK(env: Env) = schemeT.schemeK(env)
