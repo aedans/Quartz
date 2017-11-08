@@ -1,6 +1,8 @@
 package io.quartz.analyze
 
 import io.quartz.analyze.type.*
+import io.quartz.err.Err
+import io.quartz.err.errMonad
 import io.quartz.interop.varClassName
 import io.quartz.interop.varGetterName
 import io.quartz.nil
@@ -27,7 +29,7 @@ fun ExprT.analyze(env: Env, p: Package): Err<ExprI> = when (this) {
     is ExprT.Apply -> analyze(env, p)
     is ExprT.If -> analyze(env, p)
     is ExprT.Lambda -> analyze(env, p)
-}
+}.qualify()
 
 fun ExprT.Unit.analyze() = ExprI.InvokeStatic(
         location,

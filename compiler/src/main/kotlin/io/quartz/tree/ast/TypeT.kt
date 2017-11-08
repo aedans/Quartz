@@ -1,6 +1,8 @@
 package io.quartz.tree.ast
 
 import io.quartz.nil
+import io.quartz.tree.Locatable
+import io.quartz.tree.Location
 import io.quartz.tree.Name
 import io.quartz.tree.name
 
@@ -13,12 +15,12 @@ data class SchemeT(val generics: List<GenericT>, val type: TypeT) {
 }
 
 /** Sealed class representing all AST types */
-sealed class TypeT {
-    data class Id(val name: Name) : TypeT() {
+sealed class TypeT : Locatable {
+    data class Id(override val location: Location, val name: Name) : TypeT() {
         override fun toString() = name.toString()
     }
 
-    data class Apply(val t1: TypeT, val t2: TypeT) : TypeT() {
+    data class Apply(override val location: Location, val t1: TypeT, val t2: TypeT) : TypeT() {
         override fun toString() = "($t1) $t2"
     }
 
@@ -42,6 +44,6 @@ fun TypeT.apply(generics: List<TypeT>): TypeT = when (generics) {
     else -> apply(generics.first()).apply(generics.drop(1))
 }
 
-fun TypeT.apply(generic: TypeT) = TypeT.Apply(this, generic)
+fun TypeT.apply(generic: TypeT) = TypeT.Apply(location, this, generic)
 
-val Class<*>.typeT get() = TypeT.Id(name.name)
+val Class<*>.typeT get() = TypeT.Id(Location.unknown, name.name)

@@ -1,9 +1,13 @@
 package io.quartz.interop
 
-import io.quartz.analyze.*
+import io.quartz.analyze.Env
+import io.quartz.analyze.TypeInfo
+import io.quartz.analyze.VarInfo
+import io.quartz.analyze.VarLoc
 import io.quartz.analyze.type.GenericK
 import io.quartz.analyze.type.SchemeK
 import io.quartz.analyze.type.TypeK
+import io.quartz.err.errMonad
 import io.quartz.tree.QualifiedName
 import io.quartz.tree.name
 import io.quartz.tree.qualifiedName

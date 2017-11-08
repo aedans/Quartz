@@ -1,15 +1,11 @@
 package io.quartz.analyze.type
 
-import io.quartz.analyze.CompilerError
-import io.quartz.analyze.Err
-import io.quartz.analyze.errMonad
+import io.quartz.err.Err
+import io.quartz.err.err
+import io.quartz.err.errMonad
 import kategory.binding
 import kategory.ev
-import kategory.left
 import kategory.right
-
-class UnableToUnify(t1: TypeK, t2: TypeK) : CompilerError("Unable to unify $t1 with $t2")
-class InfiniteBind(tVar: TypeK.Var, type: TypeK) : CompilerError("Infinite type $tVar in $type")
 
 /** Unifies two types if possible, returning a substitution that, when applied to both types, yields the same type */
 fun unify(t1: TypeK, t2: TypeK): Err<Subst> = when {
@@ -21,13 +17,13 @@ fun unify(t1: TypeK, t2: TypeK): Err<Subst> = when {
     t1 is TypeK.Var -> bind(t1, t2)
     t2 is TypeK.Var -> bind(t2, t1)
     t1 is TypeK.Const && t2 is TypeK.Const && t1 == t2 -> emptySubst.right()
-    else -> UnableToUnify(t1, t2).left()
+    else -> err { "unable to unify $t1 with $t2" }
 }
 
 /** Returns a substitution in which a type variable is bound to a type */
 fun bind(tVar: TypeK.Var, type: TypeK) = when {
     tVar == type -> emptySubst.right()
-    occursIn(tVar, type) -> InfiniteBind(tVar, type).left()
+    occursIn(tVar, type) -> err { "infinite type $tVar in $type" }
     else -> mapOf(tVar.name to type).right()
 }
 

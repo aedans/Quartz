@@ -42,7 +42,7 @@ val QuartzGrammar<*>.atomicTypeT: Parser<TypeT> get() = parser { idType } or
         parser { parenthesizedTypeT }
 
 val QuartzGrammar<*>.idType: Parser<TypeT> get() = ID use {
-    TypeT.Id(text.name)
+    TypeT.Id(location(this@idType), text.name)
 }
 
 val QuartzGrammar<*>.unitTypeT: Parser<TypeT> get() = O_PAREN and C_PAREN use { TypeT.unit }

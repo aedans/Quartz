@@ -1,11 +1,12 @@
 package io.quartz.analyze
 
 import io.quartz.analyze.type.SchemeK
+import io.quartz.err.Err
+import io.quartz.err.err
 import io.quartz.foldString
 import io.quartz.tree.Name
 import io.quartz.tree.QualifiedName
 import io.quartz.tree.name
-import kategory.left
 import kategory.right
 
 interface Env {
@@ -30,8 +31,8 @@ data class TypeInfo(
 )
 
 val emptyEnv = object : Env {
-    override fun getType(name: QualifiedName) = UnknownType(name).left()
-    override fun getVar(name: QualifiedName) = UnknownVariable(name).left()
+    override fun getType(name: QualifiedName) = err { "could not find type $name" }
+    override fun getVar(name: QualifiedName) = err { "could not find variable $name" }
     override fun toString() = "EmptyEnv"
 }
 

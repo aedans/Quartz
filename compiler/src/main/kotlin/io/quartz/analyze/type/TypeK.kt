@@ -1,6 +1,12 @@
 package io.quartz.analyze.type
 
-import io.quartz.analyze.*
+import io.quartz.analyze.Env
+import io.quartz.analyze.TypeInfo
+import io.quartz.analyze.fresh
+import io.quartz.analyze.withType
+import io.quartz.err.Err
+import io.quartz.err.err
+import io.quartz.err.errMonad
 import io.quartz.interop.schemeK
 import io.quartz.nil
 import io.quartz.tree.Name
@@ -33,7 +39,7 @@ sealed class TypeK {
     }
 
     data class Apply(val t1: TypeK, val t2: TypeK) : TypeK() {
-        override fun toString() = "($t1 $t2)"
+        override fun toString() = arrow.fold({ "($t1 $t2)" }, { it.toString() })
     }
 
     /** Convenience class representing a type of (Function t1) t2 */
@@ -54,11 +60,11 @@ val TypeK.arrow get() =
     if (this is TypeK.Apply && t1 is TypeK.Apply && t1.t1 == TypeK.function)
         TypeK.Arrow(t1.t2, t2).right()
     else
-        CompilerError("Expected function, found $this").left()
+        err { "expected function, found $this" }
 
 val TypeK.scheme get() = SchemeK(nil, this)
 
-/** Generalizes a type to a returnType scheme by pulling all returnType variables into generics */
+/** Generalizes a type to a type scheme by pulling all type variables into generics */
 fun TypeK.generalize(env: Env, subst: Subst) = SchemeK(
         freeTypeVariables.filterNot { name ->
             env.getType(name.qualifiedLocal).bimap(
@@ -93,10 +99,14 @@ fun List<GenericT>.localEnv(env: Env) = fold(env) { envP, generic ->
 }
 
 fun TypeT.typeK(env: Env): Err<TypeK> = when (this) {
-    is TypeT.Id -> env.getType(name.qualifiedLocal).map { it.scheme.instantiate() }
+    is TypeT.Id -> env
+            .getType(name.qualifiedLocal)
+            .map { it.scheme.instantiate() }
+            .qualify()
     is TypeT.Apply -> errMonad()
             .tupled(t1.typeK(env), t2.typeK(env))
             .map { (a, b) -> TypeK.Apply(a, b) }.ev()
+            .qualify()
 }
 
 val GenericK.genericI get() = GenericI(name, type.typeI)
