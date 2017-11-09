@@ -94,22 +94,25 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = errMonad().binding {
     val arrow = typeK.arrow.bind()
     val argTypeK = arrow.t1
     val returnTypeK = arrow.t2
-    val typeSchemeK = typeK.generalize(env, s1)
-    val closures = freeVariables.map { ConstraintK(null, it.string.name) }
-    val closuresMap = closures.associate { it.name.qualifiedLocal to VarLoc.Field(it.name) }
-    val genericsK = typeSchemeK.constraints + closures.flatMap { it.type?.generalize(env, s1)?.constraints ?: nil }
+    val closures = freeVariables
+    val closuresMap = closures.associate { it to VarLoc.Field(it.unqualified) }
+    val genericsI = typeK.generalize(env, s1).constraints.map { it.genericI }
     val localEnv = env
             .mapVars { name, err ->
                 err.map { closuresMap[name]?.let { varLoc -> it.copy(varLoc = varLoc) } ?: it }
             }
             .withVar(arg.qualifiedLocal, VarInfo(argTypeK.scheme, VarLoc.Arg(0)).right())
-    val closuresI = closures.map { (b, a) ->
-        ExprI.LocalField(Location.unknown, a, b?.typeI ?: TypeI.any).let { it toT it.type }
+    val closuresI = closures.map {
+        ExprI.LocalField(
+                Location.unknown,
+                it.unqualified,
+                apply(localEnv.getVar(it).bind().scheme, s1).instantiate().typeI
+        ).let { it toT it.type }
     }
     val exprI = expr.analyze(localEnv, p).bind()
     val invokeScheme = DeclI.Method.Scheme(nil, listOf(argTypeK.typeI), returnTypeK.typeI)
     val invokeDecl = DeclI.Method("invoke".name, location, p, invokeScheme, exprI)
-    val obj = DeclI.Class.Object(genericsK.map { it.genericI }, listOf(typeK.typeI), listOf(invokeDecl))
+    val obj = DeclI.Class.Object(genericsI, listOf(typeK.typeI), listOf(invokeDecl))
     val it = ExprI.AnonymousObject(location, p, obj, closuresI)
     yields(it)
 }.ev()
