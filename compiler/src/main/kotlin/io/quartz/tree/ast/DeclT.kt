@@ -11,9 +11,10 @@ sealed class DeclT : Locatable {
     data class Class(
             override val name: Name,
             override val location: Location,
+            val constraints: List<ConstraintT>,
             val decls: List<DeclT>
     ) : DeclT() {
-        override fun toString() = "def $name {\n${decls.joinToString(separator = "\n", prefix = "", postfix = "")}\n}"
+        override fun toString() = "def $name $constraints {\n${decls.joinToString(separator = "\n", prefix = "", postfix = "")}\n}"
     }
 
     data class Value(

@@ -7,7 +7,9 @@ import io.quartz.tree.Name
 import io.quartz.tree.name
 
 /** Class representing all AST constraints */
-data class ConstraintT(val type: TypeT, val name: Name)
+data class ConstraintT(val type: TypeT, val name: Name) {
+    override fun toString() = "$type $name =>"
+}
 
 /** Class representing all AST type schemes */
 data class SchemeT(val constraints: List<ConstraintT>, val type: TypeT) {

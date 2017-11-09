@@ -84,12 +84,12 @@ fun SchemeK.instantiate(): TypeK = run {
     apply(type, namesZ)
 }
 
-fun ConstraintT.genericK(env: Env) = type.typeK(env)
+fun ConstraintT.constraintK(env: Env) = type.typeK(env)
         .map { ConstraintK(it.scheme.instantiate(), name) }
 
 fun SchemeT.schemeK(env: Env) = errMonad().binding {
     val localEnv = constraints.localEnv(env)
-    yields(SchemeK(constraints.map { it.genericK(env).bind() }, type.typeK(localEnv).bind()))
+    yields(SchemeK(constraints.map { it.constraintK(env).bind() }, type.typeK(localEnv).bind()))
 }.ev()
 
 fun List<ConstraintT>.localEnv(env: Env) = fold(env) { envP, generic ->

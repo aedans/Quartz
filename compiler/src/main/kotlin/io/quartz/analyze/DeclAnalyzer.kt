@@ -22,13 +22,17 @@ fun DeclT.analyze(env: Env, p: Package, local: Boolean): Tuple2<Env, Errs<DeclI>
 }.let { (a, b) -> a toT b.qualifyAll() }
 
 fun DeclT.Class.analyze(env: Env, p: Package, local: Boolean) = run {
-    val (_, declsIE) = decls.foldMap(env) { env, decl -> decl.analyze(env, p, true) }
-    val typeInfo = TypeInfo(schemeK(p))
+    val localEnv = constraints.localEnv(env)
+    val (_, declsIE) = decls.foldMap(localEnv) { env, decl -> decl.analyze(env, p, true) }
+    val schemeKE = schemeK(localEnv, p)
+    val typeInfo = schemeKE.map { scheme -> TypeInfo(scheme) }
     val qualifiedName = if (local) name.qualifiedLocal else name.qualify(p)
-    val envP = env.withType(qualifiedName, typeInfo.right())
+    val envP = env.withType(qualifiedName, typeInfo)
     envP toT errsMonad().binding {
+        val schemeK = schemeKE.errs().bind()
+        val schemeI = schemeK.schemeI
         val declsI = declsIE.flat().bind()
-        val obj = DeclI.Class.Object(nil, nil, declsI)
+        val obj = DeclI.Class.Object(schemeI.generics, nil, declsI)
         yields(DeclI.Class(name, location, p, null, obj) as DeclI)
     }.ev()
 }
@@ -72,7 +76,13 @@ fun DeclT.Abstract.analyze(env: Env, p: Package, local: Boolean) = run {
     }
 }
 
-fun DeclT.Class.schemeK(qualifier: Qualifier) = SchemeK(nil, TypeK.Const(name.qualify(qualifier)))
+fun DeclT.Class.schemeK(env: Env, qualifier: Qualifier) = errMonad().binding {
+    val it = SchemeK(
+            constraints.map { it.constraintK(env).bind() },
+            TypeK.Const(name.qualify(qualifier))
+    )
+    yields(it)
+}.ev()
 
 fun DeclT.Value.schemeK(env: Env) = errMonad().binding {
     val schemeK = schemeT?.schemeK(env)?.bind()

@@ -12,10 +12,11 @@ val QuartzGrammar<*>.declT: Parser<DeclT> get() = parser { classDeclT } or
 
 val QuartzGrammar<*>.classDeclT: Parser<DeclT.Class> get() = skip(DEF) and
         ID and
+        parser { constraints } and
         skip(O_BRACKET) and
         zeroOrMore(parser { declT }) and
         skip(C_BRACKET) use {
-    DeclT.Class(t1.text.name, t1.location, t2)
+    DeclT.Class(t1.text.name, t1.location, t2, t3)
 }
 
 val QuartzGrammar<*>.valueDeclT: Parser<DeclT.Value> get() = skip(DEF) and
