@@ -13,7 +13,10 @@ import io.quartz.tree.ir.DeclI
 import io.quartz.tree.name
 import io.quartz.tree.qualifiedLocal
 import io.quartz.tree.qualify
-import kategory.*
+import kategory.Tuple2
+import kategory.binding
+import kategory.ev
+import kategory.toT
 
 fun DeclT.analyze(env: Env, p: Package): Tuple2<Env, Errs<DeclI>> = when (this) {
     is DeclT.Interface -> analyze(env, p)
@@ -23,7 +26,7 @@ fun DeclT.analyze(env: Env, p: Package): Tuple2<Env, Errs<DeclI>> = when (this) 
 fun DeclT.Interface.analyze(env: Env, p: Package) = run {
     val localEnv = constraints.localEnv(env)
     val (_, declsIE) = decls
-            .foldMap(localEnv) { env, decl -> decl.analyze(env, p, true) }
+            .foldMap(localEnv) { env, decl -> decl.analyze(env, p) }
     val schemeKE = schemeK(localEnv, p)
     val typeInfo = schemeKE.map { scheme -> TypeInfo(scheme) }
     val qualifiedName = name.qualify(p)
@@ -37,24 +40,18 @@ fun DeclT.Interface.analyze(env: Env, p: Package) = run {
     }.ev()
 }
 
-fun DeclT.Interface.Abstract.analyze(env: Env, p: Package, local: Boolean) = run {
-    if (!local) {
-        env toT CompilerError({ "cannot have abstract definitions at top level" }).singletonList().left()
-    } else {
-        val localEnv = schemeT.constraints.localEnv(env)
-        val qualifiedName = name.qualifiedLocal
-        val schemeKE = schemeT.schemeK(localEnv)
-        val varInfo = schemeKE.map { schemeK -> VarInfo(schemeK, VarLoc.Global(qualifiedName)) }
-        val nEnv = localEnv.withVar(qualifiedName, varInfo)
-        nEnv toT errsMonad().binding {
-            val name = name.varGetterName()
-            val schemeK = schemeKE.errs().bind()
-            val schemeI = schemeK.schemeI
-            val scheme = DeclI.Method.Scheme(schemeI.generics, nil, schemeI.type)
-            val method = DeclI.Method(name, location, p, scheme, null)
-            yields(method)
-        }.ev()
-    }
+fun DeclT.Interface.Abstract.analyze(env: Env, p: Package) = run {
+    val localEnv = schemeT.constraints.localEnv(env)
+    val qualifiedName = name.qualifiedLocal
+    val schemeKE = schemeT.schemeK(localEnv)
+    val varInfo = schemeKE.map { schemeK -> VarInfo(schemeK, VarLoc.Global(qualifiedName)) }
+    val nEnv = localEnv.withVar(qualifiedName, varInfo)
+    nEnv toT errsMonad().binding {
+        val name = name.varGetterName()
+        val scheme = schemeKE.errs().bind().methodScheme()
+        val method = DeclI.Method(name, location, p, scheme, null)
+        yields(method)
+    }.ev()
 }
 
 fun DeclT.Value.analyze(env: Env, p: Package) = run {
@@ -65,9 +62,7 @@ fun DeclT.Value.analyze(env: Env, p: Package) = run {
     val nEnv = localEnv.withVar(qualifiedName, varInfo)
     nEnv toT errsMonad().binding {
         val name = name.varGetterName()
-        val schemeK = schemeKE.errs().bind()
-        val schemeI = schemeK.schemeI
-        val scheme = DeclI.Method.Scheme(schemeI.generics, nil, schemeI.type)
+        val scheme = schemeKE.errs().bind().methodScheme()
         val exprI = expr.analyze(nEnv, p).errs().bind()
         val method = DeclI.Method(name, location, p, scheme, exprI)
         val obj = DeclI.Class.Object(nil, nil, method.singletonList())
@@ -90,3 +85,8 @@ fun DeclT.Value.schemeK(env: Env) = errMonad().binding {
     val s2 = unify(exprType, schemeK?.instantiate() ?: TypeK.Var(fresh())).bind()
     yields(schemeK ?: apply(exprType, s2 compose s1).generalize(env, s2))
 }.ev()
+
+fun SchemeK.methodScheme() = run {
+    val schemeI = schemeI
+    DeclI.Method.Scheme(schemeI.generics, nil, schemeI.type)
+}
