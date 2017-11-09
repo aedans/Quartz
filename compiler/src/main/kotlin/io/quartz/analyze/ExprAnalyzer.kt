@@ -95,16 +95,16 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = errMonad().binding {
     val argTypeK = arrow.t1
     val returnTypeK = arrow.t2
     val typeSchemeK = typeK.generalize(env, s1)
-    val closures = freeVariables.map { ConstraintK(TypeK.any, it.string.name) }
+    val closures = freeVariables.map { ConstraintK(null, it.string.name) }
     val closuresMap = closures.associate { it.name.qualifiedLocal to VarLoc.Field(it.name) }
-    val genericsK = typeSchemeK.constraints + closures.flatMap { it.type.generalize(env, s1).constraints }
+    val genericsK = typeSchemeK.constraints + closures.flatMap { it.type?.generalize(env, s1)?.constraints ?: nil }
     val localEnv = env
             .mapVars { name, err ->
                 err.map { closuresMap[name]?.let { varLoc -> it.copy(varLoc = varLoc) } ?: it }
             }
             .withVar(arg.qualifiedLocal, VarInfo(argTypeK.scheme, VarLoc.Arg(0)).right())
     val closuresI = closures.map { (b, a) ->
-        ExprI.LocalField(Location.unknown, a, b.typeI).let { it toT it.type }
+        ExprI.LocalField(Location.unknown, a, b?.typeI ?: TypeI.any).let { it toT it.type }
     }
     val exprI = expr.analyze(localEnv, p).bind()
     val invokeScheme = DeclI.Method.Scheme(nil, listOf(argTypeK.typeI), returnTypeK.typeI)

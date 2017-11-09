@@ -18,8 +18,8 @@ import io.quartz.tree.ir.*
 import io.quartz.tree.qualifiedLocal
 import kategory.*
 
-/** Class representing a constraint for compiler analysis */
-data class ConstraintK(val type: TypeK, val name: Name) {
+/** Class representing a constraintT for compiler analysis */
+data class ConstraintK(val type: TypeK?, val name: Name) {
     override fun toString() = "($type $name) =>"
 }
 
@@ -72,7 +72,7 @@ fun TypeK.generalize(env: Env, subst: Subst) = SchemeK(
                     { it.scheme.constraints.any { it.name == name } }
             ).fold(::identity, ::identity)
         }.map {
-            ConstraintK(subst[it] ?: TypeK.any, it)
+            ConstraintK(subst[it], it)
         },
         this
 )
@@ -84,8 +84,10 @@ fun SchemeK.instantiate(): TypeK = run {
     apply(type, namesZ)
 }
 
-fun ConstraintT.constraintK(env: Env) = type.typeK(env)
-        .map { ConstraintK(it.scheme.instantiate(), name) }
+fun ConstraintT.constraintK(env: Env) = type
+        ?.typeK(env)
+        ?.map { ConstraintK(it.scheme.instantiate(), name) }
+        ?: ConstraintK(null, name).right()
 
 fun SchemeT.schemeK(env: Env) = errMonad().binding {
     val localEnv = constraints.localEnv(env)
@@ -110,7 +112,7 @@ fun TypeT.typeK(env: Env): Err<TypeK> = when (this) {
             .qualify()
 }
 
-val ConstraintK.genericI get() = if (type == TypeK.any) GenericI(name, type.typeI) else TODO()
+val ConstraintK.genericI get() = if (type == null) GenericI(name, TypeI.any) else TODO(toString())
 
 val SchemeK.schemeI get() = SchemeI(constraints.map { it.genericI }, type.typeI)
 

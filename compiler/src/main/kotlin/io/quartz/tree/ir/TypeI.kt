@@ -3,7 +3,7 @@ package io.quartz.tree.ir
 import io.quartz.nil
 import io.quartz.tree.*
 
-/** Class representing any IR constraint */
+/** Class representing any IR constraintT */
 data class GenericI(val name: Name, val type: TypeI)
 
 /** Class representing any IR type scheme */

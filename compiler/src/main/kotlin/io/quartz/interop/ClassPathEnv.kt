@@ -45,7 +45,7 @@ fun ClassPath.getVarLoc(name: QualifiedName) = getClass(name.varClassName())
         .map { VarLoc.Global(name) }
 
 val Class<*>.schemeK: SchemeK get() = run {
-    val generics = typeParameters.map { ConstraintK(TypeK.any, it.name.name) }
+    val generics = typeParameters.map { ConstraintK(null, it.name.name) }
     val typeK = TypeK.Const(qualifiedName)
     SchemeK(generics, typeK)
 }

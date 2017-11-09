@@ -5,7 +5,6 @@ import io.quartz.analyze.analyze
 import io.quartz.analyze.compose
 import io.quartz.analyze.emptyEnv
 import io.quartz.analyze.import
-import io.quartz.err.errs
 import io.quartz.err.errsMonad
 import io.quartz.err.flat
 import io.quartz.err.write
@@ -37,12 +36,12 @@ object Cli {
 
             val ir = errsMonad().binding {
                 val globalEnv = (emptyEnv compose ClassPathEnv(options.cp.classPath()))
-                        .withSource(options.sp, pg).errs().bind()
+                        .withSource(options.sp, pg).bind()
 
                 val it = options.src.flatMap {
                     val grammar = QuartzGrammar.create(it.name) { fileT }
                     val fileT = grammar.parse(it.reader())
-                    val localEnv = globalEnv.import(fileT.imports)
+                    val localEnv = globalEnv.import(fileT)
                     fileT.decls
                             .foldMap(localEnv) { env, decl -> decl.analyze(env, fileT.`package`, false) }.b
                             .flat()

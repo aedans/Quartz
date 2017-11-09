@@ -9,15 +9,16 @@ import io.quartz.tree.ast.TypeT
 import io.quartz.tree.ast.apply
 import io.quartz.tree.name
 
-val QuartzGrammar<*>.schemeT: Parser<SchemeT> get() = parser { constraints } and parser { typeT } use {
-    SchemeT(t1, t2)
+val QuartzGrammar<*>.schemeT: Parser<SchemeT> get() = optional(oneOrMore(constraintT) and skip(FAT_ARROW)) and parser { typeT } use {
+    SchemeT(t1 ?: emptyList(), t2)
 }
 
-val QuartzGrammar<*>.constraints get() = zeroOrMore(constraint and skip(FAT_ARROW))
-
-val QuartzGrammar<*>.constraint: Parser<ConstraintT> get() = parser { atomicTypeT } and ID use {
+val QuartzGrammar<*>.constraintT: Parser<ConstraintT> get() = skip(O_PAREN) and
+        parser { atomicTypeT } and
+        ID and
+        skip(C_PAREN) use {
     ConstraintT(t1, t2.text.name)
-} or (ID use { ConstraintT(TypeT.any, text.name) })
+} or (ID use { ConstraintT(null, text.name) })
 
 val QuartzGrammar<*>.typeT: Parser<TypeT> get() = parser { functionTypeT }
 

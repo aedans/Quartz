@@ -1,9 +1,13 @@
 package io.quartz.analyze
 
 import io.quartz.tree.QualifiedName
+import io.quartz.tree.ast.FileT
 import io.quartz.tree.ast.ImportT
 import io.quartz.tree.qualifiedLocal
 import kategory.Either
+import org.funktionale.collections.prependTo
+
+fun Env.import(fileT: FileT) = import(ImportT.Star(fileT.`package`).prependTo(fileT.imports))
 
 fun Env.import(imports: List<ImportT>): Env = imports.fold(this) { a: Env, b -> b.import(a) }
 

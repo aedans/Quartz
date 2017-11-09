@@ -11,7 +11,7 @@ data class CompilerError(
         val messageF: () -> String,
         val location: Location = Location.unknown
 ) {
-    override fun toString() = "CompilerError(\"$messageF\")"
+    override fun toString() = "CompilerError(\"${messageF()}\")"
 }
 
 fun err(message: () -> String) = CompilerError(message).left()
