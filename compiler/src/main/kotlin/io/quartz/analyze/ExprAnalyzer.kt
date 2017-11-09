@@ -1,8 +1,8 @@
 package io.quartz.analyze
 
 import io.quartz.analyze.type.*
-import io.quartz.err.Err
-import io.quartz.err.errMonad
+import io.quartz.err.Result
+import io.quartz.err.resultMonad
 import io.quartz.interop.varClassName
 import io.quartz.interop.varGetterName
 import io.quartz.nil
@@ -18,7 +18,7 @@ import io.quartz.tree.qualifiedLocal
 import io.quartz.tree.unqualified
 import kategory.*
 
-fun ExprT.analyze(env: Env, p: Package): Err<ExprI> = when (this) {
+fun ExprT.analyze(env: Env, p: Package): Result<ExprI> = when (this) {
     is ExprT.Unit -> analyze()
     is ExprT.Bool -> analyze()
     is ExprT.Cast -> analyze(env, p)
@@ -40,7 +40,7 @@ fun ExprT.Bool.analyze() = ExprI.Bool(location, boolean).right()
 
 fun ExprT.Cast.analyze(env: Env, p: Package) = expr.analyze(env, p)
 
-fun ExprT.Id.analyze(env: Env) = errMonad().binding {
+fun ExprT.Id.analyze(env: Env) = resultMonad().binding {
     val memLoc = env.getVar(name).bind().varLoc
     val it = when (memLoc) {
         is VarLoc.Arg -> ExprI.Arg(location, memLoc.index)
@@ -60,7 +60,7 @@ fun ExprT.Id.analyze(env: Env) = errMonad().binding {
     yields(it)
 }.ev()
 
-fun ExprT.Apply.analyze(env: Env, p: Package) = errMonad().binding {
+fun ExprT.Apply.analyze(env: Env, p: Package) = resultMonad().binding {
     val (_, _) = infer(env).bind()
     val (_, expr1TypeK) = expr1.infer(env).bind()
     val arrowK = expr1TypeK.arrow.bind()
@@ -78,7 +78,7 @@ fun ExprT.Apply.analyze(env: Env, p: Package) = errMonad().binding {
     yields(it)
 }.ev()
 
-fun ExprT.If.analyze(env: Env, p: Package) = errMonad().binding {
+fun ExprT.If.analyze(env: Env, p: Package) = resultMonad().binding {
     val conditionI = condition.analyze(env, p).bind()
     val expr1I = expr1.analyze(env, p).bind()
     val expr2I = expr2.analyze(env, p).bind()
@@ -86,7 +86,7 @@ fun ExprT.If.analyze(env: Env, p: Package) = errMonad().binding {
     yields(it)
 }.ev()
 
-fun ExprT.Lambda.analyze(env: Env, p: Package) = errMonad().binding {
+fun ExprT.Lambda.analyze(env: Env, p: Package) = resultMonad().binding {
     val (s1, typeK) = infer(env).bind()
     val arrow = typeK.arrow.bind()
     val argTypeK = arrow.t1

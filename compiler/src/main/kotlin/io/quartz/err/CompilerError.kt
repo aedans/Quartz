@@ -1,5 +1,6 @@
 package io.quartz.err
 
+import io.quartz.singletonList
 import io.quartz.tree.Locatable
 import io.quartz.tree.Location
 import kategory.Either
@@ -14,7 +15,7 @@ data class CompilerError(
     override fun toString() = "CompilerError(\"${messageF()}\")"
 }
 
-fun err(message: () -> String) = CompilerError(message).left()
+fun err(message: () -> String) = CompilerError(message).singletonList().left()
 
 inline fun <A, B, C> Either<A, B>.mapErr(crossinline fn: (A) -> C) = bimap(fn, ::identity)
 
@@ -23,6 +24,4 @@ fun CompilerError.qualify(locatable: Locatable) = when (location) {
     else -> this
 }
 
-fun <T> Err<T>.qualify(locatable: Locatable) = mapErr { it.qualify(locatable) }
-
-fun <T> Errs<T>.qualifyAll(locatable: Locatable) = mapErr { it.map { it.qualify(locatable) } }
+fun <T> Result<T>.qualify(locatable: Locatable) = mapErr { it.map { it.qualify(locatable) } }

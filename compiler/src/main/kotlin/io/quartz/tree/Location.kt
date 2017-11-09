@@ -1,15 +1,12 @@
 package io.quartz.tree
 
-import io.quartz.err.Err
-import io.quartz.err.Errs
+import io.quartz.err.Result
 import io.quartz.err.qualify
-import io.quartz.err.qualifyAll
 
 interface Locatable {
     val location: Location
 
-    fun <T> Err<T>.qualify() = qualify(this@Locatable)
-    fun <T> Errs<T>.qualifyAll() = qualifyAll(this@Locatable)
+    fun <T> Result<T>.qualify() = qualify(this@Locatable)
 }
 
 /** Class containing the source location of a token */

@@ -1,15 +1,15 @@
 package io.quartz.analyze.type
 
-import io.quartz.err.Err
+import io.quartz.err.Result
 import io.quartz.err.err
-import io.quartz.err.errMonad
+import io.quartz.err.resultMonad
 import kategory.binding
 import kategory.ev
 import kategory.right
 
 /** Unifies two types if possible, returning a substitution that, when applied to both types, yields the same type */
-fun unify(t1: TypeK, t2: TypeK): Err<Subst> = when {
-    t1 is TypeK.Apply && t2 is TypeK.Apply -> errMonad().binding {
+fun unify(t1: TypeK, t2: TypeK): Result<Subst> = when {
+    t1 is TypeK.Apply && t2 is TypeK.Apply -> resultMonad().binding {
         val s1 = unify(t1.t1, t2.t1).bind()
         val s2 = unify(apply(t1.t2, s1), apply(t2.t2, s1)).bind()
         yields(s2 compose s1)

@@ -5,8 +5,8 @@ import io.quartz.analyze.analyze
 import io.quartz.analyze.compose
 import io.quartz.analyze.emptyEnv
 import io.quartz.analyze.import
-import io.quartz.err.errsMonad
 import io.quartz.err.flat
+import io.quartz.err.resultMonad
 import io.quartz.err.write
 import io.quartz.foldMap
 import io.quartz.gen.asm.ProgramGenerator
@@ -35,7 +35,7 @@ object Cli {
                         .writeBytes(it.cw.toByteArray())
             }
 
-            val ir = errsMonad().binding {
+            val ir = resultMonad().binding {
                 val globalEnv = (emptyEnv compose { ClassPathEnv(options.cp.classPath()) }.memoize())
                         .withSource(options.sp, pg).bind()
 

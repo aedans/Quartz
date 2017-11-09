@@ -1,6 +1,6 @@
 package io.quartz.interop
 
-import io.quartz.err.Err
+import io.quartz.err.Result
 import io.quartz.err.err
 import io.quartz.tree.QualifiedName
 import kategory.right
@@ -9,7 +9,7 @@ import java.net.URL
 import java.net.URLClassLoader
 
 interface ClassPath {
-    fun getClass(name: QualifiedName): Err<Class<*>>
+    fun getClass(name: QualifiedName): Result<Class<*>>
 }
 
 fun List<File>.classPath() = map { it.toURI().toURL() }.toTypedArray().classPath()

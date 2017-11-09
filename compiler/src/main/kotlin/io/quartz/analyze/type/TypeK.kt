@@ -4,9 +4,9 @@ import io.quartz.analyze.Env
 import io.quartz.analyze.TypeInfo
 import io.quartz.analyze.fresh
 import io.quartz.analyze.withType
-import io.quartz.err.Err
+import io.quartz.err.Result
 import io.quartz.err.err
-import io.quartz.err.errMonad
+import io.quartz.err.resultMonad
 import io.quartz.interop.schemeK
 import io.quartz.nil
 import io.quartz.tree.Name
@@ -89,7 +89,7 @@ fun ConstraintT.constraintK(env: Env) = type
         ?.map { ConstraintK(it.scheme.instantiate(), name) }
         ?: ConstraintK(null, name).right()
 
-fun SchemeT.schemeK(env: Env) = errMonad().binding {
+fun SchemeT.schemeK(env: Env) = resultMonad().binding {
     val localEnv = constraints.localEnv(env)
     yields(SchemeK(constraints.map { it.constraintK(env).bind() }, type.typeK(localEnv).bind()))
 }.ev()
@@ -100,12 +100,12 @@ fun List<ConstraintT>.localEnv(env: Env) = fold(env) { envP, generic ->
     }
 }
 
-fun TypeT.typeK(env: Env): Err<TypeK> = when (this) {
+fun TypeT.typeK(env: Env): Result<TypeK> = when (this) {
     is TypeT.Id -> env
             .getType(name.qualifiedLocal)
             .map { it.scheme.instantiate() }
             .qualify()
-    is TypeT.Apply -> errMonad()
+    is TypeT.Apply -> resultMonad()
             .tupled(t1.typeK(env), t2.typeK(env))
             .map { (a, b) -> TypeK.Apply(a, b) }.ev()
             .qualify()

@@ -4,7 +4,7 @@ import io.quartz.analyze.*
 import io.quartz.analyze.type.ConstraintK
 import io.quartz.analyze.type.SchemeK
 import io.quartz.analyze.type.TypeK
-import io.quartz.err.errMonad
+import io.quartz.err.resultMonad
 import io.quartz.tree.QualifiedName
 import io.quartz.tree.name
 import io.quartz.tree.qualifiedName
@@ -19,14 +19,14 @@ data class ClassPathEnv(private val cp: ClassPath) : Env {
     override fun toString() = "ClassPathEnv($cp)"
 }
 
-fun ClassPath.getType(name: QualifiedName) = errMonad().binding {
+fun ClassPath.getType(name: QualifiedName) = resultMonad().binding {
     val scheme = getTypeScheme(name).bind()
     yields(TypeInfo(scheme))
 }.ev()
 
 fun ClassPath.getTypeScheme(name: QualifiedName) = getClass(name).map { it.schemeK }
 
-fun ClassPath.getVar(name: QualifiedName) = errMonad().binding {
+fun ClassPath.getVar(name: QualifiedName) = resultMonad().binding {
     val scheme = getVarScheme(name).bind()
     val varLoc = getVarLoc(name).bind()
     yields(VarInfo(scheme, varLoc))
