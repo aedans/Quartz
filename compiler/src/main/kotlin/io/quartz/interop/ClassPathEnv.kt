@@ -1,9 +1,6 @@
 package io.quartz.interop
 
-import io.quartz.analyze.Env
-import io.quartz.analyze.TypeInfo
-import io.quartz.analyze.VarInfo
-import io.quartz.analyze.VarLoc
+import io.quartz.analyze.*
 import io.quartz.analyze.type.ConstraintK
 import io.quartz.analyze.type.SchemeK
 import io.quartz.analyze.type.TypeK
@@ -18,6 +15,7 @@ import kategory.ev
 data class ClassPathEnv(private val cp: ClassPath) : Env {
     override fun getType(name: QualifiedName) = cp.getType(name)
     override fun getVar(name: QualifiedName) = cp.getVar(name)
+    override fun getInstance(type: TypeK, instance: TypeK) = emptyEnv.getInstance(type, instance) // TODO
     override fun toString() = "ClassPathEnv($cp)"
 }
 

@@ -1,6 +1,7 @@
 package io.quartz.analyze
 
 import io.quartz.analyze.type.SchemeK
+import io.quartz.analyze.type.TypeK
 import io.quartz.err.Err
 import io.quartz.err.err
 import io.quartz.foldString
@@ -12,6 +13,7 @@ import kategory.right
 interface Env {
     fun getType(name: QualifiedName): Err<TypeInfo>
     fun getVar(name: QualifiedName): Err<VarInfo>
+    fun getInstance(type: TypeK, instance: TypeK): Err<InstanceInfo>
 }
 
 /** ADT representing where an identifier is located */
@@ -30,9 +32,14 @@ data class TypeInfo(
         val scheme: SchemeK
 )
 
+data class InstanceInfo(
+        val varLoc: VarLoc
+)
+
 val emptyEnv = object : Env {
     override fun getType(name: QualifiedName) = err { "could not find type $name" }
     override fun getVar(name: QualifiedName) = err { "could not find variable $name" }
+    override fun getInstance(type: TypeK, instance: TypeK) = err { "could not find instance of $type for $instance" }
     override fun toString() = "EmptyEnv"
 }
 
@@ -44,6 +51,11 @@ infix fun Env.compose(env: Env) = object : Env {
 
     override fun getVar(name: QualifiedName) = env.getVar(name).fold(
             { this@compose.getVar(name) },
+            { it.right() }
+    )
+
+    override fun getInstance(type: TypeK, instance: TypeK) = env.getInstance(type, instance).fold(
+            { this@compose.getInstance(type, instance) },
             { it.right() }
     )
 
