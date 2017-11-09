@@ -16,10 +16,7 @@ import io.quartz.tree.ir.typeI
 import io.quartz.tree.name
 import io.quartz.tree.qualifiedLocal
 import io.quartz.tree.unqualified
-import kategory.binding
-import kategory.ev
-import kategory.right
-import kategory.toT
+import kategory.*
 
 fun ExprT.analyze(env: Env, p: Package): Err<ExprI> = when (this) {
     is ExprT.Unit -> analyze()
@@ -103,11 +100,11 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = errMonad().binding {
             }
             .withVar(arg.qualifiedLocal, VarInfo(argTypeK.scheme, VarLoc.Arg(0)).right())
     val closuresI = closures.map {
-        ExprI.LocalField(
-                Location.unknown,
-                it.unqualified,
-                apply(localEnv.getVar(it).bind().scheme, s1).instantiate().typeI
-        ).let { it toT it.type }
+        val typeI = apply(localEnv.getVar(it).bind().scheme, s1).instantiate().typeI
+        Tuple2(
+                ExprT.Id(Location.unknown, it).analyze(env).bind(),
+                ExprI.LocalField(Location.unknown, it.unqualified, typeI)
+        )
     }
     val exprI = expr.analyze(localEnv, p).bind()
     val invokeScheme = DeclI.Method.Scheme(nil, listOf(argTypeK.typeI), returnTypeK.typeI)

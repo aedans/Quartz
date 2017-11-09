@@ -129,19 +129,19 @@ fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
     val block = closures.mapIndexed { i, it -> ExprI.Set(
             Location.unknown,
             typeI,
-            it.a.name,
-            it.b,
+            it.b.name,
+            it.b.type,
             ExprI.This(Location.unknown),
             ExprI.Arg(Location.unknown, i)
     ) }
 
     val constructor = DeclI.Class.Constructor(
-            closures.map { it.b },
+            closures.map { it.b.type },
             ExprI.Block(Location.unknown, block)
     )
 
-    val newFields = closures.map { (a, b) ->
-        DeclI.Field(a.name, Location.unknown, b)
+    val newFields = closures.map { (_, b) ->
+        DeclI.Field(b.name, Location.unknown, b.type)
     }
 
     mg.visitClassGeneratorLater {
@@ -169,7 +169,7 @@ fun ExprI.AnonymousObject.push(mg: MethodGenerator) {
 
     mg.ga.invokeConstructor(
             type,
-            method(VoidTypeI, "<init>".name, closures.map { it.b })
+            method(VoidTypeI, "<init>".name, closures.map { it.b.type })
     )
 }
 

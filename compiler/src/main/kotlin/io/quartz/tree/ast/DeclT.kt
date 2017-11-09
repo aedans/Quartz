@@ -10,7 +10,7 @@ sealed class DeclT : Locatable {
             override val location: Location,
             val name: Name,
             val constraints: List<ConstraintT>,
-            val decls: List<Abstract>
+            val abstracts: List<Abstract>
     ) : DeclT() {
         data class Abstract(
                 val name: Name,
@@ -20,7 +20,7 @@ sealed class DeclT : Locatable {
             override fun toString() = "def $name :: $schemeT"
         }
 
-        override fun toString() = "def $name $constraints {\n${decls.joinToString(separator = "\n", prefix = "", postfix = "")}\n}"
+        override fun toString() = "def $name $constraints {\n${abstracts.joinToString(separator = "\n", prefix = "", postfix = "")}\n}"
     }
 
     data class Value(

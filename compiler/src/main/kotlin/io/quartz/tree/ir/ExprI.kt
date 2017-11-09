@@ -63,7 +63,7 @@ sealed class ExprI : Locatable {
             override val location: Location,
             val `package`: Package,
             val obj: DeclI.Class.Object,
-            val closures: List<Tuple2<ExprI.LocalField, TypeI>>
+            val closures: List<Tuple2<ExprI, LocalField>>
     ) : ExprI()
 
     data class Set(

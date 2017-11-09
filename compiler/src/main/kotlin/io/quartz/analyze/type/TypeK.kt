@@ -112,7 +112,7 @@ fun TypeT.typeK(env: Env): Err<TypeK> = when (this) {
             .qualify()
 }
 
-val ConstraintK.genericI get() = if (type == null) GenericI(name, TypeI.any) else TODO(toString())
+val ConstraintK.genericI get() = GenericI(name, TypeI.any)
 
 val SchemeK.schemeI get() = SchemeI(constraints.map { it.genericI }, type.typeI)
 
