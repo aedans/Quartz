@@ -95,10 +95,9 @@ fun SchemeT.schemeK(env: Env) = errMonad().binding {
 }.ev()
 
 fun List<ConstraintT>.localEnv(env: Env) = fold(env) { envP, generic ->
-    envP.withType(
-            generic.name.qualifiedLocal,
-            TypeInfo(TypeK.Var(generic.name).scheme).right()
-    )
+    envP.withType(generic.name.qualifiedLocal) {
+        TypeInfo(TypeK.Var(generic.name).scheme).right()
+    }
 }
 
 fun TypeT.typeK(env: Env): Err<TypeK> = when (this) {

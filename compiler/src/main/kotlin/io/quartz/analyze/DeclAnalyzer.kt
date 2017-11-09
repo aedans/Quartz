@@ -31,7 +31,7 @@ fun DeclT.Interface.analyze(env: Env, p: Package) = run {
     val schemeKE = schemeK(localEnv, p)
     val typeInfo = schemeKE.map { scheme -> TypeInfo(scheme) }
     val qualifiedName = name.qualify(p)
-    val envP = env.withType(qualifiedName, typeInfo)
+    val envP = env.withType(qualifiedName) { typeInfo }
     envP toT errsMonad().binding {
         val schemeK = schemeKE.errs().bind()
         val schemeI = schemeK.schemeI
@@ -46,7 +46,7 @@ fun DeclT.Interface.Abstract.analyze(env: Env, p: Package) = run {
     val qualifiedName = name.qualifiedLocal
     val schemeKE = schemeT.schemeK(localEnv)
     val varInfo = schemeKE.map { schemeK -> VarInfo(schemeK, VarLoc.Global(qualifiedName)) }
-    val envP = localEnv.withVar(qualifiedName, varInfo)
+    val envP = localEnv.withVar(qualifiedName) { varInfo }
     envP toT errsMonad().binding {
         val name = name.varGetterName()
         val scheme = schemeKE.errs().bind().methodScheme(nil)
@@ -60,7 +60,7 @@ fun DeclT.Value.analyze(env: Env, p: Package) = run {
     val qualifiedName = name.qualify(p)
     val schemeKE = schemeK(localEnv1)
     val varInfo = schemeKE.map { schemeK -> VarInfo(schemeK, VarLoc.Global(qualifiedName)) }
-    val envP = env.withVar(qualifiedName, varInfo)
+    val envP = env.withVar(qualifiedName) { varInfo }
     envP toT errsMonad().binding {
         val name = name.varGetterName()
         val schemeK = schemeKE.errs().bind()

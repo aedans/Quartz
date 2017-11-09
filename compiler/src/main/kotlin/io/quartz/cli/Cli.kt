@@ -18,6 +18,7 @@ import io.quartz.parse.QuartzGrammar
 import io.quartz.parse.fileT
 import kategory.binding
 import kategory.ev
+import org.funktionale.memoization.memoize
 import java.io.File
 
 /** The main entry point for the Quartz compiler */
@@ -35,7 +36,7 @@ object Cli {
             }
 
             val ir = errsMonad().binding {
-                val globalEnv = (emptyEnv compose ClassPathEnv(options.cp.classPath()))
+                val globalEnv = (emptyEnv compose { ClassPathEnv(options.cp.classPath()) }.memoize())
                         .withSource(options.sp, pg).bind()
 
                 val it = options.src.flatMap {

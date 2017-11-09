@@ -98,7 +98,7 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = errMonad().binding {
             .mapVars { name, err ->
                 err.map { closuresMap[name]?.let { varLoc -> it.copy(varLoc = varLoc) } ?: it }
             }
-            .withVar(arg.qualifiedLocal, VarInfo(argTypeK.scheme, VarLoc.Arg(0)).right())
+            .withVar(arg.qualifiedLocal) { VarInfo(argTypeK.scheme, VarLoc.Arg(0)).right() }
     val closuresI = closures.map {
         val typeI = apply(localEnv.getVar(it).bind().scheme, s1).instantiate().typeI
         Tuple2(

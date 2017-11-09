@@ -32,8 +32,8 @@ fun ExprT.infer(env: Env): Infer = when (this) {
     is ExprT.Lambda -> errMonad().binding {
         val argVar = TypeK.Var(fresh())
         val envP = env
-                .withVar(arg.qualifiedLocal, VarInfo(argVar.scheme, VarLoc.Arg(0)).right())
-                .withType(argVar.name.qualifiedLocal, TypeInfo(argVar.scheme).right())
+                .withVar(arg.qualifiedLocal) { VarInfo(argVar.scheme, VarLoc.Arg(0)).right() }
+                .withType(argVar.name.qualifiedLocal) { TypeInfo(argVar.scheme).right() }
         val (s1, exprType) = expr.infer(envP).bind()
         yields(s1 toT TypeK.Arrow(apply(argVar, s1), exprType).type)
     }.ev()

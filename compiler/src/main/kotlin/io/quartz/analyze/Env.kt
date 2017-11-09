@@ -43,18 +43,18 @@ val emptyEnv = object : Env {
     override fun toString() = "EmptyEnv"
 }
 
-infix fun Env.compose(env: Env) = object : Env {
-    override fun getType(name: QualifiedName) = env.getType(name).fold(
+infix fun Env.compose(env: () -> Env) = object : Env {
+    override fun getType(name: QualifiedName) = env().getType(name).fold(
             { this@compose.getType(name) },
             { it.right() }
     )
 
-    override fun getVar(name: QualifiedName) = env.getVar(name).fold(
+    override fun getVar(name: QualifiedName) = env().getVar(name).fold(
             { this@compose.getVar(name) },
             { it.right() }
     )
 
-    override fun getInstance(type: TypeK, instance: TypeK) = env.getInstance(type, instance).fold(
+    override fun getInstance(type: TypeK, instance: TypeK) = env().getInstance(type, instance).fold(
             { this@compose.getInstance(type, instance) },
             { it.right() }
     )
@@ -64,29 +64,29 @@ infix fun Env.compose(env: Env) = object : Env {
 
 fun Env.mapTypes(map: (QualifiedName, Err<TypeInfo>) -> Err<TypeInfo>) = object : Env by this {
     override fun getType(name: QualifiedName) = map(name, this@mapTypes.getType(name))
-    override fun toString() = "${this@mapTypes} mapTypes _"
+    override fun toString() = "${this@mapTypes} mapType"
 }
 
 fun Env.mapVars(map: (QualifiedName, Err<VarInfo>) -> Err<VarInfo>) = object : Env by this {
     override fun getVar(name: QualifiedName) = map(name, this@mapVars.getVar(name))
-    override fun toString() = "${this@mapVars} mapVars _"
+    override fun toString() = "${this@mapVars} mapVars"
 }
 
-fun Env.withType(name: QualifiedName, typeInfo: Err<TypeInfo>) = run {
+fun Env.withType(name: QualifiedName, typeInfo: () -> Err<TypeInfo>) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name
     object : Env by this {
-        override fun getType(name: QualifiedName) = if (name == _name) typeInfo else this@withType.getType(name)
-        override fun toString() = "${this@withType} withType ${name to typeInfo.foldString()}"
+        override fun getType(name: QualifiedName) = if (name == _name) typeInfo() else this@withType.getType(name)
+        override fun toString() = "${this@withType} withType ${name to typeInfo().foldString()}"
     }
 }
 
-fun Env.withVar(name: QualifiedName, varInfo: Err<VarInfo>) = run {
+fun Env.withVar(name: QualifiedName, varInfo: () -> Err<VarInfo>) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name
     object : Env by this {
-        override fun getVar(name: QualifiedName) = if (name == _name) varInfo else this@withVar.getVar(name)
-        override fun toString() = "${this@withVar} withVar ${name to varInfo.foldString()}"
+        override fun getVar(name: QualifiedName) = if (name == _name) varInfo() else this@withVar.getVar(name)
+        override fun toString() = "${this@withVar} withVar ${name to varInfo().foldString()}"
     }
 }
 

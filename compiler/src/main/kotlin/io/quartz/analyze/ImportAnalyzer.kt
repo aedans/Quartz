@@ -31,5 +31,5 @@ fun ImportT.Star.import(env: Env) = env
         }
 
 fun ImportT.Qualified.import(env: Env) = env
-        .withVar(alias.qualifiedLocal, env.getVar(qualifiedName))
-        .withType(alias.qualifiedLocal, env.getType(qualifiedName))
+        .withVar(alias.qualifiedLocal) { env.getVar(qualifiedName) }
+        .withType(alias.qualifiedLocal) { env.getType(qualifiedName) }
