@@ -6,31 +6,30 @@ import io.quartz.tree.Name
 
 /** Sealed class representing all AST declarations */
 sealed class DeclT : Locatable {
-    abstract val name: Name
-
-    data class Class(
-            override val name: Name,
+    data class Interface(
             override val location: Location,
+            val name: Name,
             val constraints: List<ConstraintT>,
-            val decls: List<DeclT>
+            val decls: List<Abstract>
     ) : DeclT() {
+        data class Abstract(
+                val name: Name,
+                val location: Location,
+                val schemeT: SchemeT
+        ) {
+            override fun toString() = "def $name :: $schemeT"
+        }
+
         override fun toString() = "def $name $constraints {\n${decls.joinToString(separator = "\n", prefix = "", postfix = "")}\n}"
     }
 
     data class Value(
-            override val name: Name,
             override val location: Location,
+            val name: Name,
             val schemeT: SchemeT?,
             val expr: ExprT
     ) : DeclT() {
         override fun toString() = "def $name :: $schemeT = $expr"
     }
 
-    data class Abstract(
-            override val name: Name,
-            override val location: Location,
-            val schemeT: SchemeT
-    ) : DeclT() {
-        override fun toString() = "def $name :: $schemeT"
-    }
 }

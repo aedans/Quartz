@@ -43,7 +43,7 @@ object Cli {
                     val fileT = grammar.parse(it.reader())
                     val localEnv = globalEnv.import(fileT)
                     fileT.decls
-                            .foldMap(localEnv) { env, decl -> decl.analyze(env, fileT.`package`, false) }.b
+                            .foldMap(localEnv) { env, decl -> decl.analyze(env, fileT.`package`) }.b
                             .flat()
                             .bind()
                 }
