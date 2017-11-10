@@ -8,13 +8,17 @@ import io.quartz.foldString
 import io.quartz.tree.Name
 import io.quartz.tree.QualifiedName
 import io.quartz.tree.name
-import kategory.right
 
 interface Env {
-    fun getType(name: QualifiedName): Result<TypeInfo>
-    fun getVar(name: QualifiedName): Result<VarInfo>
-    fun getInstance(type: TypeK, instance: TypeK): Result<InstanceInfo>
+    fun getType(name: QualifiedName): Result<TypeInfo>?
+    fun getVar(name: QualifiedName): Result<VarInfo>?
+    fun getInstance(type: TypeK, instance: TypeK): Result<InstanceInfo>?
 }
+
+fun Env.getTypeOrErr(name: QualifiedName) = getType(name) ?: err { "could not find type $name" }
+fun Env.getVarOrErr(name: QualifiedName) = getVar(name) ?: err { "could not find var $name" }
+fun Env.getInstanceOrErr(type: TypeK, instance: TypeK) =
+        getInstance(type, instance) ?: err { "could not find instance of $type for $instance" }
 
 /** ADT representing where an identifier is located */
 sealed class VarLoc {
@@ -36,57 +40,31 @@ data class InstanceInfo(
         val varLoc: VarLoc
 )
 
-val emptyEnv = object : Env {
-    override fun getType(name: QualifiedName) = err { "could not find type $name" }
-    override fun getVar(name: QualifiedName) = err { "could not find variable $name" }
-    override fun getInstance(type: TypeK, instance: TypeK) = err { "could not find instance of $type for $instance" }
-    override fun toString() = "EmptyEnv"
-}
-
-infix fun Env.compose(env: () -> Env) = object : Env {
-    override fun getType(name: QualifiedName) = env().getType(name).fold(
-            { this@compose.getType(name) },
-            { it.right() }
-    )
-
-    override fun getVar(name: QualifiedName) = env().getVar(name).fold(
-            { this@compose.getVar(name) },
-            { it.right() }
-    )
-
-    override fun getInstance(type: TypeK, instance: TypeK) = env().getInstance(type, instance).fold(
-            { this@compose.getInstance(type, instance) },
-            { it.right() }
-    )
-
-    override fun toString() = "${this@compose} compose $env"
-}
-
-fun Env.mapTypes(map: (QualifiedName, Result<TypeInfo>) -> Result<TypeInfo>) = object : Env by this {
+fun Env.mapTypes(map: (QualifiedName, Result<TypeInfo>?) -> Result<TypeInfo>?) = object : Env by this {
     override fun getType(name: QualifiedName) = map(name, this@mapTypes.getType(name))
     override fun toString() = "${this@mapTypes} mapType"
 }
 
-fun Env.mapVars(map: (QualifiedName, Result<VarInfo>) -> Result<VarInfo>) = object : Env by this {
+fun Env.mapVars(map: (QualifiedName, Result<VarInfo>?) -> Result<VarInfo>?) = object : Env by this {
     override fun getVar(name: QualifiedName) = map(name, this@mapVars.getVar(name))
     override fun toString() = "${this@mapVars} mapVars"
 }
 
-fun Env.withType(name: QualifiedName, typeInfo: () -> Result<TypeInfo>) = run {
+fun Env.withType(name: QualifiedName, typeInfo: () -> Result<TypeInfo>?) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name
     object : Env by this {
         override fun getType(name: QualifiedName) = if (name == _name) typeInfo() else this@withType.getType(name)
-        override fun toString() = "${this@withType} withType ${name to typeInfo().foldString()}"
+        override fun toString() = "${this@withType} withType ${name to typeInfo()?.foldString()}"
     }
 }
 
-fun Env.withVar(name: QualifiedName, varInfo: () -> Result<VarInfo>) = run {
+fun Env.withVar(name: QualifiedName, varInfo: () -> Result<VarInfo>?) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name
     object : Env by this {
         override fun getVar(name: QualifiedName) = if (name == _name) varInfo() else this@withVar.getVar(name)
-        override fun toString() = "${this@withVar} withVar ${name to varInfo().foldString()}"
+        override fun toString() = "${this@withVar} withVar ${name to varInfo()?.foldString()}"
     }
 }
 

@@ -4,7 +4,6 @@ import io.quartz.analyze.type.*
 import io.quartz.err.Result
 import io.quartz.err.flat
 import io.quartz.err.resultMonad
-import io.quartz.foldMap
 import io.quartz.interop.varGetterName
 import io.quartz.nil
 import io.quartz.singletonList
@@ -14,66 +13,44 @@ import io.quartz.tree.ast.Package
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.name
-import io.quartz.tree.qualifiedLocal
 import io.quartz.tree.qualify
-import kategory.Tuple2
 import kategory.binding
 import kategory.ev
-import kategory.toT
 
-fun DeclT.analyze(env: Env, p: Package): Tuple2<Env, Result<DeclI>> = when (this) {
+fun DeclT.analyze(env: Env, p: Package): Result<DeclI> = when (this) {
     is DeclT.Interface -> analyze(env, p)
     is DeclT.Value -> analyze(env, p)
-}.let { (a, b) -> a toT b.qualify() }
+}
 
-fun DeclT.Interface.analyze(env: Env, p: Package) = run {
+fun DeclT.Interface.analyze(env: Env, p: Package) = resultMonad().binding {
     val localEnv = constraints.localEnv(env)
-    val (_, abstractsIE) = abstracts
-            .foldMap(localEnv) { env, decl -> decl.analyze(env, p) }
-    val schemeKE = schemeK(localEnv, p)
-    val typeInfo = schemeKE.map { scheme -> TypeInfo(scheme) }
-    val qualifiedName = name.qualify(p)
-    val envP = env.withType(qualifiedName) { typeInfo }
-    envP toT resultMonad().binding {
-        val schemeK = schemeKE.bind()
-        val schemeI = schemeK.schemeI
-        val abstractsI = abstractsIE.flat().bind()
-        val obj = DeclI.Class.Object(schemeI.generics, nil, abstractsI)
-        yields(DeclI.Class(name, location, p, null, obj) as DeclI)
-    }.ev()
-}
+    val abstractsIE = abstracts.map { decl -> decl.analyze(env, p) }
+    val schemeK = schemeK(localEnv, p).bind()
+    val schemeI = schemeK.schemeI
+    val abstractsI = abstractsIE.flat().bind()
+    val obj = DeclI.Class.Object(schemeI.generics, nil, abstractsI)
+    yields(DeclI.Class(name, location, p, null, obj) as DeclI)
+}.ev()
 
-fun DeclT.Interface.Abstract.analyze(env: Env, p: Package) = run {
+fun DeclT.Interface.Abstract.analyze(env: Env, p: Package) = resultMonad().binding {
     val localEnv = schemeT.constraints.localEnv(env)
-    val qualifiedName = name.qualifiedLocal
-    val schemeKE = schemeT.schemeK(localEnv)
-    val varInfo = schemeKE.map { schemeK -> VarInfo(schemeK, VarLoc.Global(qualifiedName)) }
-    val envP = localEnv.withVar(qualifiedName) { varInfo }
-    envP toT resultMonad().binding {
-        val name = name.varGetterName()
-        val scheme = schemeKE.bind().methodScheme(nil)
-        val method = DeclI.Method(name, location, p, scheme, null)
-        yields(method)
-    }.ev()
-}
+    val name = name.varGetterName()
+    val scheme = schemeT.schemeK(localEnv).bind().methodScheme(nil)
+    val method = DeclI.Method(name, location, p, scheme, null)
+    yields(method)
+}.ev()
 
-fun DeclT.Value.analyze(env: Env, p: Package) = run {
+fun DeclT.Value.analyze(env: Env, p: Package) = resultMonad().binding {
     val localEnv1 = schemeT?.constraints?.localEnv(env) ?: env
-    val qualifiedName = name.qualify(p)
-    val schemeKE = schemeK(localEnv1)
-    val varInfo = schemeKE.map { schemeK -> VarInfo(schemeK, VarLoc.Global(qualifiedName)) }
-    val envP = env.withVar(qualifiedName) { varInfo }
-    envP toT resultMonad().binding {
-        val name = name.varGetterName()
-        val schemeK = schemeKE.bind()
-        val scheme = schemeK.methodScheme(nil)
-        val exprI = expr.analyze(envP, p).bind()
-        val method = DeclI.Method(name, location, p, scheme, exprI)
-        val obj = DeclI.Class.Object(nil, nil, method.singletonList())
-        val it = DeclI.Class("$$name".name, location, p, null, obj)
-        yields(it)
-    }.ev()
-}
+    val name = name.varGetterName()
+    val schemeK = schemeK(localEnv1).bind()
+    val scheme = schemeK.methodScheme(nil)
+    val exprI = expr.analyze(env, p).bind()
+    val method = DeclI.Method(name, location, p, scheme, exprI)
+    val obj = DeclI.Class.Object(nil, nil, method.singletonList())
+    val it = DeclI.Class("$$name".name, location, p, null, obj)
+    yields(it)
+}.ev()
 
 fun DeclT.Interface.schemeK(env: Env, qualifier: Qualifier) = resultMonad().binding {
     val it = SchemeK(

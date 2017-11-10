@@ -1,15 +1,13 @@
 package io.quartz.analyze
 
 import io.quartz.tree.QualifiedName
-import io.quartz.tree.ast.FileT
 import io.quartz.tree.ast.ImportT
+import io.quartz.tree.ast.Package
 import io.quartz.tree.qualifiedLocal
-import kategory.Either
-import org.funktionale.collections.prependTo
 
-fun Env.import(fileT: FileT) = import(ImportT.Star(fileT.`package`).prependTo(fileT.imports))
+val Package.import get() = ImportT.Star(this)
 
-fun Env.import(imports: List<ImportT>): Env = imports.fold(this) { a: Env, b -> b.import(a) }
+fun Env.import(imports: List<ImportT>) = imports.fold(this) { a: Env, b -> b.import(a) }
 
 fun ImportT.import(env: Env) = when (this) {
     is ImportT.Star -> import(env)
@@ -17,18 +15,8 @@ fun ImportT.import(env: Env) = when (this) {
 }
 
 fun ImportT.Star.import(env: Env) = env
-        .mapVars { name, value ->
-            when (value) {
-                is Either.Left -> env.getVar(QualifiedName(qualifier, name.string)).bimap({ value.a }, { it })
-                else -> value
-            }
-        }
-        .mapTypes { name, value ->
-            when (value) {
-                is Either.Left -> env.getType(QualifiedName(qualifier, name.string)).bimap({ value.a }, { it })
-                else -> value
-            }
-        }
+        .mapVars { name, value -> value ?: env.getVar(QualifiedName(qualifier, name.string)) }
+        .mapTypes { name, value -> value ?: env.getType(QualifiedName(qualifier, name.string)) }
 
 fun ImportT.Qualified.import(env: Env) = env
         .withVar(alias.qualifiedLocal) { env.getVar(qualifiedName) }

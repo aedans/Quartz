@@ -41,18 +41,19 @@ fun ExprT.Bool.analyze() = ExprI.Bool(location, boolean).right()
 fun ExprT.Cast.analyze(env: Env, p: Package) = expr.analyze(env, p)
 
 fun ExprT.Id.analyze(env: Env) = resultMonad().binding {
-    val memLoc = env.getVar(name).bind().varLoc
-    val it = when (memLoc) {
-        is VarLoc.Arg -> ExprI.Arg(location, memLoc.index)
+    val varInfo = env.getVarOrErr(name).bind()
+    val varLoc = varInfo.varLoc
+    val it = when (varLoc) {
+        is VarLoc.Arg -> ExprI.Arg(location, varLoc.index)
         is VarLoc.Field -> ExprI.LocalField(
                 location,
-                memLoc.name,
-                env.getVar(name).bind().scheme.instantiate().typeI
+                varLoc.name,
+                varInfo.scheme.instantiate().typeI
         )
         is VarLoc.Global -> ExprI.InvokeStatic(
                 location,
-                memLoc.name.varClassName().typeI,
-                env.getVar(name).bind().scheme.instantiate().typeI,
+                varLoc.name.varClassName().typeI,
+                varInfo.scheme.instantiate().typeI,
                 name.unqualified.varGetterName(),
                 nil
         )
@@ -96,11 +97,11 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = resultMonad().binding {
     val genericsI = typeK.generalize(env, s1).constraints.map { it.genericI }
     val localEnv = env
             .mapVars { name, err ->
-                err.map { closuresMap[name]?.let { varLoc -> it.copy(varLoc = varLoc) } ?: it }
+                err?.map { closuresMap[name]?.let { varLoc -> it.copy(varLoc = varLoc) } ?: it }
             }
             .withVar(arg.qualifiedLocal) { VarInfo(argTypeK.scheme, VarLoc.Arg(0)).right() }
     val closuresI = closures.map {
-        val typeI = apply(localEnv.getVar(it).bind().scheme, s1).instantiate().typeI
+        val typeI = apply(localEnv.getVarOrErr(it).bind().scheme, s1).instantiate().typeI
         Tuple2(
                 ExprT.Id(Location.unknown, it).analyze(env).bind(),
                 ExprI.LocalField(Location.unknown, it.unqualified, typeI)

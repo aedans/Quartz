@@ -1,9 +1,6 @@
 package io.quartz.analyze.type
 
-import io.quartz.analyze.Env
-import io.quartz.analyze.TypeInfo
-import io.quartz.analyze.fresh
-import io.quartz.analyze.withType
+import io.quartz.analyze.*
 import io.quartz.err.Result
 import io.quartz.err.err
 import io.quartz.err.resultMonad
@@ -67,7 +64,7 @@ val TypeK.scheme get() = SchemeK(nil, this)
 /** Generalizes a type to a type scheme by pulling all type variables into constraints */
 fun TypeK.generalize(env: Env, subst: Subst) = SchemeK(
         freeTypeVariables.filterNot { name ->
-            env.getType(name.qualifiedLocal).bimap(
+            env.getTypeOrErr(name.qualifiedLocal).bimap(
                     { false },
                     { it.scheme.constraints.any { it.name == name } }
             ).fold(::identity, ::identity)
@@ -102,7 +99,7 @@ fun List<ConstraintT>.localEnv(env: Env) = fold(env) { envP, generic ->
 
 fun TypeT.typeK(env: Env): Result<TypeK> = when (this) {
     is TypeT.Id -> env
-            .getType(name.qualifiedLocal)
+            .getTypeOrErr(name.qualifiedLocal)
             .map { it.scheme.instantiate() }
             .qualify()
     is TypeT.Apply -> resultMonad()

@@ -2,23 +2,18 @@ package io.quartz.cli
 
 import com.xenomachina.argparser.ShowHelpException
 import io.quartz.analyze.analyze
-import io.quartz.analyze.compose
-import io.quartz.analyze.emptyEnv
 import io.quartz.analyze.import
 import io.quartz.err.flat
 import io.quartz.err.resultMonad
 import io.quartz.err.write
-import io.quartz.foldMap
 import io.quartz.gen.asm.ProgramGenerator
 import io.quartz.gen.generate
-import io.quartz.interop.ClassPathEnv
+import io.quartz.interop.GlobalEnv
 import io.quartz.interop.classPath
-import io.quartz.interop.withSource
-import io.quartz.parse.QuartzGrammar
-import io.quartz.parse.fileT
+import io.quartz.interop.decls
+import io.quartz.interop.sourcePath
 import kategory.binding
 import kategory.ev
-import org.funktionale.memoization.memoize
 import java.io.File
 
 /** The main entry point for the Quartz compiler */
@@ -35,23 +30,15 @@ object Cli {
                         .writeBytes(it.cw.toByteArray())
             }
 
-            val ir = resultMonad().binding {
-                val globalEnv = (emptyEnv compose { ClassPathEnv(options.cp.classPath()) }.memoize())
-                        .withSource(options.sp, pg).bind()
+            resultMonad().binding {
+                val globalEnv = GlobalEnv(options.cp.classPath(), options.sp.sourcePath(), pg)
 
-                val it = options.src.flatMap {
-                    val grammar = QuartzGrammar.create(it.name) { fileT }
-                    val fileT = grammar.parse(it.reader())
-                    val localEnv = globalEnv.import(fileT)
-                    fileT.decls
-                            .foldMap(localEnv) { env, decl -> decl.analyze(env, fileT.`package`) }.b
-                            .flat()
-                            .bind()
-                }
+                val it = options.src.decls().map { (p, imports, decl) ->
+                    decl.analyze(globalEnv.import(imports), p)
+                }.flat().bind()
+
                 yields(it)
-            }.ev()
-
-            ir.bimap(
+            }.ev().bimap(
                     { it.write() },
                     { it.generate(pg) }
             )

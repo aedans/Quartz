@@ -15,7 +15,7 @@ typealias InferState = Tuple2<Subst, TypeK>
 fun ExprT.infer(env: Env): Infer = when (this) {
     is ExprT.Unit -> (emptySubst toT TypeK.unit).right()
     is ExprT.Bool -> (emptySubst toT TypeK.bool).right()
-    is ExprT.Id -> env.getVar(name).map { emptySubst toT it.scheme.instantiate() }.qualify()
+    is ExprT.Id -> env.getVarOrErr(name).map { emptySubst toT it.scheme.instantiate() }.qualify()
     is ExprT.Cast -> resultMonad().binding {
         val typeK = type.typeK(env).bind()
         val (s1, exprType) = expr.infer(env).bind()
