@@ -31,5 +31,4 @@ sealed class DeclT : Locatable {
     ) : DeclT() {
         override fun toString() = "def $name :: $schemeT = $expr"
     }
-
 }

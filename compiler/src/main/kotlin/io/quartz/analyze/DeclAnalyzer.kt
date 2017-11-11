@@ -34,7 +34,6 @@ fun DeclT.Interface.analyze(env: Env, p: Package) = resultMonad().binding {
 
 fun DeclT.Interface.Abstract.analyze(env: Env, p: Package) = resultMonad().binding {
     val localEnv = schemeT.constraints.localEnv(env)
-    val name = name.varGetterName()
     val scheme = schemeT.schemeK(localEnv).bind().methodScheme(nil)
     val method = DeclI.Method(name, location, p, scheme, null)
     yields(method)
@@ -42,11 +41,10 @@ fun DeclT.Interface.Abstract.analyze(env: Env, p: Package) = resultMonad().bindi
 
 fun DeclT.Value.analyze(env: Env, p: Package) = resultMonad().binding {
     val localEnv1 = schemeT?.constraints?.localEnv(env) ?: env
-    val name = name.varGetterName()
     val schemeK = schemeK(localEnv1).bind()
     val scheme = schemeK.methodScheme(nil)
     val exprI = expr.analyze(env, p).bind()
-    val method = DeclI.Method(name, location, p, scheme, exprI)
+    val method = DeclI.Method(name.varGetterName(), location, p, scheme, exprI)
     val obj = DeclI.Class.Object(nil, nil, method.singletonList())
     val it = DeclI.Class("$$name".name, location, p, null, obj)
     yields(it)
