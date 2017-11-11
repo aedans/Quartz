@@ -24,7 +24,7 @@ fun DeclT.analyze(env: Env, p: Package): Result<DeclI> = when (this) {
 
 fun DeclT.Interface.analyze(env: Env, p: Package) = resultMonad().binding {
     val localEnv = constraints.localEnv(env)
-    val abstractsIE = abstracts.map { decl -> decl.analyze(env, p) }
+    val abstractsIE = abstracts.map { decl -> decl.analyze(localEnv, p) }
     val schemeK = schemeK(localEnv, p).bind()
     val schemeI = schemeK.schemeI
     val abstractsI = abstractsIE.flat().bind()
