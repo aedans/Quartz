@@ -26,6 +26,7 @@ abstract class QuartzGrammar<out T>(val uri: String) : Grammar<T>() {
     val DOT by token("\\.")
     val STAR by token("\\*")
     val INTERFACE by token("interface\\b")
+    val INSTANCE by token("instance\\b")
     val PACKAGE by token("package\\b")
     val IMPORT by token("import\\b")
     val FALSE by token("false\\b")

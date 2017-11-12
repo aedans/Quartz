@@ -11,6 +11,7 @@ import io.quartz.tree.Qualifier
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.ast.Package
 import io.quartz.tree.ir.DeclI
+import io.quartz.tree.ir.ExprI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.name
 import io.quartz.tree.qualify
@@ -20,6 +21,7 @@ import kategory.ev
 fun DeclT.analyze(env: Env, p: Package): Result<DeclI> = when (this) {
     is DeclT.Interface -> analyze(env, p)
     is DeclT.Value -> analyze(env, p)
+    is DeclT.Instance -> analyze(env, p)
 }
 
 fun DeclT.Interface.analyze(env: Env, p: Package) = resultMonad().binding {
@@ -45,15 +47,35 @@ fun DeclT.Interface.Abstract.analyze(env: Env, p: Package) = resultMonad().bindi
 }.ev()
 
 fun DeclT.Value.analyze(env: Env, p: Package) = resultMonad().binding {
+    val local = analyzeLocal(env, p).bind().copy(name = name.varGetterName())
+    val obj = DeclI.Class.Object(nil, nil, local.singletonList())
+    val it = DeclI.Class("$$name".name, location, p, null, obj)
+    yields(it)
+}.ev()
+
+fun DeclT.Value.analyzeLocal(env: Env, p: Package) = resultMonad().binding {
     val localEnv1 = schemeT?.constraints?.localEnv(env) ?: env
     val schemeK = schemeK(localEnv1).bind()
     val constraints = schemeK.constraints.filter { it.type != TypeK.any }
     val constraintParams = constraints.map { it.type.apply(it.name.tVar).typeI }
     val scheme = schemeK.methodScheme(constraintParams)
     val exprI = expr.analyze(env, p).bind()
-    val method = DeclI.Method(name.varGetterName(), location, p, scheme, exprI)
-    val obj = DeclI.Class.Object(nil, nil, method.singletonList())
-    val it = DeclI.Class("$$name".name, location, p, null, obj)
+    val method = DeclI.Method(name, location, p, scheme, exprI)
+    yields(method)
+}.ev()
+
+fun DeclT.Instance.analyze(env: Env, p: Package) = resultMonad().binding {
+    val typeK = type.typeK(env).bind()
+    val instanceK = instance.typeK(env).bind()
+    val extensionK = typeK.apply(instanceK)
+    val typeI = typeK.typeI
+    val instanceI = instanceK.typeI
+    val extensionI = extensionK.typeI
+    val name = "${instanceI.qualifiedName.string}${typeI.qualifiedName.string}\$Instance".name
+    val constructor = DeclI.Class.Constructor(nil, ExprI.Block(location, nil))
+    val implsI = impls.map { it.analyzeLocal(env, p) }.flat().bind()
+    val obj = DeclI.Class.Object(nil, extensionI.singletonList(), implsI)
+    val it = DeclI.Class(name, location, p, constructor, obj)
     yields(it)
 }.ev()
 

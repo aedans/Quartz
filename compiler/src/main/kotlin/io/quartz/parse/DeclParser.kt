@@ -3,11 +3,13 @@ package io.quartz.parse
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
+import io.quartz.nil
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.name
 
 val QuartzGrammar<*>.declT: Parser<DeclT> get() = parser { interfaceDeclT } or
-        parser { valueDeclT }
+        parser { valueDeclT } or
+        parser { instanceDeclT }
 
 val QuartzGrammar<*>.interfaceDeclT: Parser<DeclT.Interface> get() = skip(INTERFACE) and
         ID and
@@ -31,4 +33,14 @@ val QuartzGrammar<*>.valueDeclT: Parser<DeclT.Value> get() = skip(DEF) and
         skip(EQ) and
         parser { exprT } use {
     DeclT.Value(t1.location, t1.text.name, t2, t3)
+}
+
+val QuartzGrammar<*>.instanceDeclT: Parser<DeclT.Instance> get() = skip(INSTANCE) and
+        optional(zeroOrMore(parser { constraintT } and skip(FAT_ARROW))) and
+        parser { atomicTypeT } and
+        parser { typeT } and
+        skip(O_BRACKET) and
+        zeroOrMore(parser { valueDeclT }) and
+        skip(C_BRACKET) use {
+    DeclT.Instance(t3.location, t1 ?: nil, t2, t3, t4)
 }

@@ -31,4 +31,12 @@ sealed class DeclT : Locatable {
     ) : DeclT() {
         override fun toString() = "def $name :: $schemeT = $expr"
     }
+
+    data class Instance(
+            override val location: Location,
+            val constraints: List<ConstraintT>,
+            val type: TypeT,
+            val instance: TypeT,
+            val impls: List<Value>
+    ) : DeclT()
 }
