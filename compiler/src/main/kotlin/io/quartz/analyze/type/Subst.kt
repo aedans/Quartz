@@ -31,7 +31,7 @@ fun apply(type: TypeK, subst: Subst): TypeK = when (type) {
 
 /** Lazily applies a substitution to all types in an environment */
 fun apply(env: Env, subst: Subst): Env = env.mapTypes { _, it ->
-    it.map { apply(it, subst) }
+    it?.map { apply(it, subst) }
 }
 
 fun apply(typeInfo: TypeInfo, subst: Subst): TypeInfo = typeInfo.copy(
