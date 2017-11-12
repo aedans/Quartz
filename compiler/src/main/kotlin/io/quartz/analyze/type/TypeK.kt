@@ -16,8 +16,12 @@ import io.quartz.tree.qualifiedLocal
 import kategory.*
 
 /** Class representing a constraintT for compiler analysis */
-data class ConstraintK(val type: TypeK?, val name: Name) {
+data class ConstraintK(val type: TypeK, val name: Name) {
     override fun toString() = "($type $name) =>"
+
+    companion object {
+        operator fun invoke(type: TypeK?, name: Name) = ConstraintK(type ?: TypeK.any, name)
+    }
 }
 
 /** Class representing a type scheme for compiler analysis */
@@ -58,6 +62,10 @@ val TypeK.arrow get() =
         TypeK.Arrow(t1.t2, t2).right()
     else
         err { "expected function, found $this" }
+
+fun TypeK.apply(type: TypeK) = TypeK.Apply(this, type)
+
+val Name.tVar get() = TypeK.Var(this)
 
 val TypeK.scheme get() = SchemeK(nil, this)
 

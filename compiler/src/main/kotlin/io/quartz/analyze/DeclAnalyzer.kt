@@ -24,10 +24,15 @@ fun DeclT.analyze(env: Env, p: Package): Result<DeclI> = when (this) {
 
 fun DeclT.Interface.analyze(env: Env, p: Package) = resultMonad().binding {
     val localEnv = constraints.localEnv(env)
-    val abstractsIE = abstracts.map { decl -> decl.analyze(localEnv, p) }
     val schemeK = schemeK(localEnv, p).bind()
+    val constraints = schemeK.constraints.filter { it.type != TypeK.any }
+    val constraintAbstractsI = constraints.map {
+        val scheme = DeclI.Method.Scheme(nil, nil, it.type.apply(it.name.tVar).typeI)
+        DeclI.Method("${it.name}$${it.type}".name, location, p, scheme, null)
+    }
+    val abstractsI = abstracts.map { decl -> decl.analyze(localEnv, p) }.flat().bind() +
+            constraintAbstractsI
     val schemeI = schemeK.schemeI
-    val abstractsI = abstractsIE.flat().bind()
     val obj = DeclI.Class.Object(schemeI.generics, nil, abstractsI)
     yields(DeclI.Class(name, location, p, null, obj) as DeclI)
 }.ev()
