@@ -16,6 +16,7 @@ dependencies {
     compile 'org.ow2.asm:asm-all:5.2'
     compile 'com.xenomachina:kotlin-argparser:2.0.3'
     compile 'io.github.aedans:kotlin-cons:2.0.1'
+    compile 'io.github.aedans:parsek:1.0.0'
     compile 'io.kategory:kategory:0.3.11'
     compile 'io.kategory:kategory-effects:0.3.11'
     compile 'io.kategory:kategory-optics:0.3.11'
