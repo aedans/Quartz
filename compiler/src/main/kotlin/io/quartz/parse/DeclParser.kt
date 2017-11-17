@@ -7,25 +7,25 @@ import io.quartz.tree.ast.DeclT
 import io.quartz.tree.name
 import io.quartz.tup
 
-val String.declP: QuartzParser<DeclT> get() = parser { interfaceDeclP } or
+val String.declP: QuartzParser<DeclT> get() = parser { traitDeclP } or
         parser { valueDeclP } or
         parser { instanceDeclP }
 
-val String.interfaceDeclP: QuartzParser<DeclT.Interface> get() = skip(TokenType.INTERFACE) then
+val String.traitDeclP: QuartzParser<DeclT.Trait> get() = skip(TokenType.TRAIT) then
         TokenType.ID then
         list(parser { constraintP }) then
         skip(TokenType.O_BRACKET) then
-        list(parser { abstractP }) then
+        list(parser { memberP }) then
         skip(TokenType.C_BRACKET) map {
     val (t1, t2, t3) = it.tup()
-    DeclT.Interface(t1.location(this), t1.text.name, t2, t3)
+    DeclT.Trait(t1.location(this), t1.text.name, t2, t3)
 }
 
-val String.abstractP: QuartzParser<DeclT.Interface.Abstract> get() = skip(TokenType.DEF) then
+val String.memberP: QuartzParser<DeclT.Trait.Member> get() = skip(TokenType.DEF) then
         TokenType.ID then
         skip(TokenType.EXTENDS) then
         parser { schemeP } map { (t1, t2) ->
-    DeclT.Interface.Abstract(t1.text.name, t1.location(this), t2)
+    DeclT.Trait.Member(t1.text.name, t1.location(this), t2)
 }
 
 val String.valueDeclP: QuartzParser<DeclT.Value> get() = skip(TokenType.DEF) then

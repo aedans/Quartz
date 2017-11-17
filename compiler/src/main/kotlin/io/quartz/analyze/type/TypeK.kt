@@ -15,7 +15,7 @@ import io.quartz.tree.ir.*
 import io.quartz.tree.qualifiedLocal
 import kategory.*
 
-/** Class representing a constraintT for compiler analysis */
+/** Class representing a constraint for compiler analysis */
 data class ConstraintK(val type: TypeK, val name: Name) {
     override fun toString() = "($type $name) =>"
 

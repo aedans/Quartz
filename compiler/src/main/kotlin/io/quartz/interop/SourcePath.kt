@@ -19,7 +19,7 @@ import org.funktionale.collections.prependTo
 import java.io.File
 
 interface SourcePath {
-    fun getInterface(name: QualifiedName): Result<DeclTInfo<DeclT.Interface>>?
+    fun getTrait(name: QualifiedName): Result<DeclTInfo<DeclT.Trait>>?
     fun getValue(name: QualifiedName): Result<DeclTInfo<DeclT.Value>>?
     fun getInstances(): List<DeclTInfo<DeclT.Instance>>
 }
@@ -27,8 +27,8 @@ interface SourcePath {
 fun List<File>.sourcePath() = object : SourcePath {
     val decls = flatMap { it.decls() }
 
-    val interfaceMap = decls.mapNotNull { (a, b, c) ->
-        (c as? DeclT.Interface)?.let { it.name.qualify(a) to Tuple3(a, b, it) }
+    val traitMap = decls.mapNotNull { (a, b, c) ->
+        (c as? DeclT.Trait)?.let { it.name.qualify(a) to Tuple3(a, b, it) }
     }.toMap()
 
     val valueMap = decls.mapNotNull { (a, b, c) ->
@@ -38,8 +38,8 @@ fun List<File>.sourcePath() = object : SourcePath {
     private val instances = decls
             .mapNotNull { (a, b, c) -> (c as? DeclT.Instance)?.let { Tuple3(a, b, it) } }
 
-    override fun getInterface(name: QualifiedName) =
-            interfaceMap[name]?.right()
+    override fun getTrait(name: QualifiedName) =
+            traitMap[name]?.right()
 
     override fun getValue(name: QualifiedName) =
             valueMap[name]?.right()
@@ -47,7 +47,7 @@ fun List<File>.sourcePath() = object : SourcePath {
     override fun getInstances() = instances
 }
 
-fun SourcePath.getType(name: QualifiedName, env: Env, pg: ProgramGenerator) = getInterface(name)?.let {
+fun SourcePath.getType(name: QualifiedName, env: Env, pg: ProgramGenerator) = getTrait(name)?.let {
     resultMonad().binding {
         val (p, imports, decl) = it.bind()
         val localEnv = env.import(p.import.prependTo(imports))

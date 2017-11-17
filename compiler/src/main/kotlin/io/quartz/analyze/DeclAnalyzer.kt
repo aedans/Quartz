@@ -19,12 +19,12 @@ import kategory.binding
 import kategory.ev
 
 fun DeclT.analyze(env: Env, p: Package): Result<DeclI> = when (this) {
-    is DeclT.Interface -> analyze(env, p)
+    is DeclT.Trait -> analyze(env, p)
     is DeclT.Value -> analyze(env, p)
     is DeclT.Instance -> analyze(env, p)
 }
 
-fun DeclT.Interface.analyze(env: Env, p: Package) = resultMonad().binding {
+fun DeclT.Trait.analyze(env: Env, p: Package) = resultMonad().binding {
     val localEnv = constraints.localEnv(env)
     val schemeK = schemeK(localEnv, p).bind()
     val constraints = schemeK.constraints.filter { it.type != TypeK.any }
@@ -32,14 +32,14 @@ fun DeclT.Interface.analyze(env: Env, p: Package) = resultMonad().binding {
         val scheme = DeclI.Method.Scheme(nil, nil, it.type.apply(it.name.tVar).typeI)
         DeclI.Method("${it.name}$${it.type}".name, location, p, scheme, null)
     }
-    val abstractsI = abstracts.map { decl -> decl.analyze(localEnv, p) }.flat().bind() +
+    val abstractsI = members.map { decl -> decl.analyze(localEnv, p) }.flat().bind() +
             constraintAbstractsI
     val schemeI = schemeK.schemeI
     val obj = DeclI.Class.Object(schemeI.generics, nil, abstractsI)
     yields(DeclI.Class(name, location, p, null, obj) as DeclI)
 }.ev()
 
-fun DeclT.Interface.Abstract.analyze(env: Env, p: Package) = resultMonad().binding {
+fun DeclT.Trait.Member.analyze(env: Env, p: Package) = resultMonad().binding {
     val localEnv = schemeT.constraints.localEnv(env)
     val scheme = schemeT.schemeK(localEnv).bind().methodScheme(nil)
     val method = DeclI.Method(name, location, p, scheme, null)
@@ -79,7 +79,7 @@ fun DeclT.Instance.analyze(env: Env, p: Package) = resultMonad().binding {
     yields(it)
 }.ev()
 
-fun DeclT.Interface.schemeK(env: Env, qualifier: Qualifier) = resultMonad().binding {
+fun DeclT.Trait.schemeK(env: Env, qualifier: Qualifier) = resultMonad().binding {
     val it = SchemeK(
             constraints.map { it.constraintK(env).bind() },
             TypeK.Const(name.qualify(qualifier))
