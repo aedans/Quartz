@@ -1,45 +1,50 @@
 package io.quartz.parse
 
-import com.github.h0tk3y.betterParse.combinators.*
-import com.github.h0tk3y.betterParse.grammar.parser
-import com.github.h0tk3y.betterParse.parser.Parser
+import io.github.aedans.parsek.dsl.*
+import io.github.aedans.parsek.optional
+import io.quartz.nil
 import io.quartz.tree.ast.ConstraintT
 import io.quartz.tree.ast.SchemeT
 import io.quartz.tree.ast.TypeT
 import io.quartz.tree.ast.apply
 import io.quartz.tree.name
 
-val QuartzGrammar<*>.schemeT: Parser<SchemeT> get() = optional(oneOrMore(constraintT) and skip(FAT_ARROW)) and parser { typeT } use {
-    SchemeT(t1 ?: emptyList(), t2)
+val String.schemeP: QuartzParser<SchemeT> get() =
+    optional(list(parser { constraintP }) then skip(TokenType.FAT_ARROW)) then
+        parser { typeP } map {
+    SchemeT(it.first ?: nil, it.second)
 }
 
-val QuartzGrammar<*>.constraintT: Parser<ConstraintT> get() = skip(O_PAREN) and
-        parser { atomicTypeT } and
-        ID and
-        skip(C_PAREN) use {
-    ConstraintT(t1, t2.text.name)
-} or (ID use { ConstraintT(null, text.name) })
+val String.constraintP: QuartzParser<ConstraintT> get() = skip(TokenType.O_PAREN) then
+        parser { atomicTypeP } then
+        TokenType.ID then
+        skip(TokenType.C_PAREN) map {
+    ConstraintT(it.first, it.second.text.name)
+} or (TokenType.ID map { ConstraintT(null, it.text.name) })
 
-val QuartzGrammar<*>.typeT: Parser<TypeT> get() = parser { functionTypeT }
+val String.typeP: QuartzParser<TypeT> get() = parser { functionTypeP }
 
-val QuartzGrammar<*>.functionTypeT: Parser<TypeT> get() = parser { applyTypeT } and
-        optional(skip(ARROW) and parser { functionTypeT }) use {
+val String.functionTypeP: QuartzParser<TypeT> get() = parser { applyTypeP } then
+        optional(skip(TokenType.ARROW) then parser { functionTypeP }) map { (t1, t2) ->
     t2?.let { TypeT.function(t1, it) } ?: t1
 }
 
-val QuartzGrammar<*>.applyTypeT: Parser<TypeT> get() = parser { atomicTypeT } and
-        zeroOrMore(parser { atomicTypeT }) use {
-    t2.fold(t1) { a, b -> a.apply(b) }
+val String.applyTypeP: QuartzParser<TypeT> get() = parser { atomicTypeP } then
+        optional(parser { applyTypeP }) map { (t1, t2) ->
+    t2?.let { t1.apply(it) } ?: t1
 }
 
-val QuartzGrammar<*>.atomicTypeT: Parser<TypeT> get() = parser { idType } or
-        parser { unitTypeT } or
-        parser { parenthesizedTypeT }
+val String.atomicTypeP: QuartzParser<TypeT> get() = parser { idTypeP } or
+        parser { unitTypeP } or
+        parser { parenthesizedTypeP }
 
-val QuartzGrammar<*>.idType: Parser<TypeT> get() = ID use {
-    TypeT.Id(location, text.name)
+val String.idTypeP: QuartzParser<TypeT> get() = TokenType.ID map {
+    TypeT.Id(it.location(this), it.text.name)
 }
 
-val QuartzGrammar<*>.unitTypeT: Parser<TypeT> get() = O_PAREN and C_PAREN use { TypeT.unit }
+val String.unitTypeP: QuartzParser<TypeT> get() = TokenType.O_PAREN then skip(TokenType.C_PAREN) map {
+    TypeT.unit.copy(location = it.location(this))
+}
 
-val QuartzGrammar<*>.parenthesizedTypeT: Parser<TypeT> get() = skip(O_PAREN) and parser { typeT } and skip(C_PAREN)
+val String.parenthesizedTypeP: QuartzParser<TypeT> get() =
+    skip(TokenType.O_PAREN) then parser { typeP } then skip(TokenType.C_PAREN)

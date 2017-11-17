@@ -1,8 +1,9 @@
 package io.quartz.parse
 
-import com.github.h0tk3y.betterParse.combinators.*
-import com.github.h0tk3y.betterParse.grammar.parser
-import com.github.h0tk3y.betterParse.parser.Parser
+import io.github.aedans.parsek.dsl.*
+import io.github.aedans.parsek.optional
+import io.github.aedans.parsek.toSuccessOrExcept
+import io.github.aedans.parsek.tokenizer.tokenize
 import io.quartz.nil
 import io.quartz.tree.Qualifier
 import io.quartz.tree.ast.FileT
@@ -10,31 +11,38 @@ import io.quartz.tree.ast.ImportT
 import io.quartz.tree.name
 import io.quartz.tree.qualifiedName
 import io.quartz.tree.unqualified
+import java.io.File
 
-val QuartzGrammar<*>.fileT: Parser<FileT> get() = optional(parser { packageT }) and
-        zeroOrMore(parser { importT }) and
-        zeroOrMore(parser { declT }) use {
-    FileT(t1 ?: nil, t2, t3)
+fun File.parse() = run {
+    try {
+        val rest = tokenize(TokenType.tokens) + eofToken
+        val (rest1, p) = packageP(rest).toSuccessOrExcept()
+        val (rest2, imports) = list(importP)(rest1).toSuccessOrExcept()
+        val (rest3, decls) = (list(name.declP) then skip(TokenType.EOF))(rest2).toSuccessOrExcept()
+        if (rest3.any())
+            throw Exception("Unexpected token ${rest3.first()}")
+        FileT(p, imports, decls)
+    } catch (e: Exception) {
+        throw Exception("Exception parsing $name", e)
+    }
 }
 
-val QuartzGrammar<*>.packageT: Parser<Qualifier> get() = skip(PACKAGE) and qualifier
-
-val QuartzGrammar<*>.importT: Parser<ImportT> get() = parser { importTStar } or
-        parser { importTQualified }
-
-val QuartzGrammar<*>.importTQualified: Parser<ImportT.Qualified> get() = skip(IMPORT) and
-        qualifier and
-        optional(skip(AS) and ID) use {
-    ImportT.Qualified(
-            t1.qualifiedName,
-            t2?.text?.name ?: t1.qualifiedName.unqualified
-    )
+val packageP: QuartzParser<Qualifier> get() = optional(skip(TokenType.PACKAGE) then parser { qualifierP }) map {
+    it ?: nil
 }
 
-val QuartzGrammar<*>.importTStar: Parser<ImportT.Star> get() = skip(IMPORT) and skip(STAR) and qualifier use {
-    ImportT.Star(this)
+val importP: QuartzParser<ImportT> get() = parser { importStarP } or parser { importQualifiedP }
+
+val importQualifiedP: QuartzParser<ImportT.Qualified> get() = skip(TokenType.IMPORT) then
+        parser { qualifierP } then
+        optional(skip(TokenType.AS) then TokenType.ID) map { (t1, t2) ->
+    ImportT.Qualified(t1.qualifiedName, t2?.text?.name ?: t1.qualifiedName.unqualified)
 }
 
-val QuartzGrammar<*>.qualifier: Parser<Qualifier> get() = zeroOrMore(ID and DOT) and ID use {
-    t1.map { it.t1.text } + t2.text
-}
+val importStarP: QuartzParser<ImportT.Star> get() =
+    skip(TokenType.IMPORT) then skip(TokenType.STAR) then parser { qualifierP } map { ImportT.Star(it.second) }
+
+val qualifierP: QuartzParser<Qualifier> get() =
+    list(TokenType.ID then skip(TokenType.DOT)) then TokenType.ID map { (t1, t2) ->
+        (t1 + t2).map { it.text }
+    }

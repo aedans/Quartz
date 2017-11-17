@@ -1,58 +1,57 @@
 package io.quartz.parse
 
-import com.github.h0tk3y.betterParse.combinators.*
-import com.github.h0tk3y.betterParse.grammar.parser
-import com.github.h0tk3y.betterParse.parser.Parser
+import io.github.aedans.parsek.dsl.*
+import io.github.aedans.parsek.optional
 import io.quartz.tree.ast.ExprT
 import io.quartz.tree.name
-import io.quartz.tree.qualifiedName
+import io.quartz.tree.qualifiedLocal
+import io.quartz.tup
 
-val QuartzGrammar<*>.exprT: Parser<ExprT> get() = parser { lambdaExprT } or
-        parser { ifExprT } or
-        parser { castExprT }
+val String.exprP: QuartzParser<ExprT> get() = parser { lambdaExprP } or
+        parser { ifExprP } or
+        parser { castExprP }
 
-val QuartzGrammar<*>.ifExprT: Parser<ExprT> get() = IF and
-        parser { exprT } and
-        THEN and
-        parser { exprT } and
-        ELSE and
-        parser { exprT } use {
-    ExprT.If(t1.location, t2, t4, t6)
+val String.lambdaExprP: QuartzParser<ExprT> get() = skip(TokenType.BACKSLASH) then
+        TokenType.ID then
+        skip(TokenType.ARROW) then
+        parser { exprP } map { (t1, t2) ->
+    ExprT.Lambda(t1.location(this), t1.text.name, t2)
 }
 
-val QuartzGrammar<*>.lambdaExprT: Parser<ExprT.Lambda> get() = skip(BACKSLASH) and
-        ID and
-        skip(ARROW) and
-        exprT use {
-    ExprT.Lambda(t1.location, t1.text.name, t2)
+val String.ifExprP: QuartzParser<ExprT> get() = TokenType.IF then
+        parser { exprP } then
+        skip(TokenType.THEN) then
+        parser { exprP } then
+        skip(TokenType.ELSE) then
+        parser { exprP } map {
+    val (t1, t2, t3, t4) = it.tup()
+    ExprT.If(t1.location(this), t2, t3, t4)
 }
 
-val QuartzGrammar<*>.castExprT: Parser<ExprT> get() = parser { applyExprT } and
-        optional(skip(EXTENDS) and parser { typeT }) use {
-    t2?.run { ExprT.Cast(t1.location, t1, this) } ?: t1
+val String.castExprP: QuartzParser<ExprT> get() = parser { applyExprP } then
+        optional(skip(TokenType.EXTENDS) then parser { typeP }) map { (t1, t2) ->
+    t2?.let { ExprT.Cast(t1.location, t1, it) } ?: t1
 }
 
-val QuartzGrammar<*>.applyExprT: Parser<ExprT> get() = parser { atomicExprT } and zeroOrMore(parser { atomicExprT }) use {
-    t2.fold(t1) { a, b -> ExprT.Apply(b.location, a, b) }
+val String.applyExprP: QuartzParser<ExprT> get() = parser { atomicExprP } then
+        optional(parser { applyExprP }) map { (t1, t2) ->
+    t2?.let { ExprT.Apply(t1.location, t1, it) } ?: t1
 }
 
-val QuartzGrammar<*>.atomicExprT: Parser<ExprT> get() = parser { unitExprT } or
-        parser { parenthesizedExprT } or
-        parser { booleanExprT } or
-        parser { idExprT }
+val String.atomicExprP: QuartzParser<ExprT> get() = parser { unitExprP } or
+        parser { parenthesizedExprP } or
+        parser { booleanExprP } or
+        parser { idExprP }
 
-val QuartzGrammar<*>.unitExprT: Parser<ExprT> get() = O_PAREN and skip(C_PAREN) use {
-    ExprT.Unit(location)
-}
+val String.unitExprP: QuartzParser<ExprT> get() =
+    TokenType.O_PAREN then skip(TokenType.C_PAREN) map { ExprT.Unit(it.location(this)) }
 
-val QuartzGrammar<*>.parenthesizedExprT: Parser<ExprT> get() = skip(O_PAREN) and
-        parser { exprT } and
-        skip(C_PAREN)
+val String.parenthesizedExprP: QuartzParser<ExprT> get() =
+    skip(TokenType.O_PAREN) then parser { exprP } then skip(TokenType.C_PAREN)
 
-val QuartzGrammar<*>.idExprT: Parser<ExprT> get() = parser { ID } use {
-    ExprT.Id(location, text.split('/').qualifiedName)
-}
+val String.idExprP: QuartzParser<ExprT> get() =
+    TokenType.ID map { ExprT.Id(it.location(this), it.text.name.qualifiedLocal) }
 
-val QuartzGrammar<*>.booleanExprT: Parser<ExprT> get() = TRUE or FALSE use {
-    ExprT.Bool(location, text.toBoolean())
+val String.booleanExprP: QuartzParser<ExprT> get() = TokenType.TRUE or TokenType.FALSE map {
+    ExprT.Bool(it.location(this), it.text.toBoolean())
 }

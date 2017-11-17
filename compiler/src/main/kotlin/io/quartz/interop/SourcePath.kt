@@ -1,13 +1,11 @@
 package io.quartz.interop
 
-import com.github.h0tk3y.betterParse.grammar.parseToEnd
 import io.quartz.analyze.*
 import io.quartz.err.Result
 import io.quartz.err.resultMonad
 import io.quartz.gen.asm.ProgramGenerator
 import io.quartz.gen.generate
-import io.quartz.parse.QuartzGrammar
-import io.quartz.parse.fileT
+import io.quartz.parse.parse
 import io.quartz.tree.QualifiedName
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.ast.ImportT
@@ -77,8 +75,7 @@ typealias DeclTInfo<T> = Tuple3<Package, List<ImportT>, T>
 fun List<File>.decls() = flatMap { it.decls() }
 
 fun File.decls(): List<DeclTInfo<DeclT>> = if (isFile) {
-    val grammar = QuartzGrammar.create(name) { fileT }
-    val fileT = grammar.parseToEnd(reader())
+    val fileT = parse()
     fileT.decls.map { Tuple3(fileT.`package`, fileT.imports, it) }
 } else {
     listFiles()

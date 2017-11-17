@@ -1,6 +1,11 @@
 package io.quartz.parse
 
-import com.github.h0tk3y.betterParse.lexer.TokenMatch
+import io.github.aedans.parsek.ParseResult
+import io.github.aedans.parsek.Parser
+import io.github.aedans.parsek.tokenizer.Token
 import io.quartz.tree.Location
 
-fun TokenMatch.location(grammar: QuartzGrammar<*>) = Location(grammar.uri, row, column)
+fun Token<*>.location(string: String) = Location(string, row, col)
+
+infix fun <A, B> Parser<A, B>.mapErr(map: (ParseResult.Failure<A>) -> ParseResult<A, B>) =
+        io.github.aedans.parsek.mapErrParser(this) { map(it) }
