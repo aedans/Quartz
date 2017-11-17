@@ -30,24 +30,24 @@ fun DeclT.Trait.analyze(env: Env, p: Package) = resultMonad().binding {
     val constraints = schemeK.constraints.filter { it.type != TypeK.any }
     val constraintAbstractsI = constraints.map {
         val scheme = DeclI.Method.Scheme(nil, nil, it.type.apply(it.name.tVar).typeI)
-        DeclI.Method("${it.name}$${it.type}".name, location, p, scheme, null)
+        DeclI.Method(location, "${it.name}$${it.type}".name, p, scheme, null)
     }
     val abstractsI = members.map { decl -> decl.analyze(localEnv, p) }.flat().bind() +
             constraintAbstractsI
     val schemeI = schemeK.schemeI
-    yields(DeclI.Class(name, location, p, null, schemeI.generics, nil, abstractsI) as DeclI)
+    yields(DeclI.Class(location, name, p, null, schemeI.generics, nil, abstractsI) as DeclI)
 }.ev()
 
 fun DeclT.Trait.Member.analyze(env: Env, p: Package) = resultMonad().binding {
     val localEnv = schemeT.constraints.localEnv(env)
     val scheme = schemeT.schemeK(localEnv).bind().methodScheme(nil)
-    val method = DeclI.Method(name, location, p, scheme, null)
+    val method = DeclI.Method(location, name, p, scheme, null)
     yields(method)
 }.ev()
 
 fun DeclT.Value.analyze(env: Env, p: Package) = resultMonad().binding {
     val local = analyzeLocal(env, p).bind().copy(name = name.varGetterName())
-    val it = DeclI.Class("$$name".name, location, p, null, nil, nil, local.singletonList())
+    val it = DeclI.Class(location, "$$name".name, p, null, nil, nil, local.singletonList())
     yields(it)
 }.ev()
 
@@ -58,7 +58,7 @@ fun DeclT.Value.analyzeLocal(env: Env, p: Package) = resultMonad().binding {
     val constraintParams = constraints.map { it.type.apply(it.name.tVar).typeI }
     val scheme = schemeK.methodScheme(constraintParams)
     val exprI = expr.analyze(env, p).bind()
-    val method = DeclI.Method(name, location, p, scheme, exprI)
+    val method = DeclI.Method(location, name, p, scheme, exprI)
     yields(method)
 }.ev()
 
@@ -72,7 +72,7 @@ fun DeclT.Instance.analyze(env: Env, p: Package) = resultMonad().binding {
     val name = "${instanceI.qualifiedName.string}${typeI.qualifiedName.string}\$Instance".name
     val constructor = DeclI.Class.Constructor(nil, ExprI.Block(location, nil))
     val implsI = impls.map { it.analyzeLocal(env, p) }.flat().bind()
-    val it = DeclI.Class(name, location, p, constructor, nil, extensionI.singletonList(), implsI)
+    val it = DeclI.Class(location, name, p, constructor, nil, extensionI.singletonList(), implsI)
     yields(it)
 }.ev()
 

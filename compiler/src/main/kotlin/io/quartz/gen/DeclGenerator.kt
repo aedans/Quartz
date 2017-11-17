@@ -24,7 +24,7 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
             (if (constructor == null) Opcodes.ACC_INTERFACE + Opcodes.ACC_ABSTRACT else 0)
     pg.generateClass(ClassInfo(
             access,
-            name.qualify(`package`).locatableName,
+            name.qualify(p).locatableName,
             classSignature(generics, TypeI.any.prependTo(superTypes)),
             TypeI.any.locatableName,
             superTypes.map { it.locatableName }

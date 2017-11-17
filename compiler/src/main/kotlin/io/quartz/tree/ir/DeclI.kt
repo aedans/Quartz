@@ -7,12 +7,10 @@ import io.quartz.tree.ast.Package
 
 /** Sealed class representing all IR declarations */
 sealed class DeclI : Locatable {
-    abstract val name: Name
-
     data class Class(
-            override val name: Name,
             override val location: Location,
-            val `package`: Package,
+            val name: Name,
+            val p: Package,
             val constructor: Constructor?,
             val generics: List<GenericI>,
             val superTypes: List<TypeI>,
@@ -25,9 +23,9 @@ sealed class DeclI : Locatable {
     }
 
     data class Method(
-            override val name: Name,
             override val location: Location,
-            val `package`: Package,
+            val name: Name,
+            val p: Package,
             val scheme: Scheme,
             val expr: ExprI?
     ) : DeclI() {

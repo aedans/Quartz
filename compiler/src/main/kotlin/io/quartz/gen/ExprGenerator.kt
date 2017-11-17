@@ -148,7 +148,7 @@ fun ExprI.Lambda.push(mg: MethodGenerator) {
                 }
 
                 val invokeScheme = DeclI.Method.Scheme(nil, listOf(argType), returnType)
-                val invokeDecl = DeclI.Method("invoke".name, location, p, invokeScheme, expr)
+                val invokeDecl = DeclI.Method(location, "invoke".name, p, invokeScheme, expr)
                 invokeDecl.generate(this)
             }
         }
