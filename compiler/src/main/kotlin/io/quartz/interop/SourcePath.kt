@@ -76,7 +76,7 @@ fun List<File>.decls() = flatMap { it.decls() }
 
 fun File.decls(): List<DeclTInfo<DeclT>> = if (isFile) {
     val fileT = parse()
-    fileT.decls.map { Tuple3(fileT.`package`, fileT.imports, it) }
+    fileT.decls.map { Tuple3(fileT.p, fileT.imports, it) }
 } else {
     listFiles()
             .filter { it.isDirectory || it.extension == "qz" }
