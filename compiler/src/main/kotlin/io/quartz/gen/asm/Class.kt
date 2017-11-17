@@ -36,5 +36,6 @@ fun ProgramGenerator.generateClass(info: ClassInfo, func: ClassGenerator.() -> U
         func()
         cw.visitEnd()
         programGeneratorLater.forEach { it() }
+        out(this)
     }
 }

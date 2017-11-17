@@ -41,10 +41,4 @@ sealed class DeclI : Locatable {
                 val ret: TypeI
         )
     }
-
-    data class Field(
-            override val name: Name,
-            override val location: Location,
-            val type: TypeI
-    ) : DeclI()
 }

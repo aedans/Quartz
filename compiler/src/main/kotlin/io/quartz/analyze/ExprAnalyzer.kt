@@ -9,7 +9,6 @@ import io.quartz.nil
 import io.quartz.tree.Location
 import io.quartz.tree.ast.ExprT
 import io.quartz.tree.ast.Package
-import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.ExprI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.ir.typeI
@@ -108,9 +107,6 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = resultMonad().binding {
         )
     }
     val exprI = expr.analyze(localEnv, p).bind()
-    val invokeScheme = DeclI.Method.Scheme(nil, listOf(argTypeK.typeI), returnTypeK.typeI)
-    val invokeDecl = DeclI.Method("invoke".name, location, p, invokeScheme, exprI)
-    val obj = DeclI.Class.Object(genericsI, listOf(typeK.typeI), listOf(invokeDecl))
-    val it = ExprI.AnonymousObject(location, p, obj, closuresI)
+    val it = ExprI.Lambda(location, p, genericsI, argTypeK.typeI, returnTypeK.typeI, exprI, closuresI)
     yields(it)
 }.ev()

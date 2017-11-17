@@ -5,7 +5,6 @@ import io.quartz.nil
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.TypeI
 import io.quartz.tree.ir.VoidTypeI
-import io.quartz.tree.ir.signature
 import io.quartz.tree.locatableName
 import io.quartz.tree.name
 import io.quartz.tree.qualify
@@ -17,8 +16,7 @@ fun Iterable<DeclI>.generate(pg: ProgramGenerator) = forEach { it.generate(pg) }
 
 fun DeclI.generate(pg: ProgramGenerator) = when (this) {
     is DeclI.Class -> generate(pg)
-    is DeclI.Method,
-    is DeclI.Field -> throw Exception()
+    is DeclI.Method -> throw Exception()
 }
 
 fun DeclI.Class.generate(pg: ProgramGenerator) {
@@ -44,14 +42,12 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
         obj.decls.forEach {
             it.generate(this)
         }
-        pg.out(this)
     }
 }
 
 fun DeclI.generate(cg: ClassGenerator) = when (this) {
     is DeclI.Class -> generate(cg)
     is DeclI.Method -> generate(cg)
-    is DeclI.Field -> generate(cg)
 }
 
 fun DeclI.Class.generate(cg: ClassGenerator) {
@@ -92,14 +88,4 @@ fun DeclI.Method.generate(cg: ClassGenerator) {
             ga.returnValue()
         }
     }
-}
-
-fun DeclI.Field.generate(cg: ClassGenerator) {
-    cg.cw.visitField(
-            Opcodes.ACC_PUBLIC,
-            name.toString(),
-            type.descriptor,
-            type.signature,
-            null
-    ).visitEnd()
 }

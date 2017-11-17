@@ -59,21 +59,13 @@ sealed class ExprI : Locatable {
             val expr2: ExprI
     ) : ExprI()
 
-    data class AnonymousObject(
+    data class Lambda(
             override val location: Location,
-            val `package`: Package,
-            val obj: DeclI.Class.Object,
+            val p: Package,
+            val generics: List<GenericI>,
+            val argType: TypeI,
+            val returnType: TypeI,
+            val expr: ExprI,
             val closures: List<Tuple2<ExprI, LocalField>>
     ) : ExprI()
-
-    data class Set(
-            override val location: Location,
-            val owner: TypeI,
-            val name: Name,
-            val type: TypeI,
-            val expr1: ExprI,
-            val expr2: ExprI
-    ) : ExprI()
-
-    data class This(override val location: Location) : ExprI()
 }
