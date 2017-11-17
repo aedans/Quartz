@@ -35,8 +35,7 @@ fun DeclT.Trait.analyze(env: Env, p: Package) = resultMonad().binding {
     val abstractsI = members.map { decl -> decl.analyze(localEnv, p) }.flat().bind() +
             constraintAbstractsI
     val schemeI = schemeK.schemeI
-    val obj = DeclI.Class.Object(schemeI.generics, nil, abstractsI)
-    yields(DeclI.Class(name, location, p, null, obj) as DeclI)
+    yields(DeclI.Class(name, location, p, null, schemeI.generics, nil, abstractsI) as DeclI)
 }.ev()
 
 fun DeclT.Trait.Member.analyze(env: Env, p: Package) = resultMonad().binding {
@@ -48,8 +47,7 @@ fun DeclT.Trait.Member.analyze(env: Env, p: Package) = resultMonad().binding {
 
 fun DeclT.Value.analyze(env: Env, p: Package) = resultMonad().binding {
     val local = analyzeLocal(env, p).bind().copy(name = name.varGetterName())
-    val obj = DeclI.Class.Object(nil, nil, local.singletonList())
-    val it = DeclI.Class("$$name".name, location, p, null, obj)
+    val it = DeclI.Class("$$name".name, location, p, null, nil, nil, local.singletonList())
     yields(it)
 }.ev()
 
@@ -74,8 +72,7 @@ fun DeclT.Instance.analyze(env: Env, p: Package) = resultMonad().binding {
     val name = "${instanceI.qualifiedName.string}${typeI.qualifiedName.string}\$Instance".name
     val constructor = DeclI.Class.Constructor(nil, ExprI.Block(location, nil))
     val implsI = impls.map { it.analyzeLocal(env, p) }.flat().bind()
-    val obj = DeclI.Class.Object(nil, extensionI.singletonList(), implsI)
-    val it = DeclI.Class(name, location, p, constructor, obj)
+    val it = DeclI.Class(name, location, p, constructor, nil, extensionI.singletonList(), implsI)
     yields(it)
 }.ev()
 

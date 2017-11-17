@@ -25,9 +25,9 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
     pg.generateClass(ClassInfo(
             access,
             name.qualify(`package`).locatableName,
-            classSignature(obj.generics, TypeI.any.prependTo(obj.superTypes)),
+            classSignature(generics, TypeI.any.prependTo(superTypes)),
             TypeI.any.locatableName,
-            obj.superTypes.map { it.locatableName }
+            superTypes.map { it.locatableName }
     )) {
         if (constructor != null) {
             generateConstructor(MethodInfo(
@@ -39,7 +39,7 @@ fun DeclI.Class.generate(pg: ProgramGenerator) {
             }
         }
 
-        obj.decls.forEach {
+        decls.forEach {
             it.generate(this)
         }
     }

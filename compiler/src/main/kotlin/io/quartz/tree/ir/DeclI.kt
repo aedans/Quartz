@@ -14,14 +14,10 @@ sealed class DeclI : Locatable {
             override val location: Location,
             val `package`: Package,
             val constructor: Constructor?,
-            val obj: Object
+            val generics: List<GenericI>,
+            val superTypes: List<TypeI>,
+            val decls: List<DeclI>
     ) : DeclI() {
-        data class Object(
-                val generics: List<GenericI>,
-                val superTypes: List<TypeI>,
-                val decls: List<DeclI>
-        )
-
         data class Constructor(
                 val args: List<TypeI>,
                 val expr: ExprI
