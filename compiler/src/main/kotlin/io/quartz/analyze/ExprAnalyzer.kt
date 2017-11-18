@@ -93,7 +93,7 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = resultMonad().binding {
     val returnTypeK = arrow.t2
     val closures = freeVariables
     val closuresMap = closures.associate { it to VarLoc.Field(it.unqualified) }
-    val genericsI = typeK.generalize(env, s1).constraints.map { it.genericI }
+    val constraintsI = typeK.generalize(env, s1).constraints.map { it.constraintI }
     val localEnv = env
             .mapVars { name, err ->
                 err?.map { closuresMap[name]?.let { varLoc -> it.copy(varLoc = varLoc) } ?: it }
@@ -107,6 +107,6 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = resultMonad().binding {
         )
     }
     val exprI = expr.analyze(localEnv, p).bind()
-    val it = ExprI.Lambda(location, p, genericsI, argTypeK.typeI, returnTypeK.typeI, exprI, closuresI)
+    val it = ExprI.Lambda(location, p, constraintsI, argTypeK.typeI, returnTypeK.typeI, exprI, closuresI)
     yields(it)
 }.ev()

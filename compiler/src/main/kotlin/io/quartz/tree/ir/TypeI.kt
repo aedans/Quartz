@@ -4,10 +4,10 @@ import io.quartz.nil
 import io.quartz.tree.*
 
 /** Class representing any IR constraintT */
-data class GenericI(val name: Name, val type: TypeI)
+data class ConstraintI(val name: Name, val type: TypeI)
 
 /** Class representing any IR type scheme */
-data class SchemeI(val generics: List<GenericI>, val type: TypeI)
+data class SchemeI(val constraints: List<ConstraintI>, val type: TypeI)
 
 /** Class representing any IR type */
 interface TypeI {
@@ -66,6 +66,8 @@ object VoidTypeI : TypeI {
     override val descriptor get() = "V"
     override fun getSignature(generics: List<TypeI>) = "V"
 }
+
+val TypeI.name get() = qualifiedName.string.name
 
 val QualifiedName.typeI get() = ClassTypeI(this)
 

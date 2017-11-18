@@ -62,7 +62,7 @@ sealed class ExprI : Locatable {
     data class Lambda(
             override val location: Location,
             val p: Package,
-            val generics: List<GenericI>,
+            val constraints: List<ConstraintI>,
             val argType: TypeI,
             val returnType: TypeI,
             val expr: ExprI,

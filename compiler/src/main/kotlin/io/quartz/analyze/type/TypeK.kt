@@ -17,17 +17,13 @@ import kategory.*
 
 /** Class representing a constraint for compiler analysis */
 data class ConstraintK(val type: TypeK, val name: Name) {
-    override fun toString() = "($type $name) =>"
-
     companion object {
         operator fun invoke(type: TypeK?, name: Name) = ConstraintK(type ?: TypeK.any, name)
     }
 }
 
 /** Class representing a type scheme for compiler analysis */
-data class SchemeK(val constraints: List<ConstraintK>, val type: TypeK) {
-    override fun toString() = "$constraints $type"
-}
+data class SchemeK(val constraints: List<ConstraintK>, val type: TypeK)
 
 /** Sealed class representing all types for compiler analysis */
 sealed class TypeK {
@@ -116,9 +112,9 @@ fun TypeT.typeK(env: Env): Result<TypeK> = when (this) {
             .qualify()
 }
 
-val ConstraintK.genericI get() = GenericI(name, TypeI.any)
+val ConstraintK.constraintI get() = ConstraintI(name, TypeI.any)
 
-val SchemeK.schemeI get() = SchemeI(constraints.map { it.genericI }, type.typeI)
+val SchemeK.schemeI get() = SchemeI(constraints.map { it.constraintI }, type.typeI)
 
 val TypeK.typeI: TypeI get() = when (this) {
     is TypeK.Const -> ClassTypeI(name)

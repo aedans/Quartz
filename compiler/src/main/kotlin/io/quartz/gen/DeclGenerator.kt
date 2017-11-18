@@ -1,91 +1,69 @@
 package io.quartz.gen
 
+import io.quartz.analyze.type.tVar
 import io.quartz.gen.asm.*
 import io.quartz.nil
+import io.quartz.tree.ir.ConstraintI
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.ir.TypeI
-import io.quartz.tree.ir.VoidTypeI
+import io.quartz.tree.ir.name
 import io.quartz.tree.locatableName
 import io.quartz.tree.name
 import io.quartz.tree.qualify
-import org.funktionale.collections.prependTo
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
 
 fun Iterable<DeclI>.generate(pg: ProgramGenerator) = forEach { it.generate(pg) }
 
 fun DeclI.generate(pg: ProgramGenerator) = when (this) {
-    is DeclI.Class -> generate(pg)
-    is DeclI.Method -> throw Exception()
+    is DeclI.Trait -> generate(pg)
+    is DeclI.Value -> generate(pg)
+    is DeclI.Instance -> TODO()
 }
 
-fun DeclI.Class.generate(pg: ProgramGenerator) {
-    val access = Opcodes.ACC_PUBLIC +
-            (if (constructor == null) Opcodes.ACC_INTERFACE + Opcodes.ACC_ABSTRACT else 0)
+fun DeclI.Trait.generate(pg: ProgramGenerator) {
+    val generics = constraints.map { it.name }.toSet().map { ConstraintI(it, TypeI.any) }
     pg.generateClass(ClassInfo(
-            access,
+            Opcodes.ACC_PUBLIC + Opcodes.ACC_INTERFACE + Opcodes.ACC_ABSTRACT,
             name.qualify(p).locatableName,
-            classSignature(generics, TypeI.any.prependTo(superTypes)),
+            classSignature(generics, listOf(TypeI.any)),
             TypeI.any.locatableName,
-            superTypes.map { it.locatableName }
+            emptyList()
     )) {
-        if (constructor != null) {
-            generateConstructor(MethodInfo(
-                    Opcodes.ACC_PUBLIC,
-                    method(VoidTypeI, "<init>".name, constructor.args),
-                    methodSignature(nil, constructor.args, VoidTypeI)
-            )) {
-                constructor.expr.generate(this)
-            }
+        constraints.filter { it.type != TypeI.any }.forEach {
+            generateMethod(MethodInfo(
+                    Opcodes.ACC_PUBLIC + Opcodes.ACC_ABSTRACT,
+                    method(it.type.apply { it.name.tVar }, "${it.name}$${it.type.name}".name, emptyList()),
+                    methodSignature(nil, nil, it.type)
+            )) { }
         }
 
-        decls.forEach {
-            it.generate(this)
+        members.forEach {
+            generateMethod(MethodInfo(
+                    Opcodes.ACC_PUBLIC + Opcodes.ACC_ABSTRACT,
+                    method(it.scheme.type, it.name, nil),
+                    methodSignature(nil, emptyList(), it.scheme.type)
+            )) { }
         }
     }
 }
 
-fun DeclI.generate(cg: ClassGenerator) = when (this) {
-    is DeclI.Class -> generate(cg)
-    is DeclI.Method -> generate(cg)
-}
-
-fun DeclI.Class.generate(cg: ClassGenerator) {
-    val name = "${cg.info.name}\$$name".name
-
-    cg.visitProgramGeneratorLater {
-        copy(name = name).generate(this)
-    }
-
-    cg.cw.visitInnerClass(
-            name.toString(),
-            cg.info.name.toString(),
-            this.name.toString(),
-            Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC
-    )
-}
-
-fun DeclI.Method.generate(cg: ClassGenerator) {
-    val access = Opcodes.ACC_PUBLIC +
-            (if (expr == null) Opcodes.ACC_ABSTRACT else 0)
-    cg.generateMethod(MethodInfo(
-            access,
-            method(scheme.ret, name, scheme.args),
-            methodSignature(scheme.generics, scheme.args, scheme.ret)
+fun DeclI.Value.generate(pg: ProgramGenerator) {
+    pg.generateClass(ClassInfo(
+            Opcodes.ACC_PUBLIC + Opcodes.ACC_FINAL,
+            name.qualify(p).locatableName,
+            classSignature(nil, listOf(TypeI.any)),
+            TypeI.any.locatableName,
+            emptyList()
     )) {
-        expr?.run {
-            push(this@generateMethod)
-            when (scheme.ret) {
-                TypeI.bool -> ga.box(Type.BOOLEAN_TYPE)
-                TypeI.byte -> ga.box(Type.BYTE_TYPE)
-                TypeI.char -> ga.box(Type.CHAR_TYPE)
-                TypeI.short -> ga.box(Type.SHORT_TYPE)
-                TypeI.int -> ga.box(Type.INT_TYPE)
-                TypeI.long -> ga.box(Type.LONG_TYPE)
-                TypeI.float -> ga.box(Type.FLOAT_TYPE)
-                TypeI.double -> ga.box(Type.DOUBLE_TYPE)
+        generateMethod(MethodInfo(
+                Opcodes.ACC_PUBLIC,
+                method(scheme.type, name, emptyList()),
+                methodSignature(scheme.constraints, emptyList(), scheme.type)
+        )) {
+            expr.run {
+                push(this@generateMethod)
+                box(scheme.type)
             }
-            ga.returnValue()
         }
     }
 }

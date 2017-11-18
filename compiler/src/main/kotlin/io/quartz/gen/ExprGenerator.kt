@@ -120,7 +120,7 @@ fun ExprI.Lambda.push(mg: MethodGenerator) {
             generateClass(ClassInfo(
                     Opcodes.ACC_PUBLIC,
                     name.qualify(p).locatableName,
-                    classSignature(generics, TypeI.any.prependTo(superTypes)),
+                    classSignature(constraints, TypeI.any.prependTo(superTypes)),
                     TypeI.any.locatableName,
                     superTypes.map { it.locatableName }
             )) {
@@ -147,9 +147,14 @@ fun ExprI.Lambda.push(mg: MethodGenerator) {
                     ).visitEnd()
                 }
 
-                val invokeScheme = DeclI.Method.Scheme(nil, listOf(argType), returnType)
-                val invokeDecl = DeclI.Method(location, "invoke".name, p, invokeScheme, expr)
-                invokeDecl.generate(this)
+                generateMethod(MethodInfo(
+                        Opcodes.ACC_PUBLIC,
+                        method(returnType, "invoke".name, listOf(argType)),
+                        methodSignature(nil, listOf(argType), returnType)
+                )) {
+                    expr.push(this)
+                    box(returnType)
+                }
             }
         }
 
