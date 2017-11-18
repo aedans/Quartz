@@ -9,54 +9,40 @@ import io.quartz.tree.QualifiedName
 sealed class ExprT : Locatable {
     data class Unit(
             override val location: Location
-    ) : ExprT() {
-        override fun toString() = "()"
-    }
+    ) : ExprT()
 
     data class Bool(
             override val location: Location,
             val boolean: Boolean
-    ) : ExprT() {
-        override fun toString() = boolean.toString()
-    }
+    ) : ExprT()
 
     data class Cast(
             override val location: Location,
             val expr: ExprT,
             val type: TypeT
-    ) : ExprT() {
-        override fun toString() = "$expr :: $type"
-    }
+    ) : ExprT()
 
     data class Id(
             override val location: Location,
             val name: QualifiedName
-    ) : ExprT() {
-        override fun toString() = name.toString()
-    }
+    ) : ExprT()
 
     data class Apply(
             override val location: Location,
             val expr1: ExprT,
             val expr2: ExprT
-    ) : ExprT() {
-        override fun toString() = "($expr1) $expr2"
-    }
+    ) : ExprT()
 
     data class If(
             override val location: Location,
             val condition: ExprT,
             val expr1: ExprT,
             val expr2: ExprT
-    ) : ExprT() {
-        override fun toString() = "if $condition then $expr1 else $expr2"
-    }
+    ) : ExprT()
 
     data class Lambda(
             override val location: Location,
             val arg: Name,
             val expr: ExprT
-    ) : ExprT() {
-        override fun toString() = "\\$arg = $expr"
-    }
+    ) : ExprT()
 }

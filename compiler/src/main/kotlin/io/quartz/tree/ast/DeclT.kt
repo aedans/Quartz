@@ -16,11 +16,7 @@ sealed class DeclT : Locatable {
                 val name: Name,
                 val location: Location,
                 val schemeT: SchemeT
-        ) {
-            override fun toString() = "def $name :: $schemeT"
-        }
-
-        override fun toString() = "def $name $constraints {\n${members.joinToString(separator = "\n", prefix = "", postfix = "")}\n}"
+        )
     }
 
     data class Value(
@@ -28,9 +24,7 @@ sealed class DeclT : Locatable {
             val name: Name,
             val schemeT: SchemeT?,
             val expr: ExprT
-    ) : DeclT() {
-        override fun toString() = "def $name :: $schemeT = $expr"
-    }
+    ) : DeclT()
 
     data class Instance(
             override val location: Location,

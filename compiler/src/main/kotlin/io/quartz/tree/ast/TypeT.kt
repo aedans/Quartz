@@ -7,24 +7,16 @@ import io.quartz.tree.Name
 import io.quartz.tree.name
 
 /** Class representing all AST constraints */
-data class ConstraintT(val type: TypeT?, val name: Name) {
-    override fun toString() = "$type $name =>"
-}
+data class ConstraintT(val type: TypeT?, val name: Name)
 
 /** Class representing all AST type schemes */
-data class SchemeT(val constraints: List<ConstraintT>, val type: TypeT) {
-    override fun toString() = "$constraints => $type"
-}
+data class SchemeT(val constraints: List<ConstraintT>, val type: TypeT)
 
 /** Sealed class representing all AST types */
 sealed class TypeT : Locatable {
-    data class Id(override val location: Location, val name: Name) : TypeT() {
-        override fun toString() = name.toString()
-    }
+    data class Id(override val location: Location, val name: Name) : TypeT()
 
-    data class Apply(override val location: Location, val t1: TypeT, val t2: TypeT) : TypeT() {
-        override fun toString() = "($t1) $t2"
-    }
+    data class Apply(override val location: Location, val t1: TypeT, val t2: TypeT) : TypeT()
 
     companion object {
         val bool = java.lang.Boolean::class.java.typeT
