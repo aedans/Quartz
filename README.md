@@ -13,7 +13,9 @@ are in the unit tests (./compiler/src/test/kotlin).
 The compiler is written in purely functional [Kotlin](https://kotlinlang.org/) using
 [Kategory](https://github.com/kategory/kategory), and the standard library is written in Java.
 As the language matures, the compiler and the standard library will be rewritten in Quartz, 
-until they are entirely self-hosting. 
+until they are entirely self-hosting.
+
+There are also plans to compile to JavaScript, and possibly even native.
 
 Building
 --------
