@@ -5,6 +5,6 @@ package quartz.lang;
  */
 public final class $unit {
     public Unit get() {
-        return Unit.getInstance();
+        return Unit.INSTANCE;
     }
 }
