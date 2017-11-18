@@ -18,24 +18,12 @@ import io.quartz.tree.unqualified
 import kategory.*
 
 fun ExprT.analyze(env: Env, p: Package): Result<ExprI> = when (this) {
-    is ExprT.Unit -> analyze()
-    is ExprT.Bool -> analyze()
     is ExprT.Cast -> analyze(env, p)
     is ExprT.Id -> analyze(env)
     is ExprT.Apply -> analyze(env, p)
     is ExprT.If -> analyze(env, p)
     is ExprT.Lambda -> analyze(env, p)
 }.qualify()
-
-fun ExprT.Unit.analyze() = ExprI.InvokeStatic(
-        location,
-        TypeI.unit,
-        TypeI.unit,
-        "getInstance".name,
-        nil
-).right()
-
-fun ExprT.Bool.analyze() = ExprI.Bool(location, boolean).right()
 
 fun ExprT.Cast.analyze(env: Env, p: Package) = expr.analyze(env, p)
 

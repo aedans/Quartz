@@ -13,8 +13,6 @@ typealias InferState = Tuple2<Subst, TypeK>
 
 /** Returns the type of an expression and all constraints it imposes as a substitution */
 fun ExprT.infer(env: Env): Infer = when (this) {
-    is ExprT.Unit -> (emptySubst toT TypeK.unit).right()
-    is ExprT.Bool -> (emptySubst toT TypeK.bool).right()
     is ExprT.Id -> env.getVarOrErr(name).map { emptySubst toT it.scheme.instantiate() }.qualify()
     is ExprT.Cast -> resultMonad().binding {
         val typeK = type.typeK(env).bind()

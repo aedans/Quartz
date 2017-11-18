@@ -5,6 +5,7 @@ import io.github.aedans.parsek.optional
 import io.quartz.tree.ast.ExprT
 import io.quartz.tree.name
 import io.quartz.tree.qualifiedLocal
+import io.quartz.tree.qualifiedName
 import io.quartz.tup
 
 val String.exprP: QuartzParser<ExprT> get() = parser { lambdaExprP } or
@@ -44,7 +45,7 @@ val String.atomicExprP: QuartzParser<ExprT> get() = parser { unitExprP } or
         parser { idExprP }
 
 val String.unitExprP: QuartzParser<ExprT> get() =
-    TokenType.O_PAREN then skip(TokenType.C_PAREN) map { ExprT.Unit(it.location(this)) }
+    TokenType.O_PAREN then skip(TokenType.C_PAREN) map { ExprT.Id(it.location(this), "quartz.lang.unit".qualifiedName) }
 
 val String.parenthesizedExprP: QuartzParser<ExprT> get() =
     skip(TokenType.O_PAREN) then parser { exprP } then skip(TokenType.C_PAREN)
@@ -53,5 +54,5 @@ val String.idExprP: QuartzParser<ExprT> get() =
     TokenType.ID map { ExprT.Id(it.location(this), it.text.name.qualifiedLocal) }
 
 val String.booleanExprP: QuartzParser<ExprT> get() = TokenType.TRUE or TokenType.FALSE map {
-    ExprT.Bool(it.location(this), it.text.toBoolean())
+    ExprT.Id(it.location(this), "quartz.lang.${it.text}".qualifiedName)
 }

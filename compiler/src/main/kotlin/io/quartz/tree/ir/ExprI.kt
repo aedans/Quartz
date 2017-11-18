@@ -8,11 +8,6 @@ import kategory.Tuple2
 
 /** Sealed class representing all IR expressions */
 sealed class ExprI : Locatable {
-    data class Bool(
-            override val location: Location,
-            val boolean: Boolean
-    ) : ExprI()
-
     data class Block(
             override val location: Location,
             val exprs: List<ExprI>

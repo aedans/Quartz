@@ -17,6 +17,6 @@ val Name.qualifiedLocal get() = qualify(nil)
 
 val LocatableName.qualifiedName get() = QualifiedName(qualifier, string)
 
-val Class<*>.qualifiedName get() = typeName
-        .split('.')
-        .let { QualifiedName(it.dropLast(1), it.last()) }
+val Class<*>.qualifiedName get() = typeName.qualifiedName
+
+val String.qualifiedName get() = split('.').let { QualifiedName(it.dropLast(1), it.last()) }

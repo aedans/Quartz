@@ -2,6 +2,7 @@ package io.quartz.gen
 
 import io.quartz.analyze.type.tVar
 import io.quartz.gen.asm.*
+import io.quartz.interop.varGetterName
 import io.quartz.nil
 import io.quartz.tree.ir.ConstraintI
 import io.quartz.tree.ir.DeclI
@@ -57,7 +58,7 @@ fun DeclI.Value.generate(pg: ProgramGenerator) {
     )) {
         generateMethod(MethodInfo(
                 Opcodes.ACC_PUBLIC,
-                method(scheme.type, name, emptyList()),
+                method(scheme.type, name.varGetterName(), emptyList()),
                 methodSignature(scheme.constraints, emptyList(), scheme.type)
         )) {
             expr.run {

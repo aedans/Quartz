@@ -17,7 +17,6 @@ import org.objectweb.asm.commons.GeneratorAdapter
 
 fun ExprI.generate(mg: MethodGenerator) = when (this) {
     is ExprI.Block -> generate(mg)
-    is ExprI.Bool,
     is ExprI.Arg,
     is ExprI.Lambda,
     is ExprI.LocalField -> {
@@ -32,7 +31,6 @@ fun ExprI.generate(mg: MethodGenerator) = when (this) {
 }
 
 fun ExprI.push(mg: MethodGenerator) = when (this) {
-    is ExprI.Bool -> push(mg)
     is ExprI.Block -> push(mg)
     is ExprI.Invoke -> push(mg)
     is ExprI.InvokeStatic -> push(mg)
@@ -40,10 +38,6 @@ fun ExprI.push(mg: MethodGenerator) = when (this) {
     is ExprI.Arg -> push(mg)
     is ExprI.LocalField -> push(mg)
     is ExprI.Lambda -> push(mg)
-}
-
-fun ExprI.Bool.push(mg: MethodGenerator) {
-    mg.ga.push(boolean)
 }
 
 fun ExprI.Block.generate(mg: MethodGenerator) {

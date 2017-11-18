@@ -7,15 +7,6 @@ import io.quartz.tree.QualifiedName
 
 /** Sealed class representing all AST expressions */
 sealed class ExprT : Locatable {
-    data class Unit(
-            override val location: Location
-    ) : ExprT()
-
-    data class Bool(
-            override val location: Location,
-            val boolean: Boolean
-    ) : ExprT()
-
     data class Cast(
             override val location: Location,
             val expr: ExprT,
