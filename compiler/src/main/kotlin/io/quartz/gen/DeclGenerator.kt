@@ -63,7 +63,8 @@ fun DeclI.Value.generate(pg: ProgramGenerator) {
         )) {
             expr.run {
                 push(this@generateMethod)
-                box(scheme.type)
+                ga.returnValue()
+                Unit
             }
         }
     }

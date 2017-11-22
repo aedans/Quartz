@@ -18,17 +18,8 @@ interface TypeI {
     fun getSignature(generics: List<TypeI>): String
 
     companion object {
-        val bool = java.lang.Boolean::class.java.typeI
-        val byte = java.lang.Byte::class.java.typeI
-        val char = java.lang.Short::class.java.typeI
-        val short = java.lang.Short::class.java.typeI
-        val int = java.lang.Integer::class.java.typeI
-        val long = java.lang.Long::class.java.typeI
-        val float = java.lang.Float::class.java.typeI
-        val double = java.lang.Double::class.java.typeI
-        val any = java.lang.Object::class.java.typeI
-        val unit = quartz.lang.Unit::class.java.typeI
-        val function = quartz.lang.Function::class.java.typeI
+        val any = "java.lang.Object".qualifiedName.typeI
+        val function = "quartz.lang.Function".qualifiedName.typeI
         fun function(arg: TypeI, value: TypeI) = function.apply(arg).apply(value)
     }
 }
@@ -70,8 +61,6 @@ object VoidTypeI : TypeI {
 val TypeI.name get() = qualifiedName.string.name
 
 val QualifiedName.typeI get() = ConstTypeI(this)
-
-val Class<*>.typeI: TypeI get() = qualifiedName.typeI
 
 val TypeI.signature get() = getSignature(generics)
 

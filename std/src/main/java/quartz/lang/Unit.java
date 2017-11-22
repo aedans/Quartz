@@ -1,7 +1,7 @@
 package quartz.lang;
 
 /**
- * The type of "()"
+ * The type of "()".
  */
 public final class Unit {
     public static final Unit INSTANCE = new Unit();

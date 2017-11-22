@@ -4,7 +4,6 @@ import io.quartz.analyze.*
 import io.quartz.err.Result
 import io.quartz.err.err
 import io.quartz.err.resultMonad
-import io.quartz.interop.schemeK
 import io.quartz.nil
 import io.quartz.tree.Name
 import io.quartz.tree.QualifiedName
@@ -13,6 +12,7 @@ import io.quartz.tree.ast.SchemeT
 import io.quartz.tree.ast.TypeT
 import io.quartz.tree.ir.*
 import io.quartz.tree.qualifiedLocal
+import io.quartz.tree.qualifiedName
 import kategory.*
 
 /** Class representing a constraint for compiler analysis */
@@ -46,10 +46,9 @@ sealed class TypeK {
     }
 
     companion object {
-        val bool = java.lang.Boolean::class.java.schemeK.type
-        val any = java.lang.Object::class.java.schemeK.type
-        val unit = quartz.lang.Unit::class.java.schemeK.type
-        val function = quartz.lang.Function::class.java.schemeK.type
+        val bool = "quartz.lang.Bool".qualifiedName.typeK
+        val any = "java.lang.Object".qualifiedName.typeK
+        val function = "quartz.lang.Function".qualifiedName.typeK
     }
 }
 
@@ -62,6 +61,8 @@ val TypeK.arrow get() =
 fun TypeK.apply(type: TypeK) = TypeK.Apply(this, type)
 
 val Name.tVar get() = TypeK.Var(this)
+
+val QualifiedName.typeK get() = TypeK.Const(this)
 
 val TypeK.scheme get() = SchemeK(nil, this)
 
@@ -103,7 +104,7 @@ fun List<ConstraintT>.localEnv(env: Env) = fold(env) { envP, generic ->
 
 fun TypeT.typeK(env: Env): Result<TypeK> = when (this) {
     is TypeT.Id -> env
-            .getTypeOrErr(name.qualifiedLocal)
+            .getTypeOrErr(name)
             .map { it.scheme.instantiate() }
             .qualify()
     is TypeT.Apply -> resultMonad()

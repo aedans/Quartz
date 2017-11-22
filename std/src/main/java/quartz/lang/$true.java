@@ -1,10 +1,10 @@
 package quartz.lang;
 
 /**
- * The value of "true"
+ * The value of "true".
  */
 public final class $true {
-    public Boolean get() {
-        return Boolean.TRUE;
+    public Bool get() {
+        return new Bool(true);
     }
 }

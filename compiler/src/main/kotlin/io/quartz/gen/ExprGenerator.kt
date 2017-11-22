@@ -1,6 +1,7 @@
 package io.quartz.gen
 
 import io.quartz.gen.asm.*
+import io.quartz.interop.varClassName
 import io.quartz.interop.varGetterName
 import io.quartz.nil
 import io.quartz.singletonList
@@ -115,7 +116,7 @@ fun ExprI.Lambda.push(mg: MethodGenerator) {
                         methodSignature(nil, listOf(argType), returnType)
                 )) {
                     expr.push(this)
-                    box(returnType)
+                    ga.returnValue()
                 }
             }
         }
@@ -145,7 +146,7 @@ fun ExprI.Var.push(mg: MethodGenerator) {
         }
         is ExprI.Var.Loc.Global -> {
             mg.ga.invokeStatic(
-                    loc.name.typeI.type(),
+                    loc.name.varClassName().typeI.type(),
                     method(type, loc.name.unqualified.varGetterName(), nil)
             )
         }

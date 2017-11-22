@@ -8,6 +8,7 @@ import io.quartz.tree.ast.SchemeT
 import io.quartz.tree.ast.TypeT
 import io.quartz.tree.ast.apply
 import io.quartz.tree.name
+import io.quartz.tree.qualifiedLocal
 
 val String.schemeP: QuartzParser<SchemeT> get() =
     optional(list(parser { constraintP }) then skip(TokenType.FAT_ARROW)) then
@@ -39,7 +40,7 @@ val String.atomicTypeP: QuartzParser<TypeT> get() = parser { idTypeP } or
         parser { parenthesizedTypeP }
 
 val String.idTypeP: QuartzParser<TypeT> get() = TokenType.ID map {
-    TypeT.Id(it.location(this), it.text.name)
+    TypeT.Id(it.location(this), it.text.name.qualifiedLocal)
 }
 
 val String.unitTypeP: QuartzParser<TypeT> get() = TokenType.O_PAREN then skip(TokenType.C_PAREN) map {

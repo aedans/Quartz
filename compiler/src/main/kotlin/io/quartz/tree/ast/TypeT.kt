@@ -1,10 +1,7 @@
 package io.quartz.tree.ast
 
 import io.quartz.nil
-import io.quartz.tree.Locatable
-import io.quartz.tree.Location
-import io.quartz.tree.Name
-import io.quartz.tree.name
+import io.quartz.tree.*
 
 /** Class representing all AST constraints */
 data class ConstraintT(val type: TypeT?, val name: Name)
@@ -14,13 +11,13 @@ data class SchemeT(val constraints: List<ConstraintT>, val type: TypeT)
 
 /** Sealed class representing all AST types */
 sealed class TypeT : Locatable {
-    data class Id(override val location: Location, val name: Name) : TypeT()
+    data class Id(override val location: Location, val name: QualifiedName) : TypeT()
 
     data class Apply(override val location: Location, val t1: TypeT, val t2: TypeT) : TypeT()
 
     companion object {
-        val unit = quartz.lang.Unit::class.java.typeT
-        val function = quartz.lang.Function::class.java.typeT
+        val unit = "quartz.lang.Unit".qualifiedName.typeT
+        val function = "quartz.lang.Function".qualifiedName.typeT
         fun function(arg: TypeT, value: TypeT) = function.apply(listOf(arg, value))
     }
 }
@@ -32,4 +29,4 @@ fun TypeT.apply(generics: List<TypeT>): TypeT = when (generics) {
 
 fun TypeT.apply(generic: TypeT) = TypeT.Apply(location, this, generic)
 
-val Class<*>.typeT get() = TypeT.Id(Location.unknown, name.name)
+val QualifiedName.typeT get() = TypeT.Id(Location.unknown, this)

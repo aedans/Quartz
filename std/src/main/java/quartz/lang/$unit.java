@@ -1,7 +1,7 @@
 package quartz.lang;
 
 /**
- * The value of "()"
+ * The value of "()".
  */
 public final class $unit {
     public Unit get() {
