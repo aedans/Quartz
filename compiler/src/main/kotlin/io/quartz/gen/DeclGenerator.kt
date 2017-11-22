@@ -2,6 +2,7 @@ package io.quartz.gen
 
 import io.quartz.analyze.type.tVar
 import io.quartz.gen.asm.*
+import io.quartz.interop.varClassName
 import io.quartz.interop.varGetterName
 import io.quartz.nil
 import io.quartz.tree.ir.ConstraintI
@@ -51,7 +52,7 @@ fun DeclI.Trait.generate(pg: ProgramGenerator) {
 fun DeclI.Value.generate(pg: ProgramGenerator) {
     pg.generateClass(ClassInfo(
             Opcodes.ACC_PUBLIC + Opcodes.ACC_FINAL,
-            name.qualify(p).locatableName,
+            name.qualify(p).varClassName().locatableName,
             classSignature(nil, listOf(TypeI.any)),
             TypeI.any.locatableName,
             emptyList()

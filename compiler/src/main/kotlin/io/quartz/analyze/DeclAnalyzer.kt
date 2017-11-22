@@ -8,7 +8,6 @@ import io.quartz.tree.Qualifier
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.ast.Package
 import io.quartz.tree.ir.DeclI
-import io.quartz.tree.name
 import io.quartz.tree.qualify
 import kategory.binding
 import kategory.ev
@@ -37,7 +36,7 @@ fun DeclT.Value.analyze(env: Env, p: Package) = resultMonad().binding {
     val localEnv = schemeT?.constraints?.localEnv(env) ?: env
     val schemeI = schemeK(localEnv).bind().schemeI
     val exprI = expr.analyze(localEnv, p).bind()
-    val it = DeclI.Value(location, "$$name".name, p, schemeI, exprI)
+    val it = DeclI.Value(location, name, p, schemeI, exprI)
     yields(it)
 }.ev()
 
