@@ -6,8 +6,6 @@ import io.quartz.nil
 import io.quartz.singletonList
 import io.quartz.tree.*
 import io.quartz.tree.ir.*
-import io.quartz.tree.ir.ExprI.Invoke.Dispatch.INTERFACE
-import io.quartz.tree.ir.ExprI.Invoke.Dispatch.VIRTUAL
 import org.funktionale.collections.prependTo
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
@@ -49,10 +47,7 @@ fun ExprI.Block.push(mg: MethodGenerator) {
 fun ExprI.Invoke.push(mg: MethodGenerator) {
     expr.push(mg)
     args.forEach { it.a.push(mg) }
-    (when (dispatch) {
-        INTERFACE -> mg.ga::invokeInterface
-        VIRTUAL -> mg.ga::invokeVirtual
-    })(
+    mg.ga.invokeInterface(
             owner.type(),
             method(returnType, name, args.map { it.b })
     )

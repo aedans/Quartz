@@ -34,14 +34,8 @@ sealed class ExprI : Locatable {
             val owner: TypeI,
             val returnType: TypeI,
             val name: Name,
-            val args: List<Tuple2<ExprI, TypeI>>,
-            val dispatch: Dispatch
-    ) : ExprI() {
-        enum class Dispatch {
-            INTERFACE,
-            VIRTUAL
-        }
-    }
+            val args: List<Tuple2<ExprI, TypeI>>
+    ) : ExprI()
 
     data class If(
             override val location: Location,

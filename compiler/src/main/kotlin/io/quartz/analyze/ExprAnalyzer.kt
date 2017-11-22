@@ -40,8 +40,7 @@ fun ExprT.Apply.analyze(env: Env, p: Package) = resultMonad().binding {
             TypeI.function,
             arrowK.t2.typeI,
             "invoke".name,
-            listOf(expr2I toT  expr1TypeK.typeI),
-            ExprI.Invoke.Dispatch.INTERFACE
+            listOf(expr2I toT  expr1TypeK.typeI)
     )
     yields(it)
 }.ev()
