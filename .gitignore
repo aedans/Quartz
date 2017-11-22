@@ -10,6 +10,7 @@ build
 
 *.xml
 *.iml
+.idea
 
 # Misc
 
