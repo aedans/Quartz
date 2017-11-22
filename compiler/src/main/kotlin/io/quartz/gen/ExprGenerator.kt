@@ -81,7 +81,7 @@ fun ExprI.Lambda.push(mg: MethodGenerator) {
     mg.visitClassGeneratorLater {
         visitProgramGeneratorLater {
             generateClass(ClassInfo(
-                    Opcodes.ACC_PUBLIC,
+                    Opcodes.ACC_PUBLIC + Opcodes.ACC_FINAL,
                     name.qualify(p).locatableName,
                     classSignature(constraints, TypeI.any.prependTo(superTypes)),
                     TypeI.any.locatableName,
