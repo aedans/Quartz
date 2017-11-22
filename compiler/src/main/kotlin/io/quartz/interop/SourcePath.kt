@@ -10,6 +10,7 @@ import io.quartz.tree.QualifiedName
 import io.quartz.tree.ast.DeclT
 import io.quartz.tree.ast.ImportT
 import io.quartz.tree.ast.Package
+import io.quartz.tree.ir.ExprI
 import io.quartz.tree.qualify
 import kategory.Tuple3
 import kategory.binding
@@ -63,8 +64,8 @@ fun SourcePath.getVar(name: QualifiedName, env: Env, pg: ProgramGenerator) = get
         val (p, imports, decl) = it.bind()
         val localEnv = env.import(p.import.prependTo(imports))
         val schemeK = decl.schemeK(localEnv).bind()
-        val varLoc = VarLoc.Global(name)
-        val info = VarInfo(schemeK, varLoc)
+        val varLoc = ExprI.Id.Loc.Global(name)
+        val info = IdInfo(schemeK, varLoc)
         decl.analyze(localEnv, p).map { it.generate(pg) } // Generate decl when accessed
         yields(info)
     }.ev()

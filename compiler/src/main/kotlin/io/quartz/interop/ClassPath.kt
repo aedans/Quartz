@@ -1,14 +1,14 @@
 package io.quartz.interop
 
+import io.quartz.analyze.IdInfo
 import io.quartz.analyze.TypeInfo
-import io.quartz.analyze.VarInfo
-import io.quartz.analyze.VarLoc
 import io.quartz.analyze.type.ConstraintK
 import io.quartz.analyze.type.SchemeK
 import io.quartz.analyze.type.TypeK
 import io.quartz.err.Result
 import io.quartz.err.resultMonad
 import io.quartz.tree.QualifiedName
+import io.quartz.tree.ir.ExprI
 import io.quartz.tree.name
 import io.quartz.tree.qualifiedName
 import io.quartz.tree.unqualified
@@ -52,8 +52,8 @@ fun ClassPath.getVar(name: QualifiedName) = run {
             val scheme = clazz.map {
                 it.getMethod(name.unqualified.varGetterName().string).returnType.schemeK
             }.bind()
-            val varLoc  = clazz.map { VarLoc.Global(name) }.bind()
-            val info = VarInfo(scheme, varLoc)
+            val varLoc  = clazz.map { ExprI.Id.Loc.Global(name) }.bind()
+            val info = IdInfo(scheme, varLoc)
             yields(info)
         }.ev()
     }

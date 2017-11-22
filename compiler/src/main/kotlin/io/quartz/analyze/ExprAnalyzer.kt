@@ -3,15 +3,11 @@ package io.quartz.analyze
 import io.quartz.analyze.type.*
 import io.quartz.err.Result
 import io.quartz.err.resultMonad
-import io.quartz.interop.varClassName
-import io.quartz.interop.varGetterName
-import io.quartz.nil
 import io.quartz.tree.Location
 import io.quartz.tree.ast.ExprT
 import io.quartz.tree.ast.Package
 import io.quartz.tree.ir.ExprI
 import io.quartz.tree.ir.TypeI
-import io.quartz.tree.ir.typeI
 import io.quartz.tree.name
 import io.quartz.tree.qualifiedLocal
 import io.quartz.tree.unqualified
@@ -28,24 +24,8 @@ fun ExprT.analyze(env: Env, p: Package): Result<ExprI> = when (this) {
 fun ExprT.Cast.analyze(env: Env, p: Package) = expr.analyze(env, p)
 
 fun ExprT.Id.analyze(env: Env) = resultMonad().binding {
-    val varInfo = env.getVarOrErr(name).bind()
-    val varLoc = varInfo.varLoc
-    val it = when (varLoc) {
-        is VarLoc.Arg -> ExprI.Arg(location, varLoc.index)
-        is VarLoc.Field -> ExprI.LocalField(
-                location,
-                varLoc.name,
-                varInfo.scheme.instantiate().typeI
-        )
-        is VarLoc.Global -> ExprI.InvokeStatic(
-                location,
-                varLoc.name.varClassName().typeI,
-                varInfo.scheme.instantiate().typeI,
-                name.unqualified.varGetterName(),
-                nil
-        )
-    }
-    yields(it)
+    val result = env.getVarOrErr(name).bind()
+    yields(ExprI.Id(location, name, result.loc, result.scheme.instantiate().typeI))
 }.ev()
 
 fun ExprT.Apply.analyze(env: Env, p: Package) = resultMonad().binding {
@@ -80,18 +60,18 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = resultMonad().binding {
     val argTypeK = arrow.t1
     val returnTypeK = arrow.t2
     val closures = freeVariables
-    val closuresMap = closures.associate { it to VarLoc.Field(it.unqualified) }
+    val closuresMap = closures.associate { it to ExprI.Id.Loc.Field(it.unqualified) }
     val constraintsI = typeK.generalize(env, s1).constraints.map { it.constraintI }
     val localEnv = env
-            .mapVars { name, err ->
-                err?.map { closuresMap[name]?.let { varLoc -> it.copy(varLoc = varLoc) } ?: it }
+            .mapIds { name, err ->
+                err?.map { closuresMap[name]?.let { varLoc -> it.copy(loc = varLoc) } ?: it }
             }
-            .withVar(arg.qualifiedLocal) { VarInfo(argTypeK.scheme, VarLoc.Arg(0)).right() }
+            .withId(arg.qualifiedLocal) { IdInfo(argTypeK.scheme, ExprI.Id.Loc.Arg(0)).right() }
     val closuresI = closures.map {
         val typeI = apply(localEnv.getVarOrErr(it).bind().scheme, s1).instantiate().typeI
         Tuple2(
                 ExprT.Id(Location.unknown, it).analyze(env).bind(),
-                ExprI.LocalField(Location.unknown, it.unqualified, typeI)
+                ExprI.Id(Location.unknown, it, ExprI.Id.Loc.Field(it.unqualified), typeI)
         )
     }
     val exprI = expr.analyze(localEnv, p).bind()

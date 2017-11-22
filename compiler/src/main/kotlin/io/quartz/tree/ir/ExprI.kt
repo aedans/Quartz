@@ -3,6 +3,7 @@ package io.quartz.tree.ir
 import io.quartz.tree.Locatable
 import io.quartz.tree.Location
 import io.quartz.tree.Name
+import io.quartz.tree.QualifiedName
 import io.quartz.tree.ast.Package
 import kategory.Tuple2
 
@@ -13,16 +14,19 @@ sealed class ExprI : Locatable {
             val exprs: List<ExprI>
     ) : ExprI()
 
-    data class Arg(
+    data class Id(
             override val location: Location,
-            val index: Int
-    ) : ExprI()
-
-    data class LocalField(
-            override val location: Location,
-            val name: Name,
+            val name: QualifiedName,
+            val loc: Loc,
             val type: TypeI
-    ) : ExprI()
+    ) : ExprI() {
+        /** ADT representing where an identifier is located */
+        sealed class Loc {
+            data class Arg(val index: Int) : Loc()
+            data class Global(val name: QualifiedName) : Loc()
+            data class Field(val name: Name) : Loc()
+        }
+    }
 
     data class Invoke(
             override val location: Location,
@@ -39,14 +43,6 @@ sealed class ExprI : Locatable {
         }
     }
 
-    data class InvokeStatic(
-            override val location: Location,
-            val owner: TypeI,
-            val type: TypeI,
-            val name: Name,
-            val args: List<Tuple2<ExprI, TypeI>>
-    ) : ExprI()
-
     data class If(
             override val location: Location,
             val condition: ExprI,
@@ -61,6 +57,6 @@ sealed class ExprI : Locatable {
             val argType: TypeI,
             val returnType: TypeI,
             val expr: ExprI,
-            val closures: List<Tuple2<ExprI, LocalField>>
+            val closures: List<Tuple2<ExprI, Id>>
     ) : ExprI()
 }

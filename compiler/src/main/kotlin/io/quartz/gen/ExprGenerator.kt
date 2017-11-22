@@ -1,15 +1,13 @@
 package io.quartz.gen
 
 import io.quartz.gen.asm.*
+import io.quartz.interop.varGetterName
 import io.quartz.nil
 import io.quartz.singletonList
+import io.quartz.tree.*
 import io.quartz.tree.ir.*
 import io.quartz.tree.ir.ExprI.Invoke.Dispatch.INTERFACE
 import io.quartz.tree.ir.ExprI.Invoke.Dispatch.VIRTUAL
-import io.quartz.tree.locatableName
-import io.quartz.tree.name
-import io.quartz.tree.qualifiedName
-import io.quartz.tree.qualify
 import org.funktionale.collections.prependTo
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
@@ -17,13 +15,11 @@ import org.objectweb.asm.commons.GeneratorAdapter
 
 fun ExprI.generate(mg: MethodGenerator) = when (this) {
     is ExprI.Block -> generate(mg)
-    is ExprI.Arg,
     is ExprI.Lambda,
-    is ExprI.LocalField -> {
+    is ExprI.Id -> {
 
     }
     is ExprI.Invoke,
-    is ExprI.InvokeStatic,
     is ExprI.If -> {
         push(mg)
         mg.ga.pop()
@@ -33,11 +29,9 @@ fun ExprI.generate(mg: MethodGenerator) = when (this) {
 fun ExprI.push(mg: MethodGenerator) = when (this) {
     is ExprI.Block -> push(mg)
     is ExprI.Invoke -> push(mg)
-    is ExprI.InvokeStatic -> push(mg)
     is ExprI.If -> push(mg)
-    is ExprI.Arg -> push(mg)
-    is ExprI.LocalField -> push(mg)
     is ExprI.Lambda -> push(mg)
+    is ExprI.Id -> push(mg)
 }
 
 fun ExprI.Block.generate(mg: MethodGenerator) {
@@ -64,14 +58,6 @@ fun ExprI.Invoke.push(mg: MethodGenerator) {
     )
 }
 
-fun ExprI.InvokeStatic.push(mg: MethodGenerator) {
-    args.forEach { it.a.push(mg) }
-    mg.ga.invokeStatic(
-            owner.type(),
-            method(type, name, args.map { it.b })
-    )
-}
-
 fun ExprI.If.push(mg: MethodGenerator) {
     val endLabel = mg.ga.newLabel()
     val falseLabel = mg.ga.newLabel()
@@ -89,19 +75,6 @@ fun ExprI.If.push(mg: MethodGenerator) {
     expr2.push(mg)
 
     mg.ga.mark(endLabel)
-}
-
-fun ExprI.Arg.push(mg: MethodGenerator) {
-    mg.ga.loadArg(index)
-}
-
-fun ExprI.LocalField.push(mg: MethodGenerator) {
-    mg.ga.loadThis()
-    mg.ga.getField(
-            mg.classGenerator.info.name.qualifiedName.typeI.type(),
-            name.toString(),
-            type.type()
-    )
 }
 
 fun ExprI.Lambda.push(mg: MethodGenerator) {
@@ -168,4 +141,26 @@ fun ExprI.Lambda.push(mg: MethodGenerator) {
             type,
             method(VoidTypeI, "<init>".name, closures.map { it.b.type })
     )
+}
+
+fun ExprI.Id.push(mg: MethodGenerator) {
+    val `_` = when (loc) {
+        is ExprI.Id.Loc.Arg -> {
+            mg.ga.loadArg(loc.index)
+        }
+        is ExprI.Id.Loc.Global -> {
+            mg.ga.invokeStatic(
+                    loc.name.typeI.type(),
+                    method(type, loc.name.unqualified.varGetterName(), nil)
+            )
+        }
+        is ExprI.Id.Loc.Field -> {
+            mg.ga.loadThis()
+            mg.ga.getField(
+                    mg.classGenerator.info.name.qualifiedName.typeI.type(),
+                    name.toString(),
+                    type.type()
+            )
+        }
+    }
 }

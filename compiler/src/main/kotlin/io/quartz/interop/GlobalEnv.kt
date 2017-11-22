@@ -12,6 +12,6 @@ class GlobalEnv(
     override fun getType(name: QualifiedName) = sp.getType(name, this, pg)
             ?: cp.getType(name)
 
-    override fun getVar(name: QualifiedName) = sp.getVar(name, this, pg)
+    override fun getId(name: QualifiedName) = sp.getVar(name, this, pg)
             ?: cp.getVar(name)
 }

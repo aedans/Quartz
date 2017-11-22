@@ -5,6 +5,7 @@ import io.quartz.err.CompilerError
 import io.quartz.err.qualify
 import io.quartz.err.resultMonad
 import io.quartz.tree.ast.ExprT
+import io.quartz.tree.ir.ExprI
 import io.quartz.tree.qualifiedLocal
 import kategory.*
 
@@ -30,7 +31,7 @@ fun ExprT.infer(env: Env): Infer = when (this) {
     is ExprT.Lambda -> resultMonad().binding {
         val argVar = TypeK.Var(fresh())
         val envP = env
-                .withVar(arg.qualifiedLocal) { VarInfo(argVar.scheme, VarLoc.Arg(0)).right() }
+                .withId(arg.qualifiedLocal) { IdInfo(argVar.scheme, ExprI.Id.Loc.Arg(0)).right() }
                 .withType(argVar.name.qualifiedLocal) { TypeInfo(argVar.scheme).right() }
         val (s1, exprType) = expr.infer(envP).bind()
         yields(s1 toT TypeK.Arrow(apply(argVar, s1), exprType).type)

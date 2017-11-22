@@ -15,9 +15,9 @@ fun ImportT.import(env: Env) = when (this) {
 }
 
 fun ImportT.Star.import(env: Env) = env
-        .mapVars { name, value -> value ?: env.getVar(QualifiedName(qualifier, name.string)) }
+        .mapIds { name, value -> value ?: env.getId(QualifiedName(qualifier, name.string)) }
         .mapTypes { name, value -> value ?: env.getType(QualifiedName(qualifier, name.string)) }
 
 fun ImportT.Qualified.import(env: Env) = env
-        .withVar(alias.qualifiedLocal) { env.getVar(qualifiedName) }
+        .withId(alias.qualifiedLocal) { env.getId(qualifiedName) }
         .withType(alias.qualifiedLocal) { env.getType(qualifiedName) }
