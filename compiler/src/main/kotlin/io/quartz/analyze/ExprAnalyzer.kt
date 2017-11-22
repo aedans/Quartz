@@ -15,7 +15,7 @@ import kategory.*
 
 fun ExprT.analyze(env: Env, p: Package): Result<ExprI> = when (this) {
     is ExprT.Cast -> analyze(env, p)
-    is ExprT.Id -> analyze(env)
+    is ExprT.Var -> analyze(env)
     is ExprT.Apply -> analyze(env, p)
     is ExprT.If -> analyze(env, p)
     is ExprT.Lambda -> analyze(env, p)
@@ -23,9 +23,9 @@ fun ExprT.analyze(env: Env, p: Package): Result<ExprI> = when (this) {
 
 fun ExprT.Cast.analyze(env: Env, p: Package) = expr.analyze(env, p)
 
-fun ExprT.Id.analyze(env: Env) = resultMonad().binding {
+fun ExprT.Var.analyze(env: Env) = resultMonad().binding {
     val result = env.getVarOrErr(name).bind()
-    yields(ExprI.Id(location, name, result.loc, result.scheme.instantiate().typeI))
+    yields(ExprI.Var(location, name, result.loc, result.scheme.instantiate().typeI))
 }.ev()
 
 fun ExprT.Apply.analyze(env: Env, p: Package) = resultMonad().binding {
@@ -59,18 +59,18 @@ fun ExprT.Lambda.analyze(env: Env, p: Package) = resultMonad().binding {
     val argTypeK = arrow.t1
     val returnTypeK = arrow.t2
     val closures = freeVariables
-    val closuresMap = closures.associate { it to ExprI.Id.Loc.Field(it.unqualified) }
+    val closuresMap = closures.associate { it to ExprI.Var.Loc.Field(it.unqualified) }
     val constraintsI = typeK.generalize(env, s1).constraints.map { it.constraintI }
     val localEnv = env
             .mapIds { name, err ->
                 err?.map { closuresMap[name]?.let { varLoc -> it.copy(loc = varLoc) } ?: it }
             }
-            .withId(arg.qualifiedLocal) { IdInfo(argTypeK.scheme, ExprI.Id.Loc.Arg(0)).right() }
+            .withId(arg.qualifiedLocal) { IdInfo(argTypeK.scheme, ExprI.Var.Loc.Arg(0)).right() }
     val closuresI = closures.map {
         val typeI = apply(localEnv.getVarOrErr(it).bind().scheme, s1).instantiate().typeI
         Tuple2(
-                ExprT.Id(Location.unknown, it).analyze(env).bind(),
-                ExprI.Id(Location.unknown, it, ExprI.Id.Loc.Field(it.unqualified), typeI)
+                ExprT.Var(Location.unknown, it).analyze(env).bind(),
+                ExprI.Var(Location.unknown, it, ExprI.Var.Loc.Field(it.unqualified), typeI)
         )
     }
     val exprI = expr.analyze(localEnv, p).bind()

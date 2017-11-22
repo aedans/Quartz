@@ -19,14 +19,6 @@ sealed class TypeT : Locatable {
     data class Apply(override val location: Location, val t1: TypeT, val t2: TypeT) : TypeT()
 
     companion object {
-        val bool = java.lang.Boolean::class.java.typeT
-        val byte = java.lang.Byte::class.java.typeT
-        val char = java.lang.Short::class.java.typeT
-        val short = java.lang.Short::class.java.typeT
-        val int = java.lang.Integer::class.java.typeT
-        val long = java.lang.Long::class.java.typeT
-        val float = java.lang.Float::class.java.typeT
-        val any = java.lang.Object::class.java.typeT
         val unit = quartz.lang.Unit::class.java.typeT
         val function = quartz.lang.Function::class.java.typeT
         fun function(arg: TypeT, value: TypeT) = function.apply(listOf(arg, value))

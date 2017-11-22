@@ -14,7 +14,7 @@ sealed class ExprI : Locatable {
             val exprs: List<ExprI>
     ) : ExprI()
 
-    data class Id(
+    data class Var(
             override val location: Location,
             val name: QualifiedName,
             val loc: Loc,
@@ -51,6 +51,6 @@ sealed class ExprI : Locatable {
             val argType: TypeI,
             val returnType: TypeI,
             val expr: ExprI,
-            val closures: List<Tuple2<ExprI, Id>>
+            val closures: List<Tuple2<ExprI, Var>>
     ) : ExprI()
 }

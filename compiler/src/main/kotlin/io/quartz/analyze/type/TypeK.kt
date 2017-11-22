@@ -117,7 +117,7 @@ val ConstraintK.constraintI get() = ConstraintI(name, TypeI.any)
 val SchemeK.schemeI get() = SchemeI(constraints.map { it.constraintI }, type.typeI)
 
 val TypeK.typeI: TypeI get() = when (this) {
-    is TypeK.Const -> ClassTypeI(name)
-    is TypeK.Var -> GenericTypeI(name)
+    is TypeK.Const -> ConstTypeI(name)
+    is TypeK.Var -> VarTypeI(name)
     is TypeK.Apply -> t1.typeI.apply(t2.typeI)
 }

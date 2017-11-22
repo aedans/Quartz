@@ -14,7 +14,7 @@ typealias InferState = Tuple2<Subst, TypeK>
 
 /** Returns the type of an expression and all constraints it imposes as a substitution */
 fun ExprT.infer(env: Env): Infer = when (this) {
-    is ExprT.Id -> env.getVarOrErr(name).map { emptySubst toT it.scheme.instantiate() }.qualify()
+    is ExprT.Var -> env.getVarOrErr(name).map { emptySubst toT it.scheme.instantiate() }.qualify()
     is ExprT.Cast -> resultMonad().binding {
         val typeK = type.typeK(env).bind()
         val (s1, exprType) = expr.infer(env).bind()
@@ -31,7 +31,7 @@ fun ExprT.infer(env: Env): Infer = when (this) {
     is ExprT.Lambda -> resultMonad().binding {
         val argVar = TypeK.Var(fresh())
         val envP = env
-                .withId(arg.qualifiedLocal) { IdInfo(argVar.scheme, ExprI.Id.Loc.Arg(0)).right() }
+                .withId(arg.qualifiedLocal) { IdInfo(argVar.scheme, ExprI.Var.Loc.Arg(0)).right() }
                 .withType(argVar.name.qualifiedLocal) { TypeInfo(argVar.scheme).right() }
         val (s1, exprType) = expr.infer(envP).bind()
         yields(s1 toT TypeK.Arrow(apply(argVar, s1), exprType).type)

@@ -52,7 +52,7 @@ fun ClassPath.getVar(name: QualifiedName) = run {
             val scheme = clazz.map {
                 it.getMethod(name.unqualified.varGetterName().string).returnType.schemeK
             }.bind()
-            val varLoc  = clazz.map { ExprI.Id.Loc.Global(name) }.bind()
+            val varLoc  = clazz.map { ExprI.Var.Loc.Global(name) }.bind()
             val info = IdInfo(scheme, varLoc)
             yields(info)
         }.ev()

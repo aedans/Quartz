@@ -16,7 +16,7 @@ interface Env {
 fun Env.getTypeOrErr(name: QualifiedName) = getType(name) ?: err { "could not find type $name" }
 fun Env.getVarOrErr(name: QualifiedName) = getId(name) ?: err { "could not find var $name" }
 
-data class IdInfo(val scheme: SchemeK, val loc: ExprI.Id.Loc)
+data class IdInfo(val scheme: SchemeK, val loc: ExprI.Var.Loc)
 
 data class TypeInfo(val scheme: SchemeK)
 

@@ -13,7 +13,7 @@ sealed class ExprT : Locatable {
             val type: TypeT
     ) : ExprT()
 
-    data class Id(
+    data class Var(
             override val location: Location,
             val name: QualifiedName
     ) : ExprT()

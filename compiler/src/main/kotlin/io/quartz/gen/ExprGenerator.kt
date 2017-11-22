@@ -14,7 +14,7 @@ import org.objectweb.asm.commons.GeneratorAdapter
 fun ExprI.generate(mg: MethodGenerator) = when (this) {
     is ExprI.Block -> generate(mg)
     is ExprI.Lambda,
-    is ExprI.Id -> {
+    is ExprI.Var -> {
 
     }
     is ExprI.Invoke,
@@ -29,7 +29,7 @@ fun ExprI.push(mg: MethodGenerator) = when (this) {
     is ExprI.Invoke -> push(mg)
     is ExprI.If -> push(mg)
     is ExprI.Lambda -> push(mg)
-    is ExprI.Id -> push(mg)
+    is ExprI.Var -> push(mg)
 }
 
 fun ExprI.Block.generate(mg: MethodGenerator) {
@@ -138,18 +138,18 @@ fun ExprI.Lambda.push(mg: MethodGenerator) {
     )
 }
 
-fun ExprI.Id.push(mg: MethodGenerator) {
+fun ExprI.Var.push(mg: MethodGenerator) {
     val `_` = when (loc) {
-        is ExprI.Id.Loc.Arg -> {
+        is ExprI.Var.Loc.Arg -> {
             mg.ga.loadArg(loc.index)
         }
-        is ExprI.Id.Loc.Global -> {
+        is ExprI.Var.Loc.Global -> {
             mg.ga.invokeStatic(
                     loc.name.typeI.type(),
                     method(type, loc.name.unqualified.varGetterName(), nil)
             )
         }
-        is ExprI.Id.Loc.Field -> {
+        is ExprI.Var.Loc.Field -> {
             mg.ga.loadThis()
             mg.ga.getField(
                     mg.classGenerator.info.name.qualifiedName.typeI.type(),

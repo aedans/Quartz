@@ -33,7 +33,7 @@ interface TypeI {
     }
 }
 
-data class ClassTypeI(val name: QualifiedName) : TypeI {
+data class ConstTypeI(val name: QualifiedName) : TypeI {
     override val generics get() = nil
     override val qualifiedName get() = name
     override val locatableName get() = name.locatableName
@@ -43,10 +43,10 @@ data class ClassTypeI(val name: QualifiedName) : TypeI {
         else -> generics.joinToString(prefix = "<", postfix = ">", separator = "") { it.signature }
     } + ";"
 
-    override fun toString() = "ClassTypeI($name)"
+    override fun toString() = "ConstTypeI($name)"
 }
 
-data class GenericTypeI(val name: Name) : TypeI {
+data class VarTypeI(val name: Name) : TypeI {
     override val generics get() = nil
     override val qualifiedName get() = name.qualifiedLocal
     override val locatableName get() = qualifiedName.locatableName
@@ -56,7 +56,7 @@ data class GenericTypeI(val name: Name) : TypeI {
         else -> generics.joinToString(prefix = "<", postfix = ">", separator = "") { it.signature }
     } + ";"
 
-    override fun toString() = "GenericTypeI($name)"
+    override fun toString() = "VarTypeI($name)"
 }
 
 object VoidTypeI : TypeI {
@@ -69,7 +69,7 @@ object VoidTypeI : TypeI {
 
 val TypeI.name get() = qualifiedName.string.name
 
-val QualifiedName.typeI get() = ClassTypeI(this)
+val QualifiedName.typeI get() = ConstTypeI(this)
 
 val Class<*>.typeI: TypeI get() = qualifiedName.typeI
 

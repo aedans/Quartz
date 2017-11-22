@@ -45,14 +45,14 @@ val String.atomicExprP: QuartzParser<ExprT> get() = parser { unitExprP } or
         parser { idExprP }
 
 val String.unitExprP: QuartzParser<ExprT> get() =
-    TokenType.O_PAREN then skip(TokenType.C_PAREN) map { ExprT.Id(it.location(this), "quartz.lang.unit".qualifiedName) }
+    TokenType.O_PAREN then skip(TokenType.C_PAREN) map { ExprT.Var(it.location(this), "quartz.lang.unit".qualifiedName) }
 
 val String.parenthesizedExprP: QuartzParser<ExprT> get() =
     skip(TokenType.O_PAREN) then parser { exprP } then skip(TokenType.C_PAREN)
 
 val String.idExprP: QuartzParser<ExprT> get() =
-    TokenType.ID map { ExprT.Id(it.location(this), it.text.name.qualifiedLocal) }
+    TokenType.ID map { ExprT.Var(it.location(this), it.text.name.qualifiedLocal) }
 
 val String.booleanExprP: QuartzParser<ExprT> get() = TokenType.TRUE or TokenType.FALSE map {
-    ExprT.Id(it.location(this), "quartz.lang.${it.text}".qualifiedName)
+    ExprT.Var(it.location(this), "quartz.lang.${it.text}".qualifiedName)
 }
