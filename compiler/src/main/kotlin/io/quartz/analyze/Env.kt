@@ -1,7 +1,6 @@
 package io.quartz.analyze
 
 import io.quartz.analyze.type.SchemeK
-import io.quartz.analyze.type.TypeK
 import io.quartz.err.Result
 import io.quartz.err.err
 import io.quartz.foldString
@@ -12,13 +11,10 @@ import io.quartz.tree.name
 interface Env {
     fun getType(name: QualifiedName): Result<TypeInfo>?
     fun getVar(name: QualifiedName): Result<VarInfo>?
-    fun getInstance(type: TypeK, instance: TypeK): Result<InstanceInfo>?
 }
 
 fun Env.getTypeOrErr(name: QualifiedName) = getType(name) ?: err { "could not find type $name" }
 fun Env.getVarOrErr(name: QualifiedName) = getVar(name) ?: err { "could not find var $name" }
-fun Env.getInstanceOrErr(type: TypeK, instance: TypeK) =
-        getInstance(type, instance) ?: err { "could not find instance of $type for $instance" }
 
 /** ADT representing where an identifier is located */
 sealed class VarLoc {
@@ -34,10 +30,6 @@ data class VarInfo(
 
 data class TypeInfo(
         val scheme: SchemeK
-)
-
-data class InstanceInfo(
-        val varLoc: VarLoc
 )
 
 fun Env.mapTypes(map: (QualifiedName, Result<TypeInfo>?) -> Result<TypeInfo>?) = object : Env by this {

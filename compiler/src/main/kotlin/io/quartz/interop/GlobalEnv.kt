@@ -1,7 +1,6 @@
 package io.quartz.interop
 
 import io.quartz.analyze.Env
-import io.quartz.analyze.type.TypeK
 import io.quartz.gen.asm.ProgramGenerator
 import io.quartz.tree.QualifiedName
 
@@ -15,6 +14,4 @@ class GlobalEnv(
 
     override fun getVar(name: QualifiedName) = sp.getVar(name, this, pg)
             ?: cp.getVar(name)
-
-    override fun getInstance(type: TypeK, instance: TypeK) = TODO()
 }
