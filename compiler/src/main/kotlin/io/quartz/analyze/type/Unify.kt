@@ -1,13 +1,8 @@
 package io.quartz.analyze.type
 
-import io.quartz.err.Result
-import io.quartz.err.err
-import io.quartz.err.resultMonad
-import kategory.binding
-import kategory.ev
-import kategory.right
+import io.quartz.err.*
+import kategory.*
 
-/** Unifies two types if possible, returning a substitution that, when applied to both types, yields the same type */
 fun unify(t1: TypeK, t2: TypeK): Result<Subst> = when {
     t1 is TypeK.Apply && t2 is TypeK.Apply -> resultMonad().binding {
         val s1 = unify(t1.t1, t2.t1).bind()
@@ -20,14 +15,12 @@ fun unify(t1: TypeK, t2: TypeK): Result<Subst> = when {
     else -> err { "unable to unify $t1 with $t2" }
 }
 
-/** Returns a substitution in which a type variable is bound to a type */
 fun bind(tVar: TypeK.Var, type: TypeK) = when {
     tVar == type -> emptySubst.right()
-    occursIn(tVar, type) -> err { "infinite type $tVar in $type" }
+    occursIn(tVar, type) -> err { "infinite constraint $tVar in $type" }
     else -> mapOf(tVar.name to type).right()
 }
 
-/** Returns true if a type variable is contained inside a type */
 fun occursIn(tVar: TypeK.Var, type: TypeK): Boolean = when (type) {
     is TypeK.Apply -> occursIn(tVar, type.t1) || occursIn(tVar, type.t2)
     is TypeK.Var -> type == tVar

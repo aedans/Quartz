@@ -3,12 +3,8 @@ package io.quartz.parse
 import io.github.aedans.parsek.dsl.*
 import io.github.aedans.parsek.optional
 import io.quartz.nil
-import io.quartz.tree.ast.ConstraintT
-import io.quartz.tree.ast.SchemeT
-import io.quartz.tree.ast.TypeT
-import io.quartz.tree.ast.apply
-import io.quartz.tree.name
-import io.quartz.tree.qualifiedLocal
+import io.quartz.tree.ast.*
+import io.quartz.tree.util.*
 
 val String.schemeP: QuartzParser<SchemeT> get() =
     optional(list(parser { constraintP }) then skip(TokenType.FAT_ARROW)) then

@@ -2,46 +2,26 @@ package io.quartz.cli
 
 import com.xenomachina.argparser.ShowHelpException
 import io.quartz.analyze.analyze
-import io.quartz.analyze.import
-import io.quartz.err.flat
-import io.quartz.err.resultMonad
-import io.quartz.err.write
-import io.quartz.gen.asm.ProgramGenerator
-import io.quartz.gen.generate
-import io.quartz.interop.GlobalEnv
-import io.quartz.interop.classPath
-import io.quartz.interop.decls
-import io.quartz.interop.sourcePath
-import kategory.binding
-import kategory.ev
-import java.io.File
+import io.quartz.env.sourceEnv
+import io.quartz.err.*
+import io.quartz.mapErr
+import io.quartz.parse.parse
+import kategory.*
 
-/** The main entry point for the Quartz compiler */
 object Cli {
     @JvmStatic
-    fun main(args: Array<String>) {
+    fun main(vararg args: String) {
         try {
-            val options = Options(args)
-
-            val pg = ProgramGenerator {
-                val locatableName = it.info.name
-                File(options.out, "$locatableName.class")
-                        .also { it.parentFile.mkdirs() }
-                        .writeBytes(it.cw.toByteArray())
-            }
-
             resultMonad().binding {
-                val globalEnv = GlobalEnv(options.cp.classPath(), options.sp.sourcePath(), pg)
-
-                val it = options.src.decls().map { (p, imports, decl) ->
-                    decl.analyze(globalEnv.import(imports), p)
-                }.flat().bind()
-
-                yields(it)
-            }.ev().bimap(
-                    { it.write() },
-                    { it.generate(pg) }
-            )
+                val options = Options(*args)
+                val target = options.target
+                val generator = target.generator(options.out)
+                val env = target.env(options.bp).sourceEnv(options.sp, generator).bind()
+                val ast = options.src.parse().bind()
+                val ir = ast.analyze(env).bind()
+                ir.forEach { generator.generate(it) }
+                yields(Unit)
+            }.ev().mapErr { it.write() }
         } catch (e: ShowHelpException) {
             val writer = System.out.writer()
             e.printUserMessage(writer, null, 80)

@@ -3,7 +3,7 @@ package quartz.lang;
 /**
  * Class representing the primitive float.
  */
-public final class Float {
+public final class Float extends Any {
     public final float value;
 
     public Float(int value) {

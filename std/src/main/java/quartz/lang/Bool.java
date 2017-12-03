@@ -3,7 +3,7 @@ package quartz.lang;
 /**
  * Class representing the primitive boolean.
  */
-public final class Bool {
+public final class Bool extends Any {
     public final boolean value;
 
     public Bool(boolean value) {

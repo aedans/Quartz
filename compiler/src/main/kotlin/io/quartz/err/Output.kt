@@ -4,6 +4,10 @@ fun List<CompilerError>.write() = forEach { it.write() }
 
 fun CompilerError.write() {
     println(messageF())
-    println("at $location")
+    location?.let { println("at $it") }
+    cause?.let {
+        print("Caused by ")
+        it.printStackTrace(System.out)
+    }
     println()
 }

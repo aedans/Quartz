@@ -1,37 +1,35 @@
 package io.quartz.tree.ir
 
-import io.quartz.tree.Locatable
-import io.quartz.tree.Location
-import io.quartz.tree.Name
-import io.quartz.tree.ast.Package
+import io.quartz.tree.util.*
 
-/** Sealed class representing all IR declarations */
 sealed class DeclI : Locatable {
+    abstract val qualifier: Qualifier
+
     data class Trait(
-            override val location: Location,
+            override val location: Location?,
+            override val qualifier: Qualifier,
             val name: Name,
-            val p: Package,
             val constraints: List<ConstraintI>,
             val members: List<Member>
     ) : DeclI() {
         data class Member(
-                val location: Location,
+                val location: Location?,
                 val name: Name,
                 val scheme: SchemeI
         )
     }
 
     data class Value(
-            override val location: Location,
+            override val location: Location?,
+            override val qualifier: Qualifier,
             val name: Name,
-            val p: Package,
             val scheme: SchemeI,
             val expr: ExprI
     ) : DeclI()
 
     data class Instance(
-            override val location: Location,
-            val p: Package,
+            override val location: Location?,
+            override val qualifier: Qualifier,
             val constraints: List<ConstraintI>,
             val type: TypeI,
             val instance: TypeI,

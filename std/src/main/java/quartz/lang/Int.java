@@ -3,7 +3,7 @@ package quartz.lang;
 /**
  * Class representing the primitive int.
  */
-public final class Int {
+public final class Int extends Any {
     public final int value;
 
     public Int(int value) {

@@ -1,9 +1,8 @@
 package io.quartz.parse
 
-import io.github.aedans.parsek.ParseResult
-import io.github.aedans.parsek.Parser
+import io.github.aedans.parsek.*
 import io.github.aedans.parsek.tokenizer.Token
-import io.quartz.tree.Location
+import io.quartz.tree.util.Location
 
 fun Token<*>.location(string: String) = Location(string, row, col)
 

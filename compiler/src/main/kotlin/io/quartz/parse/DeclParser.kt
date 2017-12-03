@@ -2,10 +2,9 @@ package io.quartz.parse
 
 import io.github.aedans.parsek.dsl.*
 import io.github.aedans.parsek.optional
-import io.quartz.nil
+import io.quartz.*
 import io.quartz.tree.ast.DeclT
-import io.quartz.tree.name
-import io.quartz.tup
+import io.quartz.tree.util.name
 
 val String.declP: QuartzParser<DeclT> get() = parser { traitDeclP } or
         parser { valueDeclP } or

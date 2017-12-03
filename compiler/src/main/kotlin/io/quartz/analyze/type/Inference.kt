@@ -1,20 +1,16 @@
 package io.quartz.analyze.type
 
-import io.quartz.analyze.*
-import io.quartz.err.CompilerError
-import io.quartz.err.qualify
-import io.quartz.err.resultMonad
+import io.quartz.env.*
+import io.quartz.err.*
 import io.quartz.tree.ast.ExprT
-import io.quartz.tree.ir.ExprI
-import io.quartz.tree.qualifiedLocal
+import io.quartz.tree.util.qualifiedLocal
 import kategory.*
 
 typealias Infer = Either<List<CompilerError>, InferState>
 typealias InferState = Tuple2<Subst, TypeK>
 
-/** Returns the type of an expression and all constraints it imposes as a substitution */
 fun ExprT.infer(env: Env): Infer = when (this) {
-    is ExprT.Var -> env.getVarOrErr(name).map { emptySubst toT it.scheme.instantiate() }.qualify()
+    is ExprT.Var -> env.getVarOrErr(name).map { emptySubst toT it.scheme.instantiate(env) }.qualify()
     is ExprT.Cast -> resultMonad().binding {
         val typeK = type.typeK(env).bind()
         val (s1, exprType) = expr.infer(env).bind()
@@ -22,16 +18,18 @@ fun ExprT.infer(env: Env): Infer = when (this) {
         yields(s2 compose s1 toT apply(exprType, s2))
     }.ev()
     is ExprT.Apply -> resultMonad().binding {
-        val typeVariable = TypeK.Var(fresh())
+        val tVarName = fresh()
+        val tVar = TypeK.Var(tVarName)
         val (s1, expr1Type) = expr1.infer(env).bind()
         val (s2, expr2Type) = expr2.infer(apply(env, s1)).bind()
-        val s3 = unify(apply(expr1Type, s2), TypeK.Arrow(expr2Type, typeVariable).type).bind()
-        yields((s3 compose s2 compose s1) toT apply(typeVariable, s3))
+        val s3 = unify(apply(expr1Type, s2), TypeK.Arrow(expr2Type, tVar).type).bind()
+        yields((s3 compose s2 compose s1) toT apply(tVar, s3))
     }.ev()
     is ExprT.Lambda -> resultMonad().binding {
-        val argVar = TypeK.Var(fresh())
+        val argName = fresh()
+        val argVar = TypeK.Var(argName)
         val envP = env
-                .withId(arg.qualifiedLocal) { IdInfo(argVar.scheme, ExprI.Var.Loc.Arg(0)).right() }
+                .withVar(this@infer.argName.qualifiedLocal) { VarInfo(argVar.scheme).right() }
                 .withType(argVar.name.qualifiedLocal) { TypeInfo(argVar.scheme).right() }
         val (s1, exprType) = expr.infer(envP).bind()
         yields(s1 toT TypeK.Arrow(apply(argVar, s1), exprType).type)

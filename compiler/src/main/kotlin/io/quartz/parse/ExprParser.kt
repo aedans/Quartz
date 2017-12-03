@@ -3,9 +3,7 @@ package io.quartz.parse
 import io.github.aedans.parsek.dsl.*
 import io.github.aedans.parsek.optional
 import io.quartz.tree.ast.ExprT
-import io.quartz.tree.name
-import io.quartz.tree.qualifiedLocal
-import io.quartz.tree.qualifiedName
+import io.quartz.tree.util.*
 import io.quartz.tup
 
 val String.exprP: QuartzParser<ExprT> get() = parser { lambdaExprP } or
@@ -16,7 +14,7 @@ val String.lambdaExprP: QuartzParser<ExprT> get() = skip(TokenType.BACKSLASH) th
         TokenType.ID then
         skip(TokenType.ARROW) then
         parser { exprP } map { (t1, t2) ->
-    ExprT.Lambda(t1.location(this), t1.text.name, t2)
+    ExprT.Lambda(t2.location, t1.text.name, t2)
 }
 
 val String.ifExprP: QuartzParser<ExprT> get() = TokenType.IF then

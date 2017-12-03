@@ -1,32 +1,16 @@
 package io.quartz.tree.ast
 
-import io.quartz.nil
-import io.quartz.tree.*
+import io.quartz.tree.util.*
 
-/** Class representing all AST constraints */
-data class ConstraintT(val type: TypeT?, val name: Name)
-
-/** Class representing all AST type schemes */
-data class SchemeT(val constraints: List<ConstraintT>, val type: TypeT)
-
-/** Sealed class representing all AST types */
 sealed class TypeT : Locatable {
-    data class Id(override val location: Location, val name: QualifiedName) : TypeT()
+    data class Id(override val location: Location?, val name: QualifiedName) : TypeT()
+    data class Apply(override val location: Location?, val t1: TypeT, val t2: TypeT) : TypeT()
 
-    data class Apply(override val location: Location, val t1: TypeT, val t2: TypeT) : TypeT()
+    fun apply(generic: TypeT) = TypeT.Apply(location, this, generic)
 
     companion object {
-        val unit = "quartz.lang.Unit".qualifiedName.typeT
-        val function = "quartz.lang.Function".qualifiedName.typeT
-        fun function(arg: TypeT, value: TypeT) = function.apply(listOf(arg, value))
+        val unit = TypeT.Id(null, "quartz.lang.Unit".qualifiedName)
+        private val function = TypeT.Id(null, "quartz.lang.Function".qualifiedName)
+        fun function(arg: TypeT, value: TypeT) = function.apply(arg).apply(value)
     }
 }
-
-fun TypeT.apply(generics: List<TypeT>): TypeT = when (generics) {
-    nil -> this
-    else -> apply(generics.first()).apply(generics.drop(1))
-}
-
-fun TypeT.apply(generic: TypeT) = TypeT.Apply(location, this, generic)
-
-val QualifiedName.typeT get() = TypeT.Id(Location.unknown, this)

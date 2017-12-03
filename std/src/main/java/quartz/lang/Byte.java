@@ -3,7 +3,7 @@ package quartz.lang;
 /**
  * Class representing the primitive byte.
  */
-public final class Byte {
+public final class Byte extends Any {
     public final byte value;
 
     public Byte(byte value) {
