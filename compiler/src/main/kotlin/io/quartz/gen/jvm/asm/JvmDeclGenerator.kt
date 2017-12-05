@@ -16,12 +16,12 @@ fun JvmDecl.Method.generate(cg: ClassGenerator) {
     val signature = methodSignature(generics, argTypes, returnType)
     val access = Opcodes.ACC_PUBLIC +
             (if (isAbstract) Opcodes.ACC_ABSTRACT else 0)
-    expr?.let {
-        MethodGenerator(cg, GeneratorAdapter(access, method, signature, emptyArray(), cg.cw)).run {
+    MethodGenerator(cg, GeneratorAdapter(access, method, signature, emptyArray(), cg.cw)).run {
+        expr?.let {
             it.generate(this)
             ga.returnValue()
-            ga.visitEnd()
         }
+        ga.visitEnd()
     }
 }
 
