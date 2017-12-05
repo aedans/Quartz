@@ -9,7 +9,7 @@ interface Env {
     fun getVar(name: QualifiedName): Result<VarInfo>?
 }
 
-fun Env.getTypeOrErr(name: QualifiedName) = getType(name) ?: err { "could not find castType $name" }
+fun Env.getTypeOrErr(name: QualifiedName) = getType(name) ?: err { "could not find type $name" }
 fun Env.getVarOrErr(name: QualifiedName) = getVar(name) ?: err { "could not find var $name" }
 
 fun Env.mapTypes(map: (QualifiedName, Result<TypeInfo>?) -> Result<TypeInfo>?) = object : Env by this {
