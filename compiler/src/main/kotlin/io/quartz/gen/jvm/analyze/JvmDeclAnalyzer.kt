@@ -21,6 +21,7 @@ fun DeclI.Trait.jvm(qualifier: Qualifier): JvmClass = run {
     JvmClass(
             qualifiedName,
             decls,
+            generics = constraints.map { it.jvm() },
             annotations = listOf(JvmAnnotation("quartz.lang.Trait".qualifiedName)),
             isInterface = true
     )
