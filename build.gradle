@@ -1,6 +1,6 @@
 allprojects {
     group 'io.quartz'
-    version '0.16.0'
+    version '0.16.1'
 
     repositories {
         mavenCentral()

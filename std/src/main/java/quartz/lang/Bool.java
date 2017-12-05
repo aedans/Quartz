@@ -6,6 +6,9 @@ package quartz.lang;
 public final class Bool extends Any {
     public final boolean value;
 
+    public static final Bool TRUE = new Bool(true);
+    public static final Bool FALSE = new Bool(false);
+
     public Bool(boolean value) {
         this.value = value;
     }

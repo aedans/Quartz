@@ -22,6 +22,6 @@ public final class Int extends Any {
 
     @Override
     public int hashCode() {
-        return value;
+        return java.lang.Integer.hashCode(value);
     }
 }

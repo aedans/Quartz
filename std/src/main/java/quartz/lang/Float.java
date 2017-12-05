@@ -6,7 +6,7 @@ package quartz.lang;
 public final class Float extends Any {
     public final float value;
 
-    public Float(int value) {
+    public Float(float value) {
         this.value = value;
     }
 

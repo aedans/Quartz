@@ -3,7 +3,7 @@ package quartz.lang;
 import java.lang.annotation.*;
 
 /**
- * Marker interface for Quartz traits.
+ * Marker annotation for Quartz traits.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

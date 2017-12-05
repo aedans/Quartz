@@ -22,6 +22,6 @@ public final class Byte extends Any {
 
     @Override
     public int hashCode() {
-        return value;
+        return java.lang.Byte.hashCode(value);
     }
 }
