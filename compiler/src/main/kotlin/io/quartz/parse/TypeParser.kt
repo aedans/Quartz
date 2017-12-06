@@ -20,7 +20,7 @@ val String.constraintP: QuartzParser<ConstraintT> get() = skip(TokenType.O_PAREN
         TokenType.ID then
         skip(TokenType.C_PAREN) map {
     ConstraintT(it.first, it.second.text.name)
-} or (TokenType.ID map { ConstraintT(null, it.text.name) })
+}
 
 val String.typeP: QuartzParser<TypeT> get() = parser { functionTypeP }
 
