@@ -12,8 +12,8 @@ infix fun <A, B> Map<A, B>.union(map: Map<A, B>) = map + this
 infix fun Subst.compose(subst: Subst): Subst = (subst union this).mapValues { apply(it.value, this) }
 
 fun apply(scheme: SchemeK, subst: Subst): SchemeK = run {
-    val substP = scheme.constraints.foldRight(subst) { a, b -> b - a.name }
-    SchemeK(scheme.constraints, apply(scheme.type, substP))
+    val substP = scheme.foralls.fold(subst) { a, b -> a - b }
+    SchemeK(scheme.foralls, scheme.constraints, apply(scheme.type, substP))
 }
 
 fun apply(type: TypeK, subst: Subst): TypeK = when (type) {
@@ -29,8 +29,6 @@ fun apply(env: Env, subst: Subst): Env = env.mapTypes { _, it ->
 fun apply(typeInfo: TypeInfo, subst: Subst): TypeInfo = typeInfo.copy(
         scheme = apply(typeInfo.scheme, subst)
 )
-
-val SchemeK.freeTypeVariables: Set<Name> get() = type.freeTypeVariables - constraints.map { it.name }.toSet()
 
 val TypeK.freeTypeVariables: Set<Name> get() = when (this) {
     is TypeK.Const -> emptySet()

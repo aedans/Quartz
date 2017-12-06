@@ -10,10 +10,12 @@ import io.quartz.tree.util.*
 fun DeclI.Trait.jvm(qualifier: Qualifier): JvmClass = run {
     val qualifiedName = name.qualify(qualifier)
     val decls = members.map {
-        val (generics, returnType) = it.scheme.jvm()
+        val (foralls, constraints, returnType) = it.scheme.jvm()
+        if (constraints.isNotEmpty())
+            TODO()
         JvmDecl.Method(
                 it.name,
-                generics,
+                foralls,
                 emptyList(),
                 returnType
         )
@@ -21,7 +23,7 @@ fun DeclI.Trait.jvm(qualifier: Qualifier): JvmClass = run {
     JvmClass(
             qualifiedName,
             decls,
-            generics = constraints.map { it.jvm() },
+            foralls = foralls,
             annotations = listOf(JvmAnnotation("quartz.lang.Trait".qualifiedName)),
             isInterface = true
     )
@@ -29,11 +31,13 @@ fun DeclI.Trait.jvm(qualifier: Qualifier): JvmClass = run {
 
 fun DeclI.Value.jvm(qualifier: Qualifier, symTable: JvmSymTable) = run {
     val qualifiedName = name.qualify(qualifier)
-    val (generics, returnType) = scheme.jvm()
+    val (foralls, constraints, returnType) = scheme.jvm()
+    if (constraints.isNotEmpty())
+        TODO()
     val jvmExpr = expr.jvm(symTable)
     val method = JvmDecl.Method(
             varGetterName,
-            generics,
+            foralls,
             emptyList(),
             returnType,
             expr = jvmExpr

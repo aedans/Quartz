@@ -23,7 +23,7 @@ sealed class JvmExpr {
     ) : JvmExpr()
 
     data class Lambda(
-            val generics: List<JvmGeneric>,
+            val foralls: Set<Name>,
             val argType: JvmType,
             val returnType: JvmType,
             val expr: JvmExpr,

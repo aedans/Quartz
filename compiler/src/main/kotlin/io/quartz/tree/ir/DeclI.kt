@@ -9,7 +9,7 @@ sealed class DeclI : Locatable {
             override val location: Location?,
             override val qualifier: Qualifier,
             val name: Name,
-            val constraints: List<ConstraintI>,
+            val foralls: Set<Name>,
             val members: List<Member>
     ) : DeclI() {
         data class Member(

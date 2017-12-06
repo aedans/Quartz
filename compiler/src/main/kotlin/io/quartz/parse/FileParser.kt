@@ -18,11 +18,11 @@ fun File.parse() = run {
         val (rest2, imports) = list(importP)(rest1).toSuccessOrExcept()
         val (rest3, decls) = (list(name.declP) then skip(TokenType.EOF))(rest2).toSuccessOrExcept()
         if (rest3.any())
-            err { "Unexpected token ${rest3.first()}" }
+            throw Exception("Unexpected token ${rest3.first()}")
         else
             decls.map { Context(p, imports, it) }.right()
     } catch (e: Exception) {
-        err(cause = e) { "Parse error: ${e.message}" }
+        err { "Error parsing $name: ${e.message}" }
     }
 }
 

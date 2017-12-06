@@ -6,6 +6,7 @@ sealed class DeclT : Locatable {
     data class Trait(
             override val location: Location?,
             val name: Name,
+            val foralls: Set<Name>,
             val constraints: List<ConstraintT>,
             val members: List<Member>
     ) : DeclT() {

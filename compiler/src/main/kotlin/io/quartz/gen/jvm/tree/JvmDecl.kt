@@ -5,7 +5,7 @@ import io.quartz.tree.util.Name
 sealed class JvmDecl {
     data class Method(
             val name: Name,
-            val generics: List<JvmGeneric>,
+            val foralls: Set<Name>,
             val argTypes: List<JvmType>,
             val returnType: JvmType,
             val expr: JvmExpr? = null

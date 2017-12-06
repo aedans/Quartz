@@ -14,7 +14,7 @@ data class ConstraintK(val type: TypeK, val name: Name) {
     }
 }
 
-data class SchemeK(val constraints: List<ConstraintK>, val type: TypeK)
+data class SchemeK(val foralls: Set<Name>, val constraints: List<ConstraintK>, val type: TypeK)
 
 sealed class TypeK {
     data class Const(val name: QualifiedName) : TypeK() {
@@ -53,50 +53,44 @@ val Name.tVar get() = TypeK.Var(this)
 
 val QualifiedName.typeK get() = TypeK.Const(this)
 
-val TypeK.scheme get() = SchemeK(nil, this)
+val TypeK.scheme get() = SchemeK(emptySet(), nil, this)
 
-fun TypeK.generalize(env: Env, subst: Subst) = SchemeK(
-        freeTypeVariables.filterNot { name ->
-            env.getTypeOrErr(name.qualifiedLocal).bimap(
-                    { false },
-                    { it.scheme.constraints.any { it.name == name } }
-            ).fold(::identity, ::identity)
-        }.map {
-            ConstraintK(subst[it], it)
-        },
+fun TypeK.generalize() = SchemeK(
+        freeTypeVariables,
+        nil,
         this
 )
 
-fun SchemeK.instantiate(env: Env): TypeK = run {
-    val (namesP, _) = constraints.fold(emptyList<TypeK>() to env) { (b, env), _ ->
+fun SchemeK.instantiate(): TypeK = run {
+    val namesP = foralls.fold(emptyList<TypeK>()) { b, _ ->
         val name = fresh()
         val type = TypeK.Var(name)
-        (b + type) to env.withType(name.qualifiedLocal) { nil.left() }
+        (b + type)
     }
-    val namesZ: Subst = (constraints.map { it.name } zip namesP).toMap()
+    val namesZ: Subst = (foralls zip namesP).toMap()
     apply(type, namesZ)
 }
 
 fun ConstraintT.constraintK(env: Env) = type
         ?.typeK(env)
-        ?.map { ConstraintK(it.scheme.instantiate(env), name) }
+        ?.map { ConstraintK(it.scheme.instantiate(), name) }
         ?: ConstraintK(null, name).right()
 
 fun SchemeT.schemeK(env: Env) = resultMonad().binding {
-    val localEnv = constraints.localEnv(env)
-    yields(SchemeK(constraints.map { it.constraintK(env).bind() }, type.typeK(localEnv).bind()))
+    val localEnv = foralls.localEnv(env)
+    yields(SchemeK(foralls, constraints.map { it.constraintK(env).bind() }, type.typeK(localEnv).bind()))
 }.ev()
 
-fun List<ConstraintT>.localEnv(env: Env) = fold(env) { envP, generic ->
-    envP.withType(generic.name.qualifiedLocal) {
-        TypeInfo(TypeK.Var(generic.name).scheme).right()
+fun Set<Name>.localEnv(env: Env) = fold(env) { envP, name ->
+    envP.withType(name.qualifiedLocal) {
+        TypeInfo(TypeK.Var(name).scheme).right()
     }
 }
 
 fun TypeT.typeK(env: Env): Result<TypeK> = when (this) {
     is TypeT.Id -> env
             .getTypeOrErr(name)
-            .map { it.scheme.instantiate(env) }
+            .map { it.scheme.instantiate() }
             .qualify()
     is TypeT.Apply -> resultMonad()
             .tupled(t1.typeK(env), t2.typeK(env))
@@ -106,7 +100,7 @@ fun TypeT.typeK(env: Env): Result<TypeK> = when (this) {
 
 val ConstraintK.constraintI get() = ConstraintI(name, TypeI.any)
 
-val SchemeK.schemeI get() = SchemeI(constraints.map { it.constraintI }, type.typeI)
+val SchemeK.schemeI get() = SchemeI(foralls, constraints.map { it.constraintI }, type.typeI)
 
 val TypeK.typeI: TypeI get() = when (this) {
     is TypeK.Const -> TypeI.Const(name)

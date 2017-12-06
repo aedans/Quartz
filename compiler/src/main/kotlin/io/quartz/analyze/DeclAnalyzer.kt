@@ -15,11 +15,10 @@ fun DeclT.analyze(env: Env, qualifier: Qualifier): Result<DeclI> = when (this) {
 }
 
 fun DeclT.Trait.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding {
-    val localEnv = constraints.localEnv(env)
+    val localEnv = foralls.localEnv(env)
     val schemeK = schemeK(localEnv, qualifier).bind()
-    val constraints = schemeK.constraints.map { it.constraintI }
     val members = members.map { it.analyze(localEnv) }.flat().bind()
-    val it = DeclI.Trait(location, qualifier, name, constraints, members)
+    val it = DeclI.Trait(location, qualifier, name, schemeK.foralls, members)
     yields(it as DeclI)
 }.ev()
 
@@ -29,7 +28,7 @@ fun DeclT.Trait.Member.analyze(env: Env) = resultMonad().binding {
 }.ev()
 
 fun DeclT.Value.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding {
-    val localEnv = scheme?.constraints?.localEnv(env) ?: env
+    val localEnv = scheme?.foralls?.localEnv(env) ?: env
     val schemeI = schemeK(localEnv).bind().schemeI
     val exprI = expr.analyze(localEnv, qualifier).bind()
     val it = DeclI.Value(location, qualifier, name, schemeI, exprI)
@@ -40,6 +39,7 @@ fun DeclT.Instance.analyze(env: Env, qualifier: Qualifier): Nothing = TODO()
 
 fun DeclT.Trait.schemeK(env: Env, qualifier: Qualifier) = resultMonad().binding {
     val it = SchemeK(
+            foralls,
             constraints.map { it.constraintK(env).bind() },
             TypeK.Const(name.qualify(qualifier))
     )
@@ -49,6 +49,6 @@ fun DeclT.Trait.schemeK(env: Env, qualifier: Qualifier) = resultMonad().binding 
 fun DeclT.Value.schemeK(env: Env) = resultMonad().binding {
     val schemeK = scheme?.schemeK(env)?.bind()
     val (s1, exprType) = expr.infer(env).bind()
-    val s2 = unify(exprType, schemeK?.instantiate(env) ?: TypeK.Var(fresh())).qualify().bind()
-    yields(schemeK ?: apply(exprType, s2 compose s1).generalize(env, s2))
+    val s2 = unify(exprType, schemeK?.instantiate() ?: TypeK.Var(fresh())).qualify().bind()
+    yields(schemeK ?: apply(exprType, s2 compose s1).generalize())
 }.ev()

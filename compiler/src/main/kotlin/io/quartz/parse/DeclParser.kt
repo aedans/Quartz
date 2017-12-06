@@ -12,12 +12,12 @@ val String.declP: QuartzParser<DeclT> get() = parser { traitDeclP } or
 
 val String.traitDeclP: QuartzParser<DeclT.Trait> get() = skip(TokenType.TRAIT) then
         TokenType.ID then
-        list(parser { constraintP }) then
+        list(parser { TokenType.ID }) then
         skip(TokenType.O_BRACKET) then
         list(parser { memberP }) then
         skip(TokenType.C_BRACKET) map {
     val (t1, t2, t3) = it.tup()
-    DeclT.Trait(t1.location(this), t1.text.name, t2, t3)
+    DeclT.Trait(t1.location(this), t1.text.name, t2.map { it.text.name }.toSet(), nil, t3)
 }
 
 val String.memberP: QuartzParser<DeclT.Trait.Member> get() = skip(TokenType.DEF) then

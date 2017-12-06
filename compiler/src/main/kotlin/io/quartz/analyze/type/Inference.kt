@@ -10,7 +10,7 @@ typealias Infer = Either<List<CompilerError>, InferState>
 typealias InferState = Tuple2<Subst, TypeK>
 
 fun ExprT.infer(env: Env): Infer = when (this) {
-    is ExprT.Var -> env.getVarOrErr(name).map { emptySubst toT it.scheme.instantiate(env) }.qualify()
+    is ExprT.Var -> env.getVarOrErr(name).map { emptySubst toT it.scheme.instantiate() }.qualify()
     is ExprT.Cast -> resultMonad().binding {
         val typeK = type.typeK(env).bind()
         val (s1, exprType) = expr.infer(env).bind()

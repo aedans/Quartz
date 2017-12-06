@@ -6,11 +6,14 @@ import io.quartz.nil
 import io.quartz.tree.ast.*
 import io.quartz.tree.util.*
 
-val String.schemeP: QuartzParser<SchemeT> get() =
-    optional(list(parser { constraintP }) then skip(TokenType.FAT_ARROW)) then
-        parser { typeP } map {
-    SchemeT(it.first ?: nil, it.second)
+val String.schemeP: QuartzParser<SchemeT> get() = list(parser { forallP }) then
+        optional(list(parser { constraintP }) then skip(TokenType.FAT_ARROW)) then
+        parser { typeP } map { (it, type) ->
+    val (foralls, constraints) = it
+    SchemeT(foralls.toSet(), constraints ?: nil, type)
 }
+
+val String.forallP: QuartzParser<Name> get() = TokenType.ID then skip(TokenType.DOT) map { it.text.name }
 
 val String.constraintP: QuartzParser<ConstraintT> get() = skip(TokenType.O_PAREN) then
         parser { atomicTypeP } then

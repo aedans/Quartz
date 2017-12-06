@@ -1,3 +1,5 @@
 package io.quartz.gen.jvm.tree
 
-data class JvmScheme(val generics: List<JvmGeneric>, val type: JvmType)
+import io.quartz.tree.util.Name
+
+data class JvmScheme(val foralls: Set<Name>, val constraints: List<JvmConstraint>, val type: JvmType)

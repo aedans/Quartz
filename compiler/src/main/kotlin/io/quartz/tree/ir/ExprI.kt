@@ -27,7 +27,7 @@ sealed class ExprI : Locatable {
     data class Lambda(
             override val location: Location?,
             val qualifier: Qualifier,
-            val constraints: List<ConstraintI>,
+            val foralls: Set<Name>,
             val argName: Name,
             val argType: TypeI,
             val returnType: TypeI,

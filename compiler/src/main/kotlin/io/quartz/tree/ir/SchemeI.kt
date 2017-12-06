@@ -1,3 +1,5 @@
 package io.quartz.tree.ir
 
-data class SchemeI(val constraints: List<ConstraintI>, val type: TypeI)
+import io.quartz.tree.util.Name
+
+data class SchemeI(val foralls: Set<Name>, val constraints: List<ConstraintI>, val type: TypeI)

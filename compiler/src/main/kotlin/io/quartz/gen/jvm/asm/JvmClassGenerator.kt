@@ -3,6 +3,7 @@ package io.quartz.gen.jvm.asm
 import io.quartz.gen.jvm.JvmGenerator
 import io.quartz.gen.jvm.tree.*
 import io.quartz.nil
+import io.quartz.tree.util.Name
 import org.objectweb.asm.*
 import org.objectweb.asm.commons.*
 
@@ -17,7 +18,7 @@ fun JvmClass.generate(jg: JvmGenerator) = run {
                 Opcodes.V1_8,
                 access,
                 name.locatableString,
-                classSignature(generics, listOf(JvmType.`object`) + interfaces),
+                classSignature(foralls, listOf(JvmType.`object`) + interfaces),
                 "java/lang/Object",
                 interfaces.map { it.qualified }.toTypedArray()
         )
@@ -38,9 +39,9 @@ fun ClassGenerator.visitDefaultConstructor() = run {
 }
 
 fun classSignature(
-        constraints: List<JvmGeneric>,
+        foralls: Set<Name>,
         superTypes: List<JvmType>
-) = when (constraints) {
+) = when (foralls) {
     nil -> ""
-    else -> constraints.joinToString(prefix = "<", postfix = ">", separator = "") { "${it.name.string}:${it.constraint.signature}" }
+    else -> foralls.joinToString(prefix = "<", postfix = ">", separator = "") { "${it.string}:Ljava/lang/Object;" }
 } + superTypes.joinToString(separator = "", prefix = "", postfix = "") { it.signature }

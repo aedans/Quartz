@@ -13,7 +13,7 @@ fun JvmDecl.generate(cg: ClassGenerator) = when (this) {
 
 fun JvmDecl.Method.generate(cg: ClassGenerator) {
     val method = method(returnType, name, argTypes)
-    val signature = methodSignature(generics, argTypes, returnType)
+    val signature = methodSignature(foralls, argTypes, returnType)
     val access = Opcodes.ACC_PUBLIC +
             (if (isAbstract) Opcodes.ACC_ABSTRACT else 0)
     MethodGenerator(cg, GeneratorAdapter(access, method, signature, emptyArray(), cg.cw)).run {
@@ -35,8 +35,8 @@ fun method(returnType: JvmType, name: Name, argTypes: List<JvmType>) =
         Method.getMethod("${returnType.string} ${name.string} " +
                 argTypes.joinToString(prefix = "(", postfix = ")") { it.string })!!
 
-fun methodSignature(generics: List<JvmGeneric>, argTypes: List<JvmType>, returnType: JvmType) = when (generics) {
+fun methodSignature(constraints: Set<Name>, argTypes: List<JvmType>, returnType: JvmType) = when (constraints) {
     nil -> ""
-    else -> generics.joinToString(prefix = "<", postfix = ">", separator = "") { "${it.name.string}:${it.constraint.signature}" }
+    else -> constraints.joinToString(prefix = "<", postfix = ">", separator = "") { "${it.string}:Ljava/lang/Object;" }
 } + argTypes.joinToString(prefix = "(", postfix = ")", separator = "") { it.signature } +
         returnType.signature

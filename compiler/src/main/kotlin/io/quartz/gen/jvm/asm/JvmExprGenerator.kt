@@ -65,7 +65,7 @@ fun JvmExpr.Lambda.generate(mg: MethodGenerator) {
     val type = JvmType.Class(name).asmType
     val invoke = JvmDecl.Method(
             "invoke".name,
-            emptyList(),
+            emptySet(),
             argType.singletonList(),
             returnType,
             expr
@@ -76,7 +76,7 @@ fun JvmExpr.Lambda.generate(mg: MethodGenerator) {
     val clazz = JvmClass(
             name,
             invoke.singletonList() + fields,
-            generics = generics,
+            foralls = foralls,
             interfaces = listOf(JvmType.function(argType, returnType)),
             isFinal = true
     )

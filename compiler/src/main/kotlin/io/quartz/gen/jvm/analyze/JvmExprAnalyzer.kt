@@ -29,7 +29,7 @@ fun ExprI.Lambda.jvm(symTable: JvmSymTable) = run {
             }
             .withMemLoc(argName.qualifiedLocal, JvmMemLoc.Arg(0))
     JvmExpr.Lambda(
-            constraints.map { it.jvm() },
+            foralls,
             argType.jvm(),
             returnType.jvm(),
             expr.jvm(localSymTable),
