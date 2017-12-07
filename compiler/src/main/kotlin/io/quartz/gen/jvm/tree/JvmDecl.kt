@@ -8,7 +8,8 @@ sealed class JvmDecl {
             val foralls: Set<Name>,
             val argTypes: List<JvmType>,
             val returnType: JvmType,
-            val expr: JvmExpr? = null
+            val expr: JvmExpr? = null,
+            val isStatic: Boolean = false
     ) : JvmDecl() {
         val isAbstract get() = expr == null
     }

@@ -46,7 +46,8 @@ fun DeclI.Value.jvm(qualifier: Qualifier, symTable: JvmSymTable) = run {
             foralls,
             emptyList(),
             type,
-            expr = jvmExpr
+            expr = jvmExpr,
+            isStatic = true
     )
     JvmClass(
             qualifiedName.varClassName,
@@ -70,7 +71,7 @@ fun DeclI.Instance.jvm(qualifier: Qualifier, symTable: JvmSymTable) = run {
                 foralls,
                 emptyList(),
                 type,
-                it.expr.jvm(symTable)
+                expr = it.expr.jvm(symTable)
         )
     }
     JvmClass(

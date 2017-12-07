@@ -15,7 +15,8 @@ fun JvmDecl.Method.generate(cg: ClassGenerator) {
     val method = method(returnType, name, argTypes)
     val signature = methodSignature(foralls, argTypes, returnType)
     val access = Opcodes.ACC_PUBLIC +
-            (if (isAbstract) Opcodes.ACC_ABSTRACT else 0)
+            (if (isAbstract) Opcodes.ACC_ABSTRACT else 0) +
+            (if (isStatic) Opcodes.ACC_STATIC else 0)
     MethodGenerator(cg, GeneratorAdapter(access, method, signature, emptyArray(), cg.cw)).run {
         expr?.let {
             it.generate(this)
