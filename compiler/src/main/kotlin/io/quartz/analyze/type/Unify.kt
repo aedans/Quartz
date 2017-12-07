@@ -1,5 +1,6 @@
 package io.quartz.analyze.type
 
+import io.quartz.analyze.tree.TypeK
 import io.quartz.err.*
 import kategory.*
 

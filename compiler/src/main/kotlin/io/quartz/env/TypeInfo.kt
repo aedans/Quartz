@@ -1,5 +1,5 @@
 package io.quartz.env
 
-import io.quartz.analyze.type.SchemeK
+import io.quartz.analyze.tree.SchemeK
 
 data class TypeInfo(val scheme: SchemeK)

@@ -1,6 +1,6 @@
 package io.quartz.env.jvm
 
-import io.quartz.analyze.type.SchemeK
+import io.quartz.analyze.tree.SchemeK
 import io.quartz.env.*
 import io.quartz.err.Result
 import io.quartz.gen.jvm.util.*
