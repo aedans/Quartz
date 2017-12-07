@@ -1,11 +1,10 @@
 package io.quartz.analyze
 
-import io.quartz.analyze.tree.*
 import io.quartz.analyze.type.*
 import io.quartz.env.*
 import io.quartz.err.*
 import io.quartz.tree.ast.ExprT
-import io.quartz.tree.ir.ExprI
+import io.quartz.tree.ir.*
 import io.quartz.tree.util.*
 import kategory.*
 
@@ -21,20 +20,20 @@ fun ExprT.Cast.analyze(env: Env, qualifier: Qualifier) = expr.analyze(env, quali
 
 fun ExprT.Var.analyze(env: Env) = resultMonad().binding {
     val result = env.getValueOrErr(name).bind()
-    yields(ExprI.Var(location, name, result.schemeK.instantiate().typeI))
+    yields(ExprI.Var(location, name, result.scheme.instantiate()))
 }.ev()
 
 fun ExprT.Apply.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding {
     val (_, _) = infer(env).bind()
     val (_, expr1TypeK) = expr1.infer(env).bind()
-    val arrowK = expr1TypeK.arrow.bind()
+    val arrowI = expr1TypeK.arrow.bind()
     val expr1I = expr1.analyze(env, qualifier).bind()
     val expr2I = expr2.analyze(env, qualifier).bind()
     val it = ExprI.Invoke(
             location,
             expr1I,
             expr2I,
-            arrowK.arrowI
+            arrowI
     )
     yields(it)
 }.ev()
@@ -50,19 +49,25 @@ fun ExprT.If.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding {
 fun ExprT.Lambda.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding {
     val (s1, typeK) = infer(env).bind()
     val arrow = typeK.arrow.bind()
-    val argTypeK = arrow.t1
-    val returnTypeK = arrow.t2
+    val argTypeI = arrow.t1
+    val returnTypeI = arrow.t2
     val closures = freeVariables
     val localEnv = env
-            .withValue(argName.qualifiedLocal) { DeclK.Value(argTypeK.scheme).right() }
-    val closuresK = closures.map {
+            .withValue(argName.qualifiedLocal) {
+                DeclI.Value(
+                        location,
+                        argName.qualifiedLocal,
+                        argTypeI.scheme,
+                        null
+                ).right()
+            }
+    val closuresI = closures.map {
         val qualifiedName = it.qualifiedLocal
-        val typeI = apply(localEnv.getValueOrErr(qualifiedName).bind().schemeK, s1).instantiate()
+        val typeI = apply(localEnv.getValueOrErr(qualifiedName).bind().scheme, s1).instantiate()
         Tuple3(it, ExprT.Var(null, qualifiedName).analyze(env).bind(), typeI)
     }
-    val foralls = typeK.generalize().foralls + closuresK.flatMap { it.c.generalize().foralls }
+    val foralls = typeK.generalize().foralls + closuresI.flatMap { it.c.generalize().foralls }
     val exprI = expr.analyze(localEnv, qualifier).bind()
-    val closuresI = closuresK.map { Tuple3(it.a, it.b, it.c.typeI) }
-    val it = ExprI.Lambda(location, qualifier, foralls, argName, argTypeK.typeI, returnTypeK.typeI, exprI, closuresI)
+    val it = ExprI.Lambda(location, qualifier, foralls, argName, argTypeI, returnTypeI, exprI, closuresI)
     yields(it)
 }.ev()

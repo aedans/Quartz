@@ -1,9 +1,9 @@
 package io.quartz.env.jvm
 
-import io.quartz.analyze.tree.DeclK
 import io.quartz.env.Env
 import io.quartz.err.Result
 import io.quartz.gen.jvm.util.*
+import io.quartz.tree.ir.DeclI
 import io.quartz.tree.util.*
 import kategory.right
 import java.io.File
@@ -15,7 +15,7 @@ class JvmEnv(classpath: List<File>) : Env {
     override fun getType(name: QualifiedName) = try {
         val clazzName = name.qualifiedString
         val clazz = classLoader.loadClass(clazzName)
-        clazz.typeK.right()
+        clazz.typeI.right()
     } catch (e: ClassNotFoundException) {
         null
     }
@@ -24,7 +24,12 @@ class JvmEnv(classpath: List<File>) : Env {
         val clazzName = name.varClassName
         val clazz = classLoader.loadClass(clazzName.qualifiedString)
         val method = clazz.getMethod(varGetterName.string)
-        DeclK.Value(method.returnType.typeK.scheme).right()
+        DeclI.Value(
+                null,
+                clazzName,
+                method.returnType.typeI.scheme,
+                null
+        ).right()
     } catch (e: ClassNotFoundException) {
         null
     }
@@ -32,11 +37,22 @@ class JvmEnv(classpath: List<File>) : Env {
     override fun getTrait(name: QualifiedName) = try {
         val clazzName = name.qualifiedString
         val clazz = classLoader.loadClass(clazzName)
-        DeclK.Trait(clazz.qualifiedName).right()
+        DeclI.Trait(
+                null,
+                clazz.qualifiedName,
+                clazz.typeI.scheme,
+                clazz.methods.map {
+                    DeclI.Trait.Member(
+                            null,
+                            it.name.name,
+                            it.returnType.typeI.scheme
+                    )
+                }
+        ).right()
     } catch (e: ClassNotFoundException) {
         null
     }
 
     // TODO
-    override fun getInstances(name: QualifiedName) = emptySequence<Result<DeclK.Instance>>()
+    override fun getInstances(name: QualifiedName) = emptySequence<Result<DeclI.Instance>>()
 }

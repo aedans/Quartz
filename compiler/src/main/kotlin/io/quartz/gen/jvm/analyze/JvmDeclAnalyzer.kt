@@ -7,14 +7,13 @@ import io.quartz.singletonList
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.util.*
 
-fun DeclI.jvm(qualifier: Qualifier, symTable: JvmSymTable) = when (this) {
-    is DeclI.Trait -> jvm(qualifier)
-    is DeclI.Value -> jvm(qualifier, JvmSymTable.default)
-    is DeclI.Instance -> jvm(qualifier, symTable)
+fun DeclI.jvm(symTable: JvmSymTable) = when (this) {
+    is DeclI.Trait -> jvm()
+    is DeclI.Value -> jvm(JvmSymTable.default)
+    is DeclI.Instance -> jvm(symTable)
 }
 
-fun DeclI.Trait.jvm(qualifier: Qualifier) = run {
-    val qualifiedName = name.qualify(qualifier)
+fun DeclI.Trait.jvm() = run {
     val decls = members.map {
         val (foralls, constraints, returnType) = it.scheme.jvm()
         if (constraints.isNotEmpty())
@@ -27,20 +26,19 @@ fun DeclI.Trait.jvm(qualifier: Qualifier) = run {
         )
     }
     JvmClass(
-            qualifiedName,
+            name,
             decls,
-            foralls = foralls,
+            foralls = scheme.foralls,
             annotations = listOf(JvmAnnotation("quartz.lang.Trait".qualifiedName)),
             isInterface = true
     )
 }
 
-fun DeclI.Value.jvm(qualifier: Qualifier, symTable: JvmSymTable) = run {
-    val qualifiedName = name.qualify(qualifier)
+fun DeclI.Value.jvm(symTable: JvmSymTable) = run {
     val (foralls, constraints, type) = scheme.jvm()
     if (constraints.isNotEmpty())
         TODO()
-    val jvmExpr = expr.jvm(symTable)
+    val jvmExpr = expr?.jvm(symTable)
     val method = JvmDecl.Method(
             varGetterName,
             foralls,
@@ -50,14 +48,14 @@ fun DeclI.Value.jvm(qualifier: Qualifier, symTable: JvmSymTable) = run {
             isStatic = true
     )
     JvmClass(
-            qualifiedName.varClassName,
+            name.varClassName,
             method.singletonList(),
             annotations = listOf(JvmAnnotation("quartz.lang.Value".qualifiedName)),
             isFinal = true
     )
 }
 
-fun DeclI.Instance.jvm(qualifier: Qualifier, symTable: JvmSymTable) = run {
+fun DeclI.Instance.jvm(symTable: JvmSymTable) = run {
     val qualifiedName = "${instance.qualifiedString}${name ?: ""}\$Instance".qualifiedName
     val instanceType = JvmType.Class(instance)
     val (foralls, constraints, type) = scheme.jvm()
@@ -66,11 +64,11 @@ fun DeclI.Instance.jvm(qualifier: Qualifier, symTable: JvmSymTable) = run {
     val decls = impls.map {
         val (foralls, constraints, type) = it.scheme.jvm()
         JvmDecl.Method(
-                it.name,
+                it.name.unqualified,
                 foralls,
                 emptyList(),
                 type,
-                expr = it.expr.jvm(symTable)
+                expr = it.expr?.jvm(symTable)
         )
     }
     JvmClass(

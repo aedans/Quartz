@@ -1,7 +1,6 @@
 package io.quartz.env
 
 import io.quartz.analyze.*
-import io.quartz.analyze.tree.DeclK
 import io.quartz.err.resultMonad
 import io.quartz.gen.Generator
 import io.quartz.getFiles
@@ -25,38 +24,28 @@ fun Env.sourceEnv(sp: List<File>, generator: Generator) = resultMonad().binding 
     val it: Env = object : Env {
         override fun getType(name: QualifiedName) = this@sourceEnv.getType(name)
 
-        override fun getTrait(name: QualifiedName) = traits[name]?.let { ast ->
-            val env = import(ast.imports, ast.qualifier)
-            ast.analyze(this).flatMap { ir ->
-                generator.generate(ir)
-                resultMonad().binding {
-                    val qualifiedName = ast.value.name.qualify(ast.qualifier)
-                    yields(DeclK.Trait(qualifiedName))
-                }.ev()
+        override fun getTrait(name: QualifiedName) = traits[name]?.let { (qualifier, imports, value) ->
+            val env = import(imports, qualifier)
+            value.analyze(env, qualifier).flatMap { ir ->
+                generator.generate(Context(qualifier, imports, ir))
+                ir.right()
             }
         } ?: this@sourceEnv.getTrait(name)
 
-        override fun getValue(name: QualifiedName) = vars[name]?.let { ast ->
-            val env = import(ast.imports, ast.qualifier)
-            ast.analyze(this).flatMap { ir ->
-                generator.generate(ir)
-                resultMonad().binding {
-                    val schemeK = ast.value.schemeK(env, ast.qualifier).bind()
-                    yields(DeclK.Value(schemeK))
-                }.ev()
+        override fun getValue(name: QualifiedName) = vars[name]?.let { (qualifier, imports, value) ->
+            val env = import(imports, qualifier)
+            value.analyze(env, qualifier).flatMap { ir ->
+                generator.generate(Context(qualifier, imports, ir))
+                ir.right()
             }
         } ?: this@sourceEnv.getValue(name)
 
         override fun getInstances(name: QualifiedName) = instances[name]?.let { asts ->
-            asts.asSequence().map { ast ->
-                val env = import(ast.imports, ast.qualifier)
-                ast.analyze(this).flatMap { ir ->
-                    generator.generate(ir)
-                    resultMonad().binding {
-                        val traitK = env.getTraitOrErr(ast.value.instance.qualifiedLocal).bind()
-                        val instance = traitK.qualifiedName
-                        yields(DeclK.Instance(instance))
-                    }.ev()
+            asts.asSequence().map { (qualifier, imports, value) ->
+                val env = import(imports, qualifier)
+                value.analyze(env, qualifier).flatMap { ir ->
+                    generator.generate(Context(qualifier, imports, ir))
+                    ir.right()
                 }
             }
         } ?: emptySequence()

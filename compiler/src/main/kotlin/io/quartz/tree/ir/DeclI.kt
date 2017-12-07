@@ -3,13 +3,10 @@ package io.quartz.tree.ir
 import io.quartz.tree.util.*
 
 sealed class DeclI : Locatable {
-    abstract val qualifier: Qualifier
-
     data class Trait(
             override val location: Location?,
-            override val qualifier: Qualifier,
-            val name: Name,
-            val foralls: Set<Name>,
+            val name: QualifiedName,
+            val scheme: SchemeI,
             val members: List<Member>
     ) : DeclI() {
         data class Member(
@@ -21,16 +18,14 @@ sealed class DeclI : Locatable {
 
     data class Value(
             override val location: Location?,
-            override val qualifier: Qualifier,
-            val name: Name,
+            val name: QualifiedName,
             val scheme: SchemeI,
-            val expr: ExprI
+            val expr: ExprI?
     ) : DeclI()
 
     data class Instance(
             override val location: Location?,
-            override val qualifier: Qualifier,
-            val name: Name?,
+            val name: QualifiedName?,
             val instance: QualifiedName,
             val scheme: SchemeI,
             val impls: List<Value>

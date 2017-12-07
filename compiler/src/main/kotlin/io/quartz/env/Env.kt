@@ -1,32 +1,32 @@
 package io.quartz.env
 
-import io.quartz.analyze.tree.*
 import io.quartz.err.*
 import io.quartz.foldString
+import io.quartz.tree.ir.*
 import io.quartz.tree.util.*
 
 interface Env {
-    fun getType(name: QualifiedName): Result<TypeK>?
-    fun getValue(name: QualifiedName): Result<DeclK.Value>?
-    fun getTrait(name: QualifiedName): Result<DeclK.Trait>?
-    fun getInstances(name: QualifiedName): Sequence<Result<DeclK.Instance>>
+    fun getType(name: QualifiedName): Result<TypeI>?
+    fun getValue(name: QualifiedName): Result<DeclI.Value>?
+    fun getTrait(name: QualifiedName): Result<DeclI.Trait>?
+    fun getInstances(name: QualifiedName): Sequence<Result<DeclI.Instance>>
 }
 
 fun Env.getTypeOrErr(name: QualifiedName) = getType(name) ?: err { "could not find instance $name" }
 fun Env.getValueOrErr(name: QualifiedName) = getValue(name) ?: err { "could not find var $name" }
 fun Env.getTraitOrErr(name: QualifiedName) = getTrait(name) ?: err { "could not find trait $name" }
 
-fun Env.mapTypes(map: (QualifiedName, Result<TypeK>?) -> Result<TypeK>?) = object : Env by this {
+fun Env.mapTypes(map: (QualifiedName, Result<TypeI>?) -> Result<TypeI>?) = object : Env by this {
     override fun getType(name: QualifiedName) = map(name, this@mapTypes.getType(name))
     override fun toString() = "${this@mapTypes} mapType"
 }
 
-fun Env.mapValues(map: (QualifiedName, Result<DeclK.Value>?) -> Result<DeclK.Value>?) = object : Env by this {
+fun Env.mapValues(map: (QualifiedName, Result<DeclI.Value>?) -> Result<DeclI.Value>?) = object : Env by this {
     override fun getValue(name: QualifiedName) = map(name, this@mapValues.getValue(name))
     override fun toString() = "${this@mapValues} mapValues"
 }
 
-fun Env.withType(name: QualifiedName, type: () -> Result<TypeK>?) = run {
+fun Env.withType(name: QualifiedName, type: () -> Result<TypeI>?) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name
     object : Env by this {
@@ -35,7 +35,7 @@ fun Env.withType(name: QualifiedName, type: () -> Result<TypeK>?) = run {
     }
 }
 
-fun Env.withValue(name: QualifiedName, value: () -> Result<DeclK.Value>?) = run {
+fun Env.withValue(name: QualifiedName, value: () -> Result<DeclI.Value>?) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name
     object : Env by this {

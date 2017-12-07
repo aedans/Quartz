@@ -11,8 +11,8 @@ import java.io.File
 
 class JvmGenerator(private val out: File) : Generator {
     override fun generate(declContext: Context<DeclI>) {
-        val (qualifier, _, decl) = declContext
-        val jvmClass = decl.jvm(qualifier, JvmSymTable.default)
+        val (_, _, decl) = declContext
+        val jvmClass = decl.jvm(JvmSymTable.default)
         generate(jvmClass)
     }
 
