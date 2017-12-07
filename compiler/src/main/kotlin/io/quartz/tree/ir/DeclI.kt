@@ -31,7 +31,7 @@ sealed class DeclI : Locatable {
             override val location: Location?,
             override val qualifier: Qualifier,
             val name: Name?,
-            val instance: Name,
+            val instance: QualifiedName,
             val scheme: SchemeI,
             val impls: List<Value>
     ) : DeclI()

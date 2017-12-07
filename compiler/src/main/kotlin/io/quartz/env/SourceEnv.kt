@@ -31,27 +31,32 @@ fun Env.sourceEnv(sp: List<File>, generator: Generator) = resultMonad().binding 
                 generator.generate(ir)
                 resultMonad().binding {
                     val qualifiedName = ast.value.name.qualify(ast.qualifier)
-                    ast.value.schemeK(env, ast.qualifier).bind()
                     yields(DeclK.Trait(qualifiedName))
                 }.ev()
             }
         } ?: this@sourceEnv.getTrait(name)
 
-        override fun getVar(name: QualifiedName) = vars[name]?.let { ast ->
+        override fun getValue(name: QualifiedName) = vars[name]?.let { ast ->
             val env = import(ast.imports, ast.qualifier)
             ast.analyze(this).flatMap { ir ->
                 generator.generate(ir)
-                ast.value.schemeK(env, ast.qualifier)
+                resultMonad().binding {
+                    val schemeK = ast.value.schemeK(env, ast.qualifier).bind()
+                    yields(DeclK.Value(schemeK))
+                }.ev()
             }
-        } ?: this@sourceEnv.getVar(name)
+        } ?: this@sourceEnv.getValue(name)
 
         override fun getInstances(name: QualifiedName) = instances[name]?.let { asts ->
             asts.asSequence().map { ast ->
                 val env = import(ast.imports, ast.qualifier)
                 ast.analyze(this).flatMap { ir ->
                     generator.generate(ir)
-                    ast.value.schemeK(env, ast.qualifier)
-                            .map { DeclK.Instance(it) }
+                    resultMonad().binding {
+                        val traitK = env.getTraitOrErr(ast.value.instance.qualifiedLocal).bind()
+                        val instance = traitK.qualifiedName
+                        yields(DeclK.Instance(instance))
+                    }.ev()
                 }
             }
         } ?: emptySequence()

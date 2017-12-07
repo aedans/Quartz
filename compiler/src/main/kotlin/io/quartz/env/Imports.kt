@@ -14,9 +14,9 @@ fun Import.import(env: Env) = when (this) {
 }
 
 fun Import.Star.import(env: Env) = env
-        .mapVars { name, value -> value ?: env.getVar(QualifiedName(qualifier, name.string)) }
+        .mapValues { name, value -> value ?: env.getValue(QualifiedName(qualifier, name.string)) }
         .mapTypes { name, value -> value ?: env.getType(QualifiedName(qualifier, name.string)) }
 
 fun Import.Qualified.import(env: Env) = env
-        .withVar(alias.qualifiedLocal) { env.getVar(name) }
+        .withValue(alias.qualifiedLocal) { env.getValue(name) }
         .withType(alias.qualifiedLocal) { env.getType(name) }

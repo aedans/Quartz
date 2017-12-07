@@ -8,7 +8,7 @@ import io.quartz.tree.util.qualifiedLocal
 import kategory.*
 
 fun ExprT.infer(env: Env): Result<Tuple2<Subst, TypeK>> = when (this) {
-    is ExprT.Var -> env.getVarOrErr(name).map { emptySubst toT it.instantiate() }.qualify()
+    is ExprT.Var -> env.getValueOrErr(name).map { emptySubst toT it.schemeK.instantiate() }.qualify()
     is ExprT.Cast -> resultMonad().binding {
         val typeK = type.typeK(env).bind()
         val (s1, exprType) = expr.infer(env).bind()
@@ -27,7 +27,7 @@ fun ExprT.infer(env: Env): Result<Tuple2<Subst, TypeK>> = when (this) {
         val argName = fresh()
         val argVar = TypeK.Var(argName)
         val envP = env
-                .withVar(this@infer.argName.qualifiedLocal) { argVar.scheme.right() }
+                .withValue(this@infer.argName.qualifiedLocal) { DeclK.Value(argVar.scheme).right() }
                 .withType(argVar.name.qualifiedLocal) { argVar.right() }
         val (s1, exprType) = expr.infer(envP).bind()
         yields(s1 toT TypeK.Arrow(apply(argVar, s1), exprType).type)

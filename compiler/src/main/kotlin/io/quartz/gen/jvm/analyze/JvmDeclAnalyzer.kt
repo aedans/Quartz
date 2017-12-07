@@ -58,9 +58,8 @@ fun DeclI.Value.jvm(qualifier: Qualifier, symTable: JvmSymTable) = run {
 }
 
 fun DeclI.Instance.jvm(qualifier: Qualifier, symTable: JvmSymTable) = run {
-    val qualifiedName = "${instance.string}${name ?: ""}\$Instance".name.qualify(qualifier)
-    val instanceName = instance.qualify(qualifier)
-    val instanceType = JvmType.Class(instanceName)
+    val qualifiedName = "${instance.qualifiedString}${name ?: ""}\$Instance".qualifiedName
+    val instanceType = JvmType.Class(instance)
     val (foralls, constraints, type) = scheme.jvm()
     if (constraints.isNotEmpty())
         TODO()

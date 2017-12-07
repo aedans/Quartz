@@ -39,16 +39,11 @@ fun DeclT.Value.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding 
 fun DeclT.Instance.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding {
     val schemeK = scheme.schemeK(env).bind()
     val schemeI = schemeK.schemeI
+    val traitK = env.getTraitOrErr(instance.qualifiedLocal).bind()
     val implsI = impls.map { it.analyze(env, qualifier) }.flat().bind()
-    val it = DeclI.Instance(location, qualifier, name, instance, schemeI, implsI)
+    val it = DeclI.Instance(location, qualifier, name, traitK.qualifiedName, schemeI, implsI)
     yields(it)
 }.ev()
-
-fun DeclT.schemeK(env: Env, qualifier: Qualifier) = when (this) {
-    is DeclT.Trait -> schemeK(env, qualifier)
-    is DeclT.Value -> schemeK(env, qualifier)
-    is DeclT.Instance -> TODO()
-}
 
 fun DeclT.Trait.schemeK(env: Env, qualifier: Qualifier) = resultMonad().binding {
     val it = SchemeK(

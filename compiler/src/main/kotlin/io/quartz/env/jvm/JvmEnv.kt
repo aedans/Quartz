@@ -20,11 +20,11 @@ class JvmEnv(classpath: List<File>) : Env {
         null
     }
 
-    override fun getVar(name: QualifiedName) = try {
+    override fun getValue(name: QualifiedName) = try {
         val clazzName = name.varClassName
         val clazz = classLoader.loadClass(clazzName.qualifiedString)
         val method = clazz.getMethod(varGetterName.string)
-        method.returnType.typeK.scheme.right()
+        DeclK.Value(method.returnType.typeK.scheme).right()
     } catch (e: ClassNotFoundException) {
         null
     }

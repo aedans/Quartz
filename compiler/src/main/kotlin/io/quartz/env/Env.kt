@@ -7,22 +7,23 @@ import io.quartz.tree.util.*
 
 interface Env {
     fun getType(name: QualifiedName): Result<TypeK>?
-    fun getVar(name: QualifiedName): Result<SchemeK>?
+    fun getValue(name: QualifiedName): Result<DeclK.Value>?
     fun getTrait(name: QualifiedName): Result<DeclK.Trait>?
     fun getInstances(name: QualifiedName): Sequence<Result<DeclK.Instance>>
 }
 
 fun Env.getTypeOrErr(name: QualifiedName) = getType(name) ?: err { "could not find instance $name" }
-fun Env.getVarOrErr(name: QualifiedName) = getVar(name) ?: err { "could not find var $name" }
+fun Env.getValueOrErr(name: QualifiedName) = getValue(name) ?: err { "could not find var $name" }
+fun Env.getTraitOrErr(name: QualifiedName) = getTrait(name) ?: err { "could not find trait $name" }
 
 fun Env.mapTypes(map: (QualifiedName, Result<TypeK>?) -> Result<TypeK>?) = object : Env by this {
     override fun getType(name: QualifiedName) = map(name, this@mapTypes.getType(name))
     override fun toString() = "${this@mapTypes} mapType"
 }
 
-fun Env.mapVars(map: (QualifiedName, Result<SchemeK>?) -> Result<SchemeK>?) = object : Env by this {
-    override fun getVar(name: QualifiedName) = map(name, this@mapVars.getVar(name))
-    override fun toString() = "${this@mapVars} mapVars"
+fun Env.mapValues(map: (QualifiedName, Result<DeclK.Value>?) -> Result<DeclK.Value>?) = object : Env by this {
+    override fun getValue(name: QualifiedName) = map(name, this@mapValues.getValue(name))
+    override fun toString() = "${this@mapValues} mapValues"
 }
 
 fun Env.withType(name: QualifiedName, type: () -> Result<TypeK>?) = run {
@@ -34,12 +35,12 @@ fun Env.withType(name: QualifiedName, type: () -> Result<TypeK>?) = run {
     }
 }
 
-fun Env.withVar(name: QualifiedName, value: () -> Result<SchemeK>?) = run {
+fun Env.withValue(name: QualifiedName, value: () -> Result<DeclK.Value>?) = run {
     @Suppress("UnnecessaryVariable", "LocalVariableName")
     val _name = name
     object : Env by this {
-        override fun getVar(name: QualifiedName) = if (name == _name) value() else this@withVar.getVar(name)
-        override fun toString() = "${this@withVar} withVar ${name to value()?.foldString()}"
+        override fun getValue(name: QualifiedName) = if (name == _name) value() else this@withValue.getValue(name)
+        override fun toString() = "${this@withValue} withValue ${name to value()?.foldString()}"
     }
 }
 

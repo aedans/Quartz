@@ -7,7 +7,11 @@ sealed class DeclK {
             val qualifiedName: QualifiedName
     ) : DeclK()
 
+    data class Value(
+            val schemeK: SchemeK
+    ) : DeclK()
+
     data class Instance(
-            val scheme: SchemeK
+            val instance: QualifiedName
     ) : DeclK()
 }
