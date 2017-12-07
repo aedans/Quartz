@@ -7,11 +7,8 @@ import io.quartz.tree.ast.ExprT
 import io.quartz.tree.util.qualifiedLocal
 import kategory.*
 
-typealias Infer = Either<List<CompilerError>, InferState>
-typealias InferState = Tuple2<Subst, TypeK>
-
-fun ExprT.infer(env: Env): Infer = when (this) {
-    is ExprT.Var -> env.getVarOrErr(name).map { emptySubst toT it.scheme.instantiate() }.qualify()
+fun ExprT.infer(env: Env): Result<Tuple2<Subst, TypeK>> = when (this) {
+    is ExprT.Var -> env.getVarOrErr(name).map { emptySubst toT it.instantiate() }.qualify()
     is ExprT.Cast -> resultMonad().binding {
         val typeK = type.typeK(env).bind()
         val (s1, exprType) = expr.infer(env).bind()
@@ -30,8 +27,8 @@ fun ExprT.infer(env: Env): Infer = when (this) {
         val argName = fresh()
         val argVar = TypeK.Var(argName)
         val envP = env
-                .withVar(this@infer.argName.qualifiedLocal) { VarInfo(argVar.scheme).right() }
-                .withType(argVar.name.qualifiedLocal) { TypeInfo(argVar.scheme).right() }
+                .withVar(this@infer.argName.qualifiedLocal) { argVar.scheme.right() }
+                .withType(argVar.name.qualifiedLocal) { argVar.right() }
         val (s1, exprType) = expr.infer(envP).bind()
         yields(s1 toT TypeK.Arrow(apply(argVar, s1), exprType).type)
     }.ev()

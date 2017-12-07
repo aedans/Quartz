@@ -21,7 +21,7 @@ fun ExprT.Cast.analyze(env: Env, qualifier: Qualifier) = expr.analyze(env, quali
 
 fun ExprT.Var.analyze(env: Env) = resultMonad().binding {
     val result = env.getVarOrErr(name).bind()
-    yields(ExprI.Var(location, name, result.scheme.instantiate().typeI))
+    yields(ExprI.Var(location, name, result.instantiate().typeI))
 }.ev()
 
 fun ExprT.Apply.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding {
@@ -54,10 +54,10 @@ fun ExprT.Lambda.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding
     val returnTypeK = arrow.t2
     val closures = freeVariables
     val localEnv = env
-            .withVar(argName.qualifiedLocal) { VarInfo(argTypeK.scheme).right() }
+            .withVar(argName.qualifiedLocal) { argTypeK.scheme.right() }
     val closuresK = closures.map {
         val qualifiedName = it.qualifiedLocal
-        val typeI = apply(localEnv.getVarOrErr(qualifiedName).bind().scheme, s1).instantiate()
+        val typeI = apply(localEnv.getVarOrErr(qualifiedName).bind(), s1).instantiate()
         Tuple3(it, ExprT.Var(null, qualifiedName).analyze(env).bind(), typeI)
     }
     val foralls = typeK.generalize().foralls + closuresK.flatMap { it.c.generalize().foralls }

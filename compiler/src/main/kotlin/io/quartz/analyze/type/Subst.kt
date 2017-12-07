@@ -27,10 +27,6 @@ fun apply(env: Env, subst: Subst): Env = env.mapTypes { _, it ->
     it?.map { apply(it, subst) }
 }
 
-fun apply(typeInfo: TypeInfo, subst: Subst): TypeInfo = typeInfo.copy(
-        scheme = apply(typeInfo.scheme, subst)
-)
-
 val TypeK.freeTypeVariables: Set<Name> get() = when (this) {
     is TypeK.Const -> emptySet()
     is TypeK.Var -> setOf(name)

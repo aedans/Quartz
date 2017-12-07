@@ -1,6 +1,7 @@
 package io.quartz.env
 
 import io.quartz.analyze.*
+import io.quartz.analyze.tree.DeclK
 import io.quartz.err.resultMonad
 import io.quartz.gen.Generator
 import io.quartz.getFiles
@@ -22,21 +23,25 @@ fun Env.sourceEnv(sp: List<File>, generator: Generator) = resultMonad().binding 
             .mapNotNull { (a, b, c) -> (c as? DeclT.Instance)?.let { Context(a, b, it) } }
             .groupBy { it.value.instance.qualify(it.qualifier) }
     val it: Env = object : Env {
-        override fun getType(name: QualifiedName) = traits[name]?.let { ast ->
+        override fun getType(name: QualifiedName) = this@sourceEnv.getType(name)
+
+        override fun getTrait(name: QualifiedName) = traits[name]?.let { ast ->
             val env = import(ast.imports, ast.qualifier)
             ast.analyze(this).flatMap { ir ->
                 generator.generate(ir)
-                ast.value.schemeK(env, ast.qualifier)
-                        .map { TypeInfo(it) }
+                resultMonad().binding {
+                    val qualifiedName = ast.value.name.qualify(ast.qualifier)
+                    ast.value.schemeK(env, ast.qualifier).bind()
+                    yields(DeclK.Trait(qualifiedName))
+                }.ev()
             }
-        } ?: this@sourceEnv.getType(name)
+        } ?: this@sourceEnv.getTrait(name)
 
         override fun getVar(name: QualifiedName) = vars[name]?.let { ast ->
             val env = import(ast.imports, ast.qualifier)
             ast.analyze(this).flatMap { ir ->
                 generator.generate(ir)
                 ast.value.schemeK(env, ast.qualifier)
-                        .map { VarInfo(it) }
             }
         } ?: this@sourceEnv.getVar(name)
 
@@ -46,7 +51,7 @@ fun Env.sourceEnv(sp: List<File>, generator: Generator) = resultMonad().binding 
                 ast.analyze(this).flatMap { ir ->
                     generator.generate(ir)
                     ast.value.schemeK(env, ast.qualifier)
-                            .map { InstanceInfo(it) }
+                            .map { DeclK.Instance(it) }
                 }
             }
         } ?: emptySequence()

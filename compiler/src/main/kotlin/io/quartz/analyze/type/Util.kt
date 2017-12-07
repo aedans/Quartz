@@ -14,7 +14,7 @@ fun TypeK.generalize() = SchemeK(
 
 fun Set<Name>.localEnv(env: Env) = fold(env) { envP, name ->
     envP.withType(name.qualifiedLocal) {
-        TypeInfo(TypeK.Var(name).scheme).right()
+        TypeK.Var(name).right()
     }
 }
 
