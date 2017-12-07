@@ -7,7 +7,13 @@ import io.quartz.singletonList
 import io.quartz.tree.ir.DeclI
 import io.quartz.tree.util.*
 
-fun DeclI.Trait.jvm(qualifier: Qualifier): JvmClass = run {
+fun DeclI.jvm(qualifier: Qualifier, symTable: JvmSymTable) = when (this) {
+    is DeclI.Trait -> jvm(qualifier)
+    is DeclI.Value -> jvm(qualifier, JvmSymTable.default)
+    is DeclI.Instance -> jvm(qualifier, symTable)
+}
+
+fun DeclI.Trait.jvm(qualifier: Qualifier) = run {
     val qualifiedName = name.qualify(qualifier)
     val decls = members.map {
         val (foralls, constraints, returnType) = it.scheme.jvm()
@@ -31,7 +37,7 @@ fun DeclI.Trait.jvm(qualifier: Qualifier): JvmClass = run {
 
 fun DeclI.Value.jvm(qualifier: Qualifier, symTable: JvmSymTable) = run {
     val qualifiedName = name.qualify(qualifier)
-    val (foralls, constraints, returnType) = scheme.jvm()
+    val (foralls, constraints, type) = scheme.jvm()
     if (constraints.isNotEmpty())
         TODO()
     val jvmExpr = expr.jvm(symTable)
@@ -39,13 +45,43 @@ fun DeclI.Value.jvm(qualifier: Qualifier, symTable: JvmSymTable) = run {
             varGetterName,
             foralls,
             emptyList(),
-            returnType,
+            type,
             expr = jvmExpr
     )
     JvmClass(
             qualifiedName.varClassName,
             method.singletonList(),
             annotations = listOf(JvmAnnotation("quartz.lang.Value".qualifiedName)),
+            isFinal = true
+    )
+}
+
+fun DeclI.Instance.jvm(qualifier: Qualifier, symTable: JvmSymTable) = run {
+    val qualifiedName = "${instance.string}${name ?: ""}\$Instance".name.qualify(qualifier)
+    val instanceName = instance.qualify(qualifier)
+    val instanceType = JvmType.Class(instanceName)
+    val (foralls, constraints, type) = scheme.jvm()
+    if (constraints.isNotEmpty())
+        TODO()
+    val decls = impls.map {
+        val (foralls, constraints, type) = it.scheme.jvm()
+        JvmDecl.Method(
+                it.name,
+                foralls,
+                emptyList(),
+                type,
+                it.expr.jvm(symTable)
+        )
+    }
+    JvmClass(
+            qualifiedName,
+            decls,
+            interfaces = listOf(instanceType.copy(generics = instanceType.generics + type)),
+            annotations = JvmAnnotation(
+                    "quartz.lang.Instance".qualifiedName,
+                    JvmAnnotation.Arg("value".name, instanceType.asmType).singletonList()
+            ).singletonList(),
+            foralls = foralls,
             isFinal = true
     )
 }

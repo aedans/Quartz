@@ -30,9 +30,9 @@ sealed class DeclI : Locatable {
     data class Instance(
             override val location: Location?,
             override val qualifier: Qualifier,
-            val constraints: List<ConstraintI>,
-            val type: TypeI,
-            val instance: TypeI,
+            val name: Name?,
+            val instance: Name,
+            val scheme: SchemeI,
             val impls: List<Value>
     ) : DeclI()
 }

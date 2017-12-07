@@ -2,6 +2,7 @@ package io.quartz.env.jvm
 
 import io.quartz.analyze.type.SchemeK
 import io.quartz.env.*
+import io.quartz.err.Result
 import io.quartz.gen.jvm.util.*
 import io.quartz.nil
 import io.quartz.tree.util.QualifiedName
@@ -28,4 +29,7 @@ class JvmEnv(classpath: List<File>) : Env {
     } catch (e: ClassNotFoundException) {
         null
     }
+
+    // TODO
+    override fun getInstances(name: QualifiedName) = emptySequence<Result<InstanceInfo>>()
 }

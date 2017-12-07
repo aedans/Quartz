@@ -1,26 +1,29 @@
 package io.quartz.parse
 
-import io.github.aedans.parsek.*
 import io.github.aedans.parsek.dsl.*
+import io.github.aedans.parsek.optional
 import io.github.aedans.parsek.tokenizer.tokenize
 import io.quartz.err.*
 import io.quartz.nil
 import io.quartz.tree.util.*
-import kategory.right
+import kategory.*
 import java.io.File
 
 fun List<File>.parse() = map(File::parse).flat().map { it.flatten() }
 
 fun File.parse() = run {
     try {
-        val rest = tokenize(TokenType.tokens) + eofToken
-        val (rest1, p) = packageP(rest).toSuccessOrExcept()
-        val (rest2, imports) = list(importP)(rest1).toSuccessOrExcept()
-        val (rest3, decls) = (list(name.declP) then skip(TokenType.EOF))(rest2).toSuccessOrExcept()
-        if (rest3.any())
-            throw Exception("Unexpected token ${rest3.first()}")
-        else
-            decls.map { Context(p, imports, it) }.right()
+        resultMonad().binding {
+            val rest = tokenize(TokenType.tokens) + eofToken
+            val (rest1, p) = packageP(rest).toResult().bind()
+            val (rest2, imports) = list(importP)(rest1).toResult().bind()
+            val (rest3, decls) = (list(name.declP) then skip(TokenType.EOF))(rest2).toResult().bind()
+            val it = if (rest3.any())
+                throw Exception("Unexpected token ${rest3.first()}")
+            else
+                decls.map { Context(p, imports, it) }
+            yields(it)
+        }.ev()
     } catch (e: Exception) {
         err { "Error parsing $name: ${e.message}" }
     }

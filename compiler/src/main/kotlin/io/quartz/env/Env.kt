@@ -7,9 +7,10 @@ import io.quartz.tree.util.*
 interface Env {
     fun getType(name: QualifiedName): Result<TypeInfo>?
     fun getVar(name: QualifiedName): Result<VarInfo>?
+    fun getInstances(name: QualifiedName): Sequence<Result<InstanceInfo>>
 }
 
-fun Env.getTypeOrErr(name: QualifiedName) = getType(name) ?: err { "could not find type $name" }
+fun Env.getTypeOrErr(name: QualifiedName) = getType(name) ?: err { "could not find instance $name" }
 fun Env.getVarOrErr(name: QualifiedName) = getVar(name) ?: err { "could not find var $name" }
 
 fun Env.mapTypes(map: (QualifiedName, Result<TypeInfo>?) -> Result<TypeInfo>?) = object : Env by this {

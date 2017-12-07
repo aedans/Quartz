@@ -18,6 +18,9 @@ fun Env.sourceEnv(sp: List<File>, generator: Generator) = resultMonad().binding 
     val vars = ast
             .mapNotNull { (a, b, c) -> (c as? DeclT.Value)?.let { Context(a, b, it) } }
             .associateBy { it.value.name.qualify(it.qualifier) }
+    val instances = ast
+            .mapNotNull { (a, b, c) -> (c as? DeclT.Instance)?.let { Context(a, b, it) } }
+            .groupBy { it.value.instance.qualify(it.qualifier) }
     val it: Env = object : Env {
         override fun getType(name: QualifiedName) = traits[name]?.let { ast ->
             val env = import(ast.imports, ast.qualifier)
@@ -32,10 +35,21 @@ fun Env.sourceEnv(sp: List<File>, generator: Generator) = resultMonad().binding 
             val env = import(ast.imports, ast.qualifier)
             ast.analyze(this).flatMap { ir ->
                 generator.generate(ir)
-                ast.value.schemeK(env)
+                ast.value.schemeK(env, ast.qualifier)
                         .map { VarInfo(it) }
             }
         } ?: this@sourceEnv.getVar(name)
+
+        override fun getInstances(name: QualifiedName) = instances[name]?.let { asts ->
+            asts.asSequence().map { ast ->
+                val env = import(ast.imports, ast.qualifier)
+                ast.analyze(this).flatMap { ir ->
+                    generator.generate(ir)
+                    ast.value.schemeK(env, ast.qualifier)
+                            .map { InstanceInfo(it) }
+                }
+            }
+        } ?: emptySequence()
     }
     yields(it)
 }.ev()

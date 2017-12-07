@@ -12,11 +12,7 @@ import java.io.File
 class JvmGenerator(private val out: File) : Generator {
     override fun generate(declContext: Context<DeclI>) {
         val (qualifier, _, decl) = declContext
-        val jvmClass = when (decl) {
-            is DeclI.Trait -> decl.jvm(qualifier)
-            is DeclI.Value -> decl.jvm(qualifier, JvmSymTable.default)
-            is DeclI.Instance -> TODO()
-        }
+        val jvmClass = decl.jvm(qualifier, JvmSymTable.default)
         generate(jvmClass)
     }
 

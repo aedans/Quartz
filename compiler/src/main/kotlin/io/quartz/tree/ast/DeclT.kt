@@ -26,9 +26,9 @@ sealed class DeclT : Locatable {
 
     data class Instance(
             override val location: Location?,
-            val constraints: List<ConstraintT>,
-            val type: TypeT,
-            val instance: TypeT,
+            val name: Name?,
+            val instance: Name,
+            val scheme: SchemeT,
             val impls: List<Value>
     ) : DeclT()
 }

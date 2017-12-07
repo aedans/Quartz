@@ -38,12 +38,12 @@ val String.valueDeclP: QuartzParser<DeclT.Value> get() = skip(TokenType.DEF) the
 }
 
 val String.instanceDeclP: QuartzParser<DeclT.Instance> get() = skip(TokenType.INSTANCE) then
-        optional(list(parser { constraintP }) then skip(TokenType.FAT_ARROW)) then
-        parser { atomicTypeP } then
-        parser { typeP } then
+        optional(TokenType.ID then skip(TokenType.EXTENDS)) then
+        TokenType.ID then
+        parser { schemeP } then
         skip(TokenType.O_BRACKET) then
         list(parser { valueDeclP }) then
         skip(TokenType.C_BRACKET) map {
     val (t1, t2, t3, t4) = it.tup()
-    DeclT.Instance(t3.location, t1 ?: nil, t2, t3, t4)
+    DeclT.Instance(t2.location(this), t1?.text?.name, t2.text.name, t3, t4)
 }
