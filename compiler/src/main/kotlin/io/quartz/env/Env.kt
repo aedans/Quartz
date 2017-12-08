@@ -13,7 +13,7 @@ interface Env {
 }
 
 fun Env.getTypeOrErr(name: QualifiedName) = getType(name) ?: err { "could not find constraint $name" }
-fun Env.getValueOrErr(name: QualifiedName) = getValue(name) ?: err { "could not find var $name" }
+fun Env.getValueOrErr(name: QualifiedName) = getValue(name) ?: err { "could not find value $name" }
 fun Env.getTraitOrErr(name: QualifiedName) = getTrait(name) ?: err { "could not find trait $name" }
 
 fun Env.mapTypes(map: (QualifiedName, Result<TypeI>?) -> Result<TypeI>?) = object : Env by this {
