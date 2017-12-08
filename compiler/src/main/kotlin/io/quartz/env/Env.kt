@@ -12,7 +12,7 @@ interface Env {
     fun getInstances(name: QualifiedName): Sequence<Result<DeclI.Instance>>
 }
 
-fun Env.getTypeOrErr(name: QualifiedName) = getType(name) ?: err { "could not find instance $name" }
+fun Env.getTypeOrErr(name: QualifiedName) = getType(name) ?: err { "could not find type $name" }
 fun Env.getValueOrErr(name: QualifiedName) = getValue(name) ?: err { "could not find var $name" }
 fun Env.getTraitOrErr(name: QualifiedName) = getTrait(name) ?: err { "could not find trait $name" }
 
