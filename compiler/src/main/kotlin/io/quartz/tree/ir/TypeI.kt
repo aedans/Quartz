@@ -5,12 +5,21 @@ import io.quartz.tree.util.*
 import kategory.right
 
 sealed class TypeI {
-    data class Const(val name: QualifiedName) : TypeI()
-    data class Var(val name: Name) : TypeI()
-    data class Apply(val t1: TypeI, val t2: TypeI) : TypeI()
+    data class Const(val name: QualifiedName) : TypeI() {
+        override fun toString() = name.qualifiedString
+    }
+
+    data class Var(val name: Name) : TypeI() {
+        override fun toString() = name.string
+    }
+
+    data class Apply(val t1: TypeI, val t2: TypeI) : TypeI() {
+        override fun toString() = arrow.fold({ if (t1 is Apply) "($t1) $t2" else "$t1 $t2" }, Any::toString)
+    }
 
     data class Arrow(val t1: TypeI, val t2: TypeI) {
         val type get() = Apply(Apply(function, t1), t2)
+        override fun toString() = "$t1 -> $t2"
     }
 
     fun apply(type: TypeI) = Apply(this, type)

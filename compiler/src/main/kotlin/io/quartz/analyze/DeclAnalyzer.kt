@@ -16,7 +16,11 @@ fun DeclT.analyze(env: Env, qualifier: Qualifier): Result<DeclI> = when (this) {
 
 fun DeclT.Trait.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding {
     val localEnv = foralls.localEnv(env)
-    val schemeI = schemeK(localEnv, qualifier).bind()
+    val schemeI = SchemeI(
+            foralls,
+            constraints.map { it.constraintI(localEnv) }.flat().bind(),
+            TypeI.Const(name.qualify(qualifier))
+    )
     val members = members.map { it.analyze(localEnv) }.flat().bind()
     val it = DeclI.Trait(location, name.qualify(qualifier), schemeI, members)
     yields(it)
@@ -29,7 +33,10 @@ fun DeclT.Trait.Member.analyze(env: Env) = resultMonad().binding {
 
 fun DeclT.Value.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding {
     val localEnv = scheme?.foralls?.localEnv(env) ?: env
-    val schemeI = schemeK(localEnv, qualifier).bind()
+    val schemeIO = scheme?.schemeI(localEnv)?.bind()
+    val (s1, exprType) = expr.infer(localEnv).bind()
+    val s2 = unify(exprType, schemeIO?.instantiate() ?: TypeI.Var(fresh())).qualify().bind()
+    val schemeI = schemeIO ?: apply(exprType, s2 compose s1).generalize()
     val exprI = expr.analyze(localEnv, qualifier).bind()
     val it = DeclI.Value(location, name.qualify(qualifier), schemeI, exprI)
     yields(it)
@@ -38,23 +45,14 @@ fun DeclT.Value.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding 
 fun DeclT.Instance.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding {
     val schemeI = scheme.schemeI(env).bind()
     val traitI = env.getTraitOrErr(instance.qualifiedLocal).bind()
-    val implsI = impls.map { it.analyze(env, qualifier) }.flat().bind()
+    val implsI = impls.map {
+        it.analyze(env, qualifier).flatMap { impl ->
+            val superValue = traitI.members.find { it.name == impl.name.unqualified }
+            val s1 = unify(superValue?.scheme?.instantiate() ?: TypeI.Var(fresh()), impl.scheme.instantiate())
+            s1.map { impl.copy(scheme = apply(impl.scheme, it)) }
+        }
+    }.flat().bind()
     val it = DeclI.Instance(location, name?.qualify(qualifier), traitI.name, schemeI, implsI)
     yields(it)
 }.ev()
 
-fun DeclT.Trait.schemeK(env: Env, qualifier: Qualifier) = resultMonad().binding {
-    val it = SchemeI(
-            foralls,
-            constraints.map { it.constraintI(env).bind() },
-            TypeI.Const(name.qualify(qualifier))
-    )
-    yields(it)
-}.ev()
-
-fun DeclT.Value.schemeK(env: Env, qualifier: Qualifier) = resultMonad().binding {
-    val schemeI = scheme?.schemeI(env)?.bind()
-    val (s1, exprType) = expr.infer(env).bind()
-    val s2 = unify(exprType, schemeI?.instantiate() ?: TypeI.Var(fresh())).qualify().bind()
-    yields(schemeI ?: apply(exprType, s2 compose s1).generalize())
-}.ev()
