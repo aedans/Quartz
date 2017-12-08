@@ -1,6 +1,6 @@
 package io.quartz.env
 
-import io.quartz.analyze.*
+import io.quartz.analyze.analyze
 import io.quartz.err.resultMonad
 import io.quartz.gen.Generator
 import io.quartz.getFiles
@@ -15,12 +15,12 @@ fun Env.sourceEnv(sp: List<File>, generator: Generator) = resultMonad().binding 
     val traits = ast
             .mapNotNull { (a, b, c) -> (c as? DeclT.Trait)?.let { Context(a, b, it) } }
             .associateBy { it.value.name.qualify(it.qualifier) }
-    val vars = ast
-            .mapNotNull { (a, b, c) -> (c as? DeclT.Value)?.let { Context(a, b, it) } }
-            .associateBy { it.value.name.qualify(it.qualifier) }
     val instances = ast
             .mapNotNull { (a, b, c) -> (c as? DeclT.Instance)?.let { Context(a, b, it) } }
             .groupBy { it.value.instance.qualify(it.qualifier) }
+    val values = ast
+            .mapNotNull { (a, b, c) -> (c as? DeclT.Value)?.let { Context(a, b, it) } }
+            .associateBy { it.value.name.qualify(it.qualifier) }
     val it: Env = object : Env {
         override fun getType(name: QualifiedName) = this@sourceEnv.getType(name)
 
@@ -32,7 +32,7 @@ fun Env.sourceEnv(sp: List<File>, generator: Generator) = resultMonad().binding 
             }
         } ?: this@sourceEnv.getTrait(name)
 
-        override fun getValue(name: QualifiedName) = vars[name]?.let { (qualifier, imports, value) ->
+        override fun getValue(name: QualifiedName) = values[name]?.let { (qualifier, imports, value) ->
             val env = import(imports, qualifier)
             value.analyze(env, qualifier).flatMap { ir ->
                 generator.generate(Context(qualifier, imports, ir))

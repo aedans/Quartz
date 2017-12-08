@@ -2,6 +2,7 @@ package io.quartz.parse
 
 import io.github.aedans.parsek.dsl.*
 import io.github.aedans.parsek.optional
+import io.github.aedans.parsek.tokenizer.tokenParser
 import io.quartz.tree.ast.ExprT
 import io.quartz.tree.util.*
 import io.quartz.tup
@@ -49,7 +50,9 @@ val String.parenthesizedExprP: QuartzParser<ExprT> get() =
     skip(TokenType.O_PAREN) then parser { exprP } then skip(TokenType.C_PAREN)
 
 val String.idExprP: QuartzParser<ExprT> get() =
-    TokenType.ID map { ExprT.Var(it.location(this), it.text.name.qualifiedLocal) }
+    list(parser { TokenType.ID } then skip(tokenParser(TokenType.DOT))) then TokenType.ID map {
+        ExprT.Var(it.second.location(this), QualifiedName(it.first.map { it.text }, it.second.text))
+    }
 
 val String.booleanExprP: QuartzParser<ExprT> get() = TokenType.TRUE or TokenType.FALSE map {
     ExprT.Var(it.location(this), "quartz.lang.${it.text}".qualifiedName)
