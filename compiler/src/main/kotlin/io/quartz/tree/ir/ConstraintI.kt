@@ -1,5 +1,5 @@
 package io.quartz.tree.ir
 
-import io.quartz.tree.util.Name
+import io.quartz.tree.util.*
 
-data class ConstraintI(val name: Name, val constraint: TypeI)
+data class ConstraintI(val constraint: QualifiedName, val name: Name)

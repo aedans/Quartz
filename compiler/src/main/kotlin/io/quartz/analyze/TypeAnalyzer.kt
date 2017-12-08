@@ -5,12 +5,12 @@ import io.quartz.env.*
 import io.quartz.err.*
 import io.quartz.tree.ast.*
 import io.quartz.tree.ir.*
+import io.quartz.tree.util.qualifiedLocal
 import kategory.*
 
-fun ConstraintT.constraintI(env: Env) = type
-        ?.typeI(env)
-        ?.map { ConstraintI(name, it.scheme.instantiate()) }
-        ?: ConstraintI(name, TypeI.any).right()
+fun ConstraintT.constraintI(env: Env) = env
+        .getTraitOrErr(constraint.qualifiedLocal)
+        .map { ConstraintI(it.name, name) }
 
 fun SchemeT.schemeI(env: Env) = resultMonad().binding {
     val localEnv = foralls.localEnv(env)

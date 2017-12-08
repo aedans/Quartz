@@ -16,10 +16,10 @@ val String.schemeP: QuartzParser<SchemeT> get() = list(parser { forallP }) then
 val String.forallP: QuartzParser<Name> get() = TokenType.ID then skip(TokenType.DOT) map { it.text.name }
 
 val String.constraintP: QuartzParser<ConstraintT> get() = skip(TokenType.O_PAREN) then
-        parser { atomicTypeP } then
+        parser { TokenType.ID } then
         TokenType.ID then
         skip(TokenType.C_PAREN) map {
-    ConstraintT(it.first, it.second.text.name)
+    ConstraintT(it.first.text.name, it.second.text.name)
 }
 
 val String.typeP: QuartzParser<TypeT> get() = parser { functionTypeP }
