@@ -45,13 +45,7 @@ fun DeclT.Value.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding 
 fun DeclT.Instance.analyze(env: Env, qualifier: Qualifier) = resultMonad().binding {
     val schemeI = scheme.schemeI(env).bind()
     val traitI = env.getTraitOrErr(instance.qualifiedLocal).bind()
-    val implsI = impls.map {
-        it.analyze(env, qualifier).flatMap { impl ->
-            val superValue = traitI.members.find { it.name == impl.name.unqualified }
-            val s1 = unify(superValue?.scheme?.instantiate() ?: TypeI.Var(fresh()), impl.scheme.instantiate())
-            s1.map { impl.copy(scheme = apply(impl.scheme, it)) }
-        }
-    }.flat().bind()
+    val implsI = impls.map { it.analyze(env, qualifier) }.flat().bind()
     val it = DeclI.Instance(location, name?.qualify(qualifier), traitI.name, schemeI, implsI)
     yields(it)
 }.ev()
