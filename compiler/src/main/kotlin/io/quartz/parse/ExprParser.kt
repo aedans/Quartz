@@ -10,9 +10,8 @@ val String.exprP: QuartzParser<ExprT> get() = parser { lambdaExprP } or
         parser { ifExprP } or
         parser { castExprP }
 
-val String.lambdaExprP: QuartzParser<ExprT> get() = skip(TokenType.BACKSLASH) then
-        TokenType.ID then
-        skip(TokenType.ARROW) then
+val String.lambdaExprP: QuartzParser<ExprT> get() = TokenType.ID then
+        skip(TokenType.DOT) then
         parser { exprP } map { (t1, t2) ->
     ExprT.Lambda(t2.location, t1.text.name, t2)
 }
